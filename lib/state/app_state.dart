@@ -56,6 +56,7 @@ import '../compute/inputs/measurement_inputs.dart'
         profileWithWeighing,
         profileWithoutStaleWeighing;
 import '../compute/profile.dart';
+import '../compute/recovery_calibration.dart';
 import '../data/day_label.dart';
 import '../data/journal_fields.dart'
     show JournalMetricValue, kJournalFieldsByKey;
@@ -1988,6 +1989,11 @@ class AppState extends ChangeNotifier {
       if (score == null) {
         return; // recovery not computed (no nocturnal HRV) → no fire
       }
+      // First-week calibration: Home shows progress, not a grade, so don't
+      // announce one either.
+      final hrvNights =
+          (await LocalDb.metricSeriesCounts(const ['rmssd']))['rmssd'];
+      if (recoveryCalibrating(hrvNights)) return;
       final prefs = await SharedPreferences.getInstance();
       if (prefs.getString(_kLastRecoveryNotifDay) == dayId) {
         return; // already fired

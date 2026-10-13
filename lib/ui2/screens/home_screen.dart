@@ -44,6 +44,7 @@ import '../../compute/findings.dart'
 import '../../data/day_label.dart' show todayLabel, calendarDaysBetween;
 import '../../compute/onehz_pipeline.dart'
     show readinessInputShortfallNote, readinessUnstableBaselineNote;
+import '../../compute/recovery_calibration.dart';
 import '../../data/db.dart' show DbRebuild, LocalDb;
 import '../../data/journal_fields.dart' show formatMinuteOfDay;
 import '../../data/local_repository.dart';
@@ -1005,6 +1006,22 @@ _RingState _ringOf(HomeRingKind k, HomeData d, AppLocalizations? l) {
             why: l?.homeRecoveryAfterWake ??
                 'Recovery is scored after you wake.');
       }
+      // FIRST-WEEK GATE. HRV and resting HR only mean something against your
+      // own normal, and a normal from a few nights is mostly noise, so no
+      // recovery grade is shown until a week of nights is banked — even when
+      // the pipeline's own (shorter) minimum would already score one.
+      final nights = d.hrvNights;
+      if (nights != null && recoveryCalibrating(nights)) {
+        return _RingState(k, l?.homeRingRecovery ?? 'Recovery',
+            LucideIcons.batteryCharging, C.green,
+            value: l?.homeCalibrating ?? 'Learning your usual',
+            sub: l?.homeCalibratingNights(nights, kRecoveryCalibrationNights) ??
+                '$nights of $kRecoveryCalibrationNights nights',
+            frac: nights / kRecoveryCalibrationNights,
+            calibrating: true,
+            have: nights,
+            need: kRecoveryCalibrationNights);
+      }
       if (d.recoveryState == 'provisional' && v != null) {
         return _RingState(k, l?.homeRingRecovery ?? 'Recovery',
             LucideIcons.batteryCharging, band.color,
@@ -1270,6 +1287,12 @@ class HomeData {
   final String? name;
   final String? dayId;
   final Metric readiness;
+
+  /// Nights with a measured overnight HRV (`rmssd` in metric_series), all
+  /// time. Drives the first-week calibration gate on the recovery ring:
+  /// below [kRecoveryCalibrationNights] the ring shows progress, not a score.
+  /// Null when unknown (goldens, fixtures) — the gate then stays out of the way.
+  final int? hrvNights;
   final List<Map<String, dynamic>> drivers;
   final Metric sleepMin, rhr, steps, calories, caloriesTotal;
 
@@ -1327,6 +1350,7 @@ class HomeData {
     this.name,
     this.dayId,
     this.readiness = Metric.empty,
+    this.hrvNights,
     this.drivers = const [],
     this.sleepMin = Metric.empty,
     this.rhr = Metric.empty,
@@ -1355,6 +1379,7 @@ class HomeData {
         name: name,
         dayId: dayId,
         readiness: readiness,
+        hrvNights: hrvNights,
         drivers: drivers,
         sleepMin: sleepMin,
         rhr: rhr,
@@ -1375,6 +1400,16 @@ class HomeData {
         recoveryState: recoveryState,
         readinessUpdate: readinessUpdate,
       );
+
+  /// See [hrvNights]. A failed read leaves the gate open rather than hiding a
+  /// score the pipeline already produced.
+  static Future<int?> _hrvNights() async {
+    try {
+      return (await LocalDb.metricSeriesCounts(const ['rmssd']))['rmssd'];
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// A day OTHER than today, for the Home day switcher.
   ///
@@ -1403,6 +1438,7 @@ class HomeData {
       name: profile['name']?.toString(),
       dayId: date,
       readiness: readiness,
+      hrvNights: await _hrvNights(),
       absentDiag: absentDiag,
       rhr: metricOf(overview['resting_hr']),
       strain: metricOf(strain['strain']),
@@ -1465,6 +1501,7 @@ class HomeData {
       illnessDay: illness is Map ? illness['date']?.toString() : null,
       illnessZ: illness is Map ? (illness['z'] as num?)?.toDouble() : null,
       readiness: readiness,
+      hrvNights: await _hrvNights(),
       absentDiag: absentDiag,
       recoveryState: recoveryState,
       readinessUpdate: (head['recovery_update'] as Map?)?.cast<String, dynamic>(),
