@@ -102,7 +102,13 @@ class SyncController {
   DateTime? _lastWakeWindowRefreshAt;
   bool background = false;
 
-  static const Duration _backfillInterval = Duration(minutes: 10);
+  /// Foreground pull cadence. Backgrounded ticks never offload (the engine's
+  /// floored 15-min timer owns that), so this only sets how stale the screen
+  /// can get while someone is looking at it. Was 10 min upstream; 5 min gets
+  /// a nap or workout on screen sooner. Not lower: a pull that finds nothing
+  /// new counts toward the empty-sync detector (3 in a row reads as a lost
+  /// strap clock), and the band needs time to bank new records between pulls.
+  static const Duration _backfillInterval = Duration(minutes: 5);
 
   /// Cadence of the reconnect supervisor. Cheap — the tick reads local flags
   /// and does nothing at all unless the app is paired, wants a link, and does
@@ -266,9 +272,9 @@ class SyncController {
     if (!engine.isConnected) return;
     // BACKGROUND: leave periodic offloads to the engine's own timer, which is
     // floored by `BackfillPolicy` (900 s + an empty-streak backoff). This timer
-    // runs every 10 minutes and drives `requestHistorySync()`, whose `manual`
+    // runs every 5 minutes and drives `requestHistorySync()`, whose `manual`
     // trigger is deliberately NEVER floored — so backgrounded, the two together
-    // meant a radio-waking offload round roughly every ten minutes all day and
+    // meant a radio-waking offload round on every tick all day and
     // all night, bypassing the very rate limit written to prevent that (issue
     // #200). Foreground keeps the faster cadence: the user can see the data.
     if (background) {
@@ -279,8 +285,8 @@ class SyncController {
       // that connected at 22:00 and stayed connected never armed high-frequency
       // sync for that night at all.
       //
-      // Throttled to every 25 min while backgrounded (every third 10-min
-      // tick): the plan's input (habitual wake median off 14 derived days)
+      // Throttled to every 25 min while backgrounded (time-based, so it
+      // holds whatever the tick period is): the plan's input (habitual wake median off 14 derived days)
       // changes at most once a day, and the window it arms is 90 min wide —
       // a ~30-min check still opens it with ≥60 min of lead. Re-running the
       // 14-day DB read + JSON decode every 10 min all night bought nothing.
