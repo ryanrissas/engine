@@ -31,7 +31,7 @@ final class WatchBridge: NSObject, WCSessionDelegate {
     Bundle.main.object(forInfoDictionaryKey: "OpenStrapAppGroupIdentifier") as? String
       // Same fallback as AppGroup.swift and WidgetService.fallbackAppGroupId —
       // see the note there.
-      ?? "group.com.example.openstrap"
+      ?? "group.com.ryanrissas.engine"
   }
 
   /// Activate the WCSession. Safe to call once at launch; no-op if unsupported

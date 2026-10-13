@@ -18,7 +18,7 @@ enum OpenStrapShared {
       // the build-configured default (ios/Config/Signing.defaults.xcconfig).
       // Three different fallbacks for one group meant that if Info.plist ever
       // went missing, Siri and the widget would read different suites.
-      ?? "group.com.example.openstrap"
+      ?? "group.com.ryanrissas.engine"
   }
 
   static func defaults() -> UserDefaults? { UserDefaults(suiteName: appGroup) }

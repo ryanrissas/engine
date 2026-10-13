@@ -11,7 +11,7 @@ String uiText(BuildContext context, String text) =>
 /// Appended to pairing and unpair/reset copy so nobody learns it afterwards.
 String withIosUninstallWarning(BuildContext context, String body) =>
     defaultTargetPlatform == TargetPlatform.iOS
-        ? '$body\n\n${AppLocalizations.of(context)?.iosUninstallUnpairsWarning ?? "On iOS, deleting OpenStrap also unpairs every band and sensor paired here from the phone, so other apps, including the maker's own, lose them too."}'
+        ? '$body\n\n${AppLocalizations.of(context)?.iosUninstallUnpairsWarning ?? "On iOS, deleting Engine also unpairs every band and sensor paired here from the phone, so other apps, including the maker's own, lose them too."}'
         : body;
 
 String journalTagText(BuildContext context, String tag) =>

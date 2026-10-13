@@ -1,0 +1,64 @@
+name: iPhone app
+
+# Builds an unsigned Engine.ipa to install with Sideloadly (signed on install
+# with your own Apple ID). Run it from the Actions tab: "iPhone app" -> "Run
+# workflow". The .ipa is attached to the finished run under "Artifacts".
+#
+# Separate from build.yml on purpose: that one is OpenStrap's tag-driven release
+# pipeline and expects their Firebase and companion-server secrets. This one
+# needs no secrets: the committed dummy firebase_options.dart is used as-is, and
+# with no COMPANION_URL the OTA/telemetry companion stays off.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ipa:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # Same pin as test.yml / build.yml: the repo does not build on 3.44.x.
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.6'
+          channel: stable
+          cache: true
+
+      - name: Write .env (no server URLs)
+        run: |
+          echo "COMPANION_URL=" > .env
+          echo "BACKEND_URL=" >> .env
+
+      # The Crashlytics symbol-upload build phase calls flutterfire and is
+      # `|| true`, so this only keeps the build log quiet.
+      - name: Install flutterfire
+        run: dart pub global activate flutterfire_cli 1.4.0
+
+      - run: flutter pub get
+
+      - name: Build unsigned iOS app
+        run: flutter build ios --release --no-codesign --dart-define-from-file=.env
+
+      # The Watch companion cannot survive a re-sign by Sideloadly (see the
+      # long note in build.yml), so it is dropped from the sideload build.
+      - name: Strip Watch companion
+        run: rm -rf "build/ios/iphoneos/Runner.app/Watch"
+
+      - name: Package Engine.ipa
+        run: |
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -R Runner.app Payload/Runner.app
+          zip -qr -y "$GITHUB_WORKSPACE/Engine.ipa" Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Engine-ipa
+          path: Engine.ipa
+          retention-days: 30
