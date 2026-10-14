@@ -120,8 +120,8 @@ class SyncTimers {
       runZoned(body, zoneSpecification: spec);
 }
 
-/// The 10 minute periodic backfill.
-const Duration kBackfillEvery = Duration(minutes: 10);
+/// The periodic backfill (`SyncController._backfillInterval`).
+const Duration kBackfillEvery = Duration(minutes: 5);
 
 /// The reconnect supervisor.
 const Duration kSuperviseEvery = Duration(minutes: 1);

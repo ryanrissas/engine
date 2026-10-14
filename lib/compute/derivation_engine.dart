@@ -9677,7 +9677,7 @@ class DerivationEngine {
           'sport': b.sport,
           if (m != null) 'hrr_bpm': double.parse(m.toStringAsFixed(1)),
           if (r.tauSec != null) 'hrr_tau_s': r.tauSec!.round(),
-          if (rhrRefNote != null) 'rhr_ref': rhrRefNote,
+          'rhr_ref': ?rhrRefNote,
         });
       }
       // Also fill HRR for already-saved sessions (manual/live) retrospectively
@@ -9726,7 +9726,7 @@ class DerivationEngine {
             'duration_min': b.durationMin,
             'sport': b.sport,
             'dismissed': 0,
-            if (rhrRefNote != null) 'rhr_ref': rhrRefNote,
+            'rhr_ref': ?rhrRefNote,
           });
         }
 

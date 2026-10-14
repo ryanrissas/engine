@@ -616,7 +616,7 @@ class _SleepDetailState extends State<SleepDetail> with RevisionReload {
       // side by side as alternatives, never merged.
       if (d.deviceNights.isNotEmpty) ...[
         DeviceFilter(
-          allLabel: 'OpenStrap',
+          allLabel: 'Engine',
           showWithOne: true,
           options: [
             for (final dn in d.deviceNights)

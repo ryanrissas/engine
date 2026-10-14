@@ -1197,7 +1197,7 @@ class _Monitors extends StatelessWidget {
   @override
   Widget build(BuildContext c) {
     final l = AppLocalizations.of(c);
-    final (Color hTone, String hWord, String hSub, IconData? hIcon) =
+    final (Color hTone, String hWord, String hSub, IconData hIcon) =
         switch (d.illnessState) {
       'green' => (
           C.green,

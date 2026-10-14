@@ -501,7 +501,7 @@ void main() {
           ],
         ),
       );
-      expect(find.text('OpenStrap'), findsOneWidget);
+      expect(find.text('Engine'), findsOneWidget);
       expect(find.text('Mi Band'), findsOneWidget);
       expect(find.text('Colmi ring'), findsOneWidget);
       expect(find.textContaining('Staged by'), findsNothing,
@@ -521,16 +521,16 @@ void main() {
       expect(find.text('Staged by Colmi ring'), findsOneWidget);
       expect(find.textContaining('does not report'), findsNothing);
 
-      await t.ensureVisible(find.text('OpenStrap'));
+      await t.ensureVisible(find.text('Engine'));
       await t.pumpAndSettle();
-      await t.tap(find.text('OpenStrap'));
+      await t.tap(find.text('Engine'));
       await t.pumpAndSettle();
       expect(find.textContaining('Staged by'), findsNothing);
     });
 
     testWidgets('no device night means no switcher', (t) async {
       await _pump(t, SleepData(day: '2026-05-20', night: _night()));
-      expect(find.text('OpenStrap'), findsNothing);
+      expect(find.text('Engine'), findsNothing);
     });
   });
 
