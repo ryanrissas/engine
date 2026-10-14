@@ -1049,7 +1049,11 @@ class SyncController {
 
   DateTime? get lastDataAt => engine.lastRxAt;
 
-  DateTime? get lastRecordAt => lastRecTs == null
+  /// Null until a real record has been banked. A frontier of 0 is what a
+  /// fresh cursor and a band whose clock was never set both report, and it
+  /// rendered on Home as "Synced through Wed 31 Dec, 4:00 PM" (the epoch in
+  /// local time) — a date the app never received data on.
+  DateTime? get lastRecordAt => lastRecTs == null || lastRecTs! <= 0
       ? null
       : DateTime.fromMillisecondsSinceEpoch(lastRecTs! * 1000);
 

@@ -2098,18 +2098,19 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
         // Shown here TOO: a first run, a failed read and a sync in flight are
         // exactly when "how far are we?" is worth answering, and the header
         // this line normally sits under does not exist on this path.
-        Align(alignment: Alignment.centerLeft, child: syncedThroughLine(c, null, l)),
-        // The battery reading lives on AppState.device, independent of
-        // HomeData — a load failure or first run must not hide it too.
-        if (batteryLine(c) case final battery?) ...[
-          const SizedBox(height: 2),
-          Align(alignment: Alignment.centerLeft, child: battery),
+        if (widget.data == null)
+          // The device card says how far the data reaches and the battery.
+          const _DeviceCard()
+        else ...[
+          Align(alignment: Alignment.centerLeft, child: syncedThroughLine(c, null, l)),
+          // The battery reading lives on AppState.device, independent of
+          // HomeData — a load failure or first run must not hide it too.
+          if (batteryLine(c) case final battery?) ...[
+            const SizedBox(height: 2),
+            Align(alignment: Alignment.centerLeft, child: battery),
+          ],
         ],
         const SizedBox(height: S.x3),
-        if (widget.data == null) ...[
-          const _DeviceCard(),
-          const SizedBox(height: S.x3),
-        ],
         const DetectedActivitiesCard(),
         if (_loading)
           const Center(child: CircularProgressIndicator())
@@ -2219,17 +2220,20 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
               ]),
               const SizedBox(height: 2),
               Text(prettyDay(d.dayId, l), style: F.cap.copyWith(color: p.ink3)),
-              // How far the band's data reaches, always — the question "am I
-              // looking at today, or at last night?" used to be answerable
-              // only by opening Profile > Devices.
-              syncedThroughLine(c, d.dayId, l),
-              // Its own line, not squeezed into the sync line's row: at
-              // accessibility text sizes that row has no slack left, and
-              // `Expanded` would only shrink the sync text into extra wrapped
-              // lines to make room rather than ever actually overflow.
-              if (batteryLine(c) case final battery?) ...[
-                const SizedBox(height: 2),
-                battery,
+              // How far the band's data reaches, and the battery. On today's
+              // Home the device card directly below carries both, so the
+              // header says them only on a past day (where the card is not
+              // shown) or when the screen was handed its data.
+              if (!(isToday && widget.data == null)) ...[
+                syncedThroughLine(c, d.dayId, l),
+                // Its own line, not squeezed into the sync line's row: at
+                // accessibility text sizes that row has no slack left, and
+                // `Expanded` would only shrink the sync text into extra
+                // wrapped lines to make room rather than ever overflow.
+                if (batteryLine(c) case final battery?) ...[
+                  const SizedBox(height: 2),
+                  battery,
+                ],
               ],
             ]),
           ),
