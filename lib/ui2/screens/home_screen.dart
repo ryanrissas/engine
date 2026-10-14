@@ -1583,7 +1583,7 @@ _RingState _ringOf(HomeRingKind k, HomeData d, AppLocalizations? l) {
               d.sleepMin, l?.homeRingNoSleep ?? 'No sleep', l,
               fallbackWhy: l?.homeSleepGapFallback ??
                   'No night long enough to score was recorded.')
-          : _RingState(k, l?.homeRingSleep ?? 'Sleep', LucideIcons.moon, C.blue,
+          : _RingState(k, l?.homeRingSleep ?? 'Sleep', LucideIcons.moon, C.blueSoft,
               // Slept as a share of YOUR need when one is computed, the
               // duration otherwise. No computed need means no denominator:
               // the hardcoded 480 in the sleep bundle is not this user's need
@@ -1703,10 +1703,10 @@ class _RingColumn extends StatelessWidget {
         semanticLabel: r.spoken,
         child: Column(children: [
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 116),
+            constraints: const BoxConstraints(maxWidth: 124),
             child: AspectRatio(
               aspectRatio: 1,
-              child: _Dial(r, stroke: 11, icon: 22),
+              child: _Dial(r, stroke: 10, icon: 22),
             ),
           ),
           const SizedBox(height: S.x3),
@@ -1753,10 +1753,12 @@ class _RingText extends StatelessWidget {
     final cross = align == TextAlign.center
         ? CrossAxisAlignment.center
         : CrossAxisAlignment.start;
-    // The number is in the ring (see _Dial); under it the name, a chevron
-    // saying it opens, and one short line: the band word, the calibration
-    // count, or the absence in words — never a dash standing in for a value.
+    // The number is in the ring (see _Dial); under it the name and a chevron
+    // saying it opens. The words — band, calibration count, or the absence —
+    // are spoken, shown in the accessibility row layout, and on the gap rows
+    // under the trio; the three-across layout keeps the line clean.
     final line = r.calibrating || r.measured ? r.sub : r.value;
+    final showLine = align != TextAlign.center && line.isNotEmpty;
     return Column(crossAxisAlignment: cross, children: [
       Row(
         mainAxisSize: MainAxisSize.min,
@@ -1766,16 +1768,17 @@ class _RingText extends StatelessWidget {
         children: [
           Flexible(
             child: Text(r.label.toUpperCase(),
-                style: F.over.copyWith(color: p.ink),
+                style: F.over.copyWith(
+                    color: p.ink, fontWeight: FontWeight.w800, letterSpacing: 1.2),
                 textAlign: align,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis),
           ),
-          const SizedBox(width: 2),
-          Icon(LucideIcons.chevronRight, size: 13, color: p.ink3),
+          const SizedBox(width: 3),
+          Icon(LucideIcons.chevronRight, size: 14, color: p.ink3),
         ],
       ),
-      if (line.isNotEmpty) ...[
+      if (showLine) ...[
         const SizedBox(height: 2),
         Text(
           presentationText(AppLocalizations.of(c), line),
@@ -2492,7 +2495,7 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
                         child: Text(
                           isToday
                               ? (l?.tabToday ?? 'Today').toUpperCase()
-                              : prettyDay(d.dayId, l),
+                              : prettyDay(d.dayId, l).toUpperCase(),
                           textAlign: TextAlign.center,
                           style: F.body.copyWith(
                               color: p.ink, fontWeight: FontWeight.w600),
@@ -2507,29 +2510,28 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
         ]),
       ),
 
-      // ── wordmark + greeting ──
+      // ── wordmark ──
       Center(
         child: Column(children: [
-          Text('ENGINE',
-              style: F.t2.copyWith(
-                  color: p.ink,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 4)),
-          const SizedBox(height: 2),
-          Text(
-            d.name == null || d.name!.isEmpty
-                ? '${g.word} · ${prettyDay(d.dayId, l)}'
-                : '${g.word}, ${d.name} · ${prettyDay(d.dayId, l)}',
-            style: F.cap.copyWith(color: p.ink3),
-            textAlign: TextAlign.center,
+          Semantics(
+            label: d.name == null || d.name!.isEmpty
+                ? g.word
+                : '${g.word}, ${d.name}',
+            child: Text('ENGINE',
+                style: F.t2.copyWith(
+                    color: p.ink,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 4)),
           ),
           // A past day, or a screen handed its data: the band card is not
           // shown, so how far the data reaches is said here.
-          if (!(isToday && widget.data == null))
+          if (!(isToday && widget.data == null)) ...[
+            const SizedBox(height: 2),
             syncedThroughLine(c, d.dayId, l),
+          ],
         ]),
       ),
-      const SizedBox(height: S.x5),
+      const SizedBox(height: S.x6),
 
       if (bare) ...[
         const DetectedActivitiesCard(),
@@ -2636,16 +2638,8 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
           }),
 
         // ── monitors ──
-        const SizedBox(height: S.x3),
+        const SizedBox(height: S.x4),
         _Monitors(d),
-
-        // ── the band: connected? reading me? ──
-        //
-        // Today only, and only in the real app (goldens hand data in).
-        if (isToday && widget.data == null) ...[
-          const SizedBox(height: S.x3),
-          const _DeviceCard(),
-        ],
 
         // ── vitals ──
         //
@@ -2682,6 +2676,15 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
         // strain" about a day already over is an instruction, not a fact.
         if (isToday)
           Section('My day', _plan(c, p, d)),
+
+      // ── the band: connected? reading me? ──
+      //
+      // Today only, and only in the real app (goldens hand data in). The
+      // header's dot says connected at a glance; this is the live reading.
+      if (isToday && widget.data == null) ...[
+        const _DeviceCard(),
+        const SizedBox(height: S.x3),
+      ],
 
         // ── the way into the whole day ──
         //
