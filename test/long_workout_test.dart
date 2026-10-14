@@ -41,6 +41,8 @@ List<ana.DetectedWorkout> _base(
     );
 
 void main() {
+  _intermittentTests();
+
   test('the whole-day detector drops a 150-min session (the bug)', () {
     final d = _day(startMin: 300, minutes: 150);
     expect(_base(d), isEmpty);
@@ -126,5 +128,104 @@ void main() {
       ),
       isEmpty,
     );
+  });
+}
+
+/// 16 h at rest with a 140-min interval session from minute 300: 4 min at
+/// 132 bpm, 2 min resting at 100, repeated — practice, a circuit, intervals.
+({List<int> ts, List<int> bpm, List<ana.MotionPoint> motion}) _intervalDay(
+    {double motionInSession = 0.3}) {
+  final ts = <int>[], bpm = <int>[];
+  final motion = <ana.MotionPoint>[];
+  for (var i = 0; i < 16 * 3600; i++) {
+    final m = i ~/ 60;
+    final inSession = m >= 300 && m < 440;
+    final h = inSession ? ((m - 300) % 6 < 4 ? 132 : 100) : 62;
+    ts.add(_t0 + i);
+    bpm.add(h + (i % 5) - 2);
+    motion.add(ana.MotionPoint(_t0 + i, inSession ? motionInSession : 0.02));
+  }
+  return (ts: ts, bpm: bpm, motion: motion);
+}
+
+List<ana.DetectedWorkout> _all(
+    ({List<int> ts, List<int> bpm, List<ana.MotionPoint> motion}) d) {
+  final base = ana.AutoWorkoutDetector.detect(
+      hrTs: d.ts, hrBpm: d.bpm, restingBpm: 45, maxBpm: 192, motion: d.motion);
+  final long = recoverLongWorkouts(
+      hrTs: d.ts,
+      hrBpm: d.bpm,
+      found: base,
+      restingBpm: 45,
+      maxBpm: 192,
+      motion: d.motion);
+  return withIntermittentWorkouts(
+      hrTs: d.ts,
+      hrBpm: d.bpm,
+      found: [...base, ...long],
+      restingBpm: 45,
+      maxBpm: 192,
+      motion: d.motion);
+}
+
+void _intermittentTests() {
+  group('workouts with rests', () {
+    test('the whole-day detector shatters an interval session (the bug)', () {
+      final d = _intervalDay();
+      expect(
+          ana.AutoWorkoutDetector.detect(
+              hrTs: d.ts,
+              hrBpm: d.bpm,
+              restingBpm: 45,
+              maxBpm: 192,
+              motion: d.motion),
+          isEmpty);
+    });
+
+    test('it comes back as one session, trimmed to the hard minutes', () {
+      final w = _all(_intervalDay()).single;
+      expect(w.startSec, _t0 + 300 * 60);
+      expect((w.endSec - (_t0 + 440 * 60)).abs(), lessThan(60));
+      expect(w.durationMin, inInclusiveRange(138, 140));
+      expect(w.avgBpm, inInclusiveRange(115, 125));
+    });
+
+    test('a still wrist at the same heart rate is not a workout', () {
+      expect(_all(_intervalDay(motionInSession: 0.02)), isEmpty);
+    });
+
+    test('a steady run keeps the bout the detector found, edges and all', () {
+      final d = _day(startMin: 300, minutes: 40);
+      final base = _base(d);
+      expect(base, hasLength(1));
+      final all = withIntermittentWorkouts(
+          hrTs: d.ts,
+          hrBpm: d.bpm,
+          found: base,
+          restingBpm: 55,
+          maxBpm: 195,
+          motion: d.motion);
+      expect(all, hasLength(1));
+      expect(all.single.startSec, base.single.startSec);
+      expect(all.single.endSec, base.single.endSec);
+    });
+
+    test('a logged session is never proposed again', () {
+      final d = _intervalDay();
+      final base = ana.AutoWorkoutDetector.detect(
+          hrTs: d.ts, hrBpm: d.bpm, restingBpm: 45, maxBpm: 192, motion: d.motion);
+      expect(
+        withIntermittentWorkouts(
+          hrTs: d.ts,
+          hrBpm: d.bpm,
+          found: base,
+          restingBpm: 45,
+          maxBpm: 192,
+          motion: d.motion,
+          savedSpans: [ana.SavedWorkoutSpan(_t0 + 320 * 60, _t0 + 330 * 60)],
+        ),
+        isEmpty,
+      );
+    });
   });
 }

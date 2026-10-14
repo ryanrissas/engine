@@ -175,7 +175,17 @@ class ActivityStore {
         );
         // A decided interval wins over every re-detection, including a merger
         // that now covers both a decided and a still-pending fragment.
-        final decided = matches.where((m) => m['status'] != 'pending').toList();
+        //
+        // DECIDED MEANS THE USER DECIDED. `superseded` is not a decision: it
+        // is "something else covered this" — a session, a nap, a night — and
+        // that cover is re-checked just below on every pass. Counting it as
+        // decided made the cover permanent: a session saved over a detected
+        // bout and later deleted left the bout superseded forever, and that
+        // stale row then superseded every re-detection of the same window,
+        // so a real workout could never be proposed again.
+        final decided = matches
+            .where((m) => m['status'] == 'confirmed' || m['status'] == 'discarded')
+            .toList();
         final saved = await _overlapsSleep(tx, start, end);
         if (decided.isNotEmpty || saved) {
           for (final m in matches) {
@@ -223,12 +233,17 @@ class ActivityStore {
           // same-start bout only grows, so it never moves the end back.
           // Workouts only: a nap's end can legitimately move back once more
           // of the day is staged.
-          if (kind == ActivityKind.workout &&
+          // Nothing covers it any more (checked above): a superseded row is
+          // proposed again.
+          final revive = first['status'] == 'superseded';
+          if (!revive &&
+              kind == ActivityKind.workout &&
               first['start_ts'] == start &&
               (first['end_ts'] as int) > end) {
             continue;
           }
           final changed =
+              revive ||
               first['start_ts'] != start ||
               first['end_ts'] != end ||
               first['details_json'] != details;
@@ -251,6 +266,7 @@ class ActivityStore {
               ),
               'revision': (first['revision'] as int) + (changed ? 1 : 0),
               'updated_at': now,
+              if (revive) 'status': 'pending',
             },
             where: 'id = ?',
             whereArgs: [id],

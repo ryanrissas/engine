@@ -32,7 +32,8 @@ import 'strain_backfill.dart' show backfillStrainScale;
 import 'readiness_calibration_backfill.dart'
     show backfillReadinessCalibration, seedRecentReadinessZ;
 import 'workout_rhr_ref.dart';
-import 'long_workout.dart' show recoverLongWorkouts;
+import 'long_workout.dart'
+    show recoverLongWorkouts, withIntermittentWorkouts;
 
 import 'package:crypto/crypto.dart' show sha1;
 import 'package:flutter/foundation.dart';
@@ -1816,7 +1817,17 @@ import 'vendor_sleep.dart';
 // 100-min windows and stitches the pieces with its own 5-min merge gap,
 // adding only spans > 120 min (≤ 6 h) that overlap nothing the whole-day
 // pass found. Days without such a session are unchanged. Edge-only.
-const int kAlgoVersion = 114;
+// 114 → 115 (workouts with rests): intervals, practice and circuits drop
+// under the detector's floor between efforts, so its 90-s dip rule shattered
+// them into pieces under 12 min (reported: a 2h20 session at ~115 bpm, peaks
+// 150, came back as one 15-min bout). `withIntermittentWorkouts`
+// (compute/long_workout.dart) holds a session open per minute at ≥ rest +
+// 35% of reserve across rests ≤ 5 min, trims it to its first/last minute at
+// the detector's work floor, and keeps it when ≥ 20 min, ≥ 30% at work level
+// and (with motion) mean motion ≥ the detector's 0.15. It replaces bouts
+// inside it only when ≥ 30 min longer, so a steady bout keeps its edges.
+// Edge-only.
+const int kAlgoVersion = 115;
 /// The sibling SHAs this version was derived against, asserted against
 /// pubspec.yaml in test/db_serve_version_and_reads_test.dart.
 ///
@@ -9662,7 +9673,7 @@ class DerivationEngine {
           const <ana.DetectedWorkout>[];
       // Sessions past the detector's two-hour cap, which the pass above drops
       // outright — see `recoverLongWorkouts`. Empty on any day without one.
-      final bouts = [
+      final continuous = [
         ...dayBouts,
         ...recoverLongWorkouts(
           hrTs: hrTs,
@@ -9673,7 +9684,19 @@ class DerivationEngine {
           motion: motion,
           savedSpans: savedSpans,
         ),
-      ]..sort((a, b) => a.startSec.compareTo(b.startSec));
+      ];
+      // Then sessions with rests in them (intervals, practice, circuits),
+      // which shatter under the detector's 90-second dip rule — see
+      // `withIntermittentWorkouts`. A steady bout keeps its own edges.
+      final bouts = withIntermittentWorkouts(
+        hrTs: hrTs,
+        hrBpm: hrBpm,
+        found: continuous,
+        restingBpm: restingRef.bpm,
+        maxBpm: maxHr,
+        motion: motion,
+        savedSpans: savedSpans,
+      );
       // Provenance for a bout priced on something other than the night's own
       // resting HR. Omitted on the normal path, so a day with a detected night
       // stores exactly what it stored before.

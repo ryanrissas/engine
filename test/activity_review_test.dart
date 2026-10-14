@@ -411,6 +411,34 @@ void main() {
     expect(await db.query('sessions'), isEmpty);
   });
 
+  test('a detection hidden by a session comes back when the session is gone',
+      () async {
+    // A session saved over a detected bout supersedes it; deleting that
+    // session used to leave it superseded forever — and that stale row then
+    // superseded every re-detection of the window, so the workout could never
+    // be proposed again.
+    final s = (await store.reconcile(ActivityKind.workout, [
+      {'start_ts': start, 'end_ts': start + 1800},
+    ])).single;
+    await LocalDb.putSession(
+        {'id': 'live-1', 'start_ts': start + 60, 'end_ts': start + 900,
+         'type': 'other', 'status': 'done'});
+    expect((await store.get(s.id))!.status, ActivityReviewStatus.superseded);
+    // Still covered: a re-detection stays hidden.
+    await store.reconcile(ActivityKind.workout, [
+      {'start_ts': start, 'end_ts': start + 3600},
+    ]);
+    expect(await store.pending(), isEmpty);
+    // The session is deleted; the next pass proposes the (longer) bout again.
+    await db.delete('sessions', where: 'id = ?', whereArgs: ['live-1']);
+    await store.reconcile(ActivityKind.workout, [
+      {'start_ts': start, 'end_ts': start + 3600},
+    ]);
+    final back = (await store.pending()).single;
+    expect(back.id, s.id);
+    expect(back.endTs, start + 3600);
+  });
+
   test('a manually logged workout supersedes pending detections', () async {
     await store.reconcile(ActivityKind.workout, [
       {'start_ts': start, 'end_ts': start + 1800},
