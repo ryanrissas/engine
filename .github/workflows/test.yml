@@ -65,8 +65,18 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      # Each finding is re-emitted as a workflow annotation, so it is readable
+      # from the check-run API (the raw job log is not always reachable).
       - name: Analyze
-        run: flutter analyze
+        shell: bash
+        run: |
+          set +e
+          flutter analyze 2>&1 | tee analyze.txt
+          rc=${PIPESTATUS[0]}
+          grep -E '^\s*(error|warning|info) •' analyze.txt \
+            | sed -E 's/^\s*(error|warning|info) • (.*) • ([^ ]+):([0-9]+):([0-9]+) • (.*)$/::\1 file=\3,line=\4,col=\5,title=\6::\2/' \
+            | sed 's/^::info/::notice/'
+          exit $rc
 
       # --concurrency=1: the suite uses sqflite_common_ffi against real database
       # files, and parallel workers race on them.
