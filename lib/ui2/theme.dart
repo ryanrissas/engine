@@ -135,11 +135,13 @@ class P {
 
   static P of(BuildContext c) => P(Theme.of(c).brightness == Brightness.dark);
 
-  Color get bg => dark ? const Color(0xFF0B1017) : C.n50;
-  Color get card => dark ? const Color(0xFF151C26) : C.white;
-  Color get card2 => dark ? const Color(0xFF1D2632) : C.n100;
-  Color get line => dark ? const Color(0xFF232D3B) : C.n200;
-  Color get track => dark ? const Color(0xFF232D3B) : C.n200;
+  // Dark: near-black page, charcoal cards. Neutral rather than the blue-black
+  // it replaced, so the accents are the only colour on the page.
+  Color get bg => dark ? const Color(0xFF0A0B0D) : C.n50;
+  Color get card => dark ? const Color(0xFF151619) : C.white;
+  Color get card2 => dark ? const Color(0xFF1E1F24) : C.n100;
+  Color get line => dark ? const Color(0xFF2A2B32) : C.n200;
+  Color get track => dark ? const Color(0xFF2A2B32) : C.n200;
 
   Color get ink => dark ? const Color(0xFFF1F5F9) : C.n900;
   Color get ink2 => dark ? const Color(0xFF94A3B8) : C.n600;

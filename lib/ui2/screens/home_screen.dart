@@ -66,7 +66,7 @@ import '../../theme/theme_switcher.dart' show themedRoute;
 import '../activity/day_strain.dart' show DayStrainDetail;
 import '../profile/alarm.dart'
     show AlarmArmState, alarmArmOf, alarmDoor, alarmGlanceCard;
-import '../profile/devices.dart' show formatDayTime;
+import '../profile/devices.dart' show MyDevices, formatDayTime;
 import '../profile/profile.dart';
 import '../profile/wearable_numbers.dart'
     show WearableCells, kHomeWearableRows;
@@ -816,21 +816,25 @@ String driverLabel(Object? key, [AppLocalizations? l]) {
 ///
 /// Every ring opens something: recovery → [ReadinessDetail], strain →
 /// [DayStrainDetail], sleep → [SleepDetail].
-/// The live strip on today's Home: whether the band is connected, whether
-/// data is moving, and the heart rate right now. Tap it to sync.
+/// The device card on today's Home. It answers "is my band connected and
+/// reading me?" before anything else on the screen does: the link state, the
+/// battery, how far the data reaches, the heart rate from the last few
+/// seconds with its recent trace, and the one action that fits the state.
 ///
-/// Holds the live-HR stream open while it is on screen (the same
-/// retain/release the resting-HR screen uses), so the number is a reading
-/// from the last few seconds, not the last sync. Renders nothing without an
-/// AppState above it or before a band is paired.
-class _LiveStatus extends StatefulWidget {
-  const _LiveStatus();
+/// Holds the live-HR stream open while on screen (the same retain/release the
+/// resting-HR screen uses), so the number is a reading of NOW, not the last
+/// sync. Renders nothing without an AppState above it (goldens) and a pairing
+/// prompt before a band is paired.
+class _DeviceCard extends StatefulWidget {
+  const _DeviceCard();
 
   @override
-  State<_LiveStatus> createState() => _LiveStatusState();
+  State<_DeviceCard> createState() => _DeviceCardState();
 }
 
-class _LiveStatusState extends State<_LiveStatus> {
+enum _Link { unpaired, disconnected, syncing, connected, live }
+
+class _DeviceCardState extends State<_DeviceCard> {
   AppState? _app;
 
   @override
@@ -857,42 +861,91 @@ class _LiveStatusState extends State<_LiveStatus> {
             (bool, bool, bool, int?, DateTime?)>(
         (a) => (a.isPaired, a.isConnected, a.syncingNow, a.liveHr,
             a.lastRecordAt));
-    if (!paired) return const SizedBox.shrink();
+    final battery = deviceBatteryOf(c);
     final p = P.of(c);
     final l = AppLocalizations.of(c);
 
-    final (Color tone, String title, String sub) = !connected
-        ? (
-            C.red,
-            'Band not connected',
-            'Reconnecting on its own. Tap to try now.',
-          )
-        : syncing
-            ? (
-                C.yellow,
-                'Syncing with your band…',
-                syncedThroughLabel(last, todayLabel(), l),
-              )
-            : (
-                C.green,
-                'Connected · live',
-                syncedThroughLabel(last, todayLabel(), l),
-              );
+    final link = !paired
+        ? _Link.unpaired
+        : !connected
+            ? _Link.disconnected
+            : syncing
+                ? _Link.syncing
+                : hr != null
+                    ? _Link.live
+                    : _Link.connected;
+
+    final through = syncedThroughLabel(last, todayLabel(), l);
+    final (Color tone, String title, String sub, String? action) =
+        switch (link) {
+      _Link.unpaired => (
+          C.n400,
+          'No band paired',
+          'Pair your band to start reading.',
+          'Pair a band',
+        ),
+      _Link.disconnected => (
+          C.orange,
+          'Reconnecting',
+          'Keep the band in range. $through',
+          'Reconnect now',
+        ),
+      _Link.syncing => (C.yellow, 'Syncing', 'Pulling the band\'s backlog. $through', null),
+      _Link.connected => (
+          C.green,
+          'Connected',
+          'No beat in the last ${AppState.liveHrMaxAge.inSeconds} s — is the '
+              'band on your wrist? $through',
+          'Sync now',
+        ),
+      _Link.live => (C.green, 'Connected · Live', through, 'Sync now'),
+    };
+
+    // A REVISION, not the length: the buffer's length pins at the cap once it
+    // is full and a select on it would freeze the trace (see LiveHrCard).
+    final List<int> trace;
+    if (hr != null) {
+      c.select<AppState, int>((a) => a.liveHrTraceRev);
+      trace = app.liveHrTrace();
+    } else {
+      trace = const [];
+    }
+
+    void act() {
+      switch (link) {
+        case _Link.unpaired:
+          go(c, const MyDevices());
+        case _Link.syncing:
+          break;
+        case _Link.disconnected:
+        case _Link.connected:
+        case _Link.live:
+          unawaited(app.syncNow());
+      }
+    }
+
+    final low = battery != null && lowBattery(battery.$1, battery.$2);
 
     return Surface(
       elevation: 2,
       semanticLabel: [
         title,
         sub,
-        if (hr != null) 'Heart rate $hr beats per minute',
+        if (battery != null) 'Battery ${battery.$1.round()} percent',
+        if (hr != null) 'Heart rate $hr beats per minute, live',
+        'Opens your devices',
       ].join('. '),
-      onTap: syncing ? null : () => unawaited(app.syncNow()),
-      child: Column(children: [
-        Row(children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(color: tone, shape: BoxShape.circle),
+      onTap: () => go(c, const MyDevices()),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 5),
+            child: Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                  color: p.on(tone), shape: BoxShape.circle),
+            ),
           ),
           const SizedBox(width: S.x3),
           Expanded(
@@ -903,22 +956,164 @@ class _LiveStatusState extends State<_LiveStatus> {
               Text(sub, style: F.cap.copyWith(color: p.ink3)),
             ]),
           ),
-          const SizedBox(width: S.x3),
-          Icon(LucideIcons.heart, size: 20, color: p.on(C.red)),
-          const SizedBox(width: S.x1),
-          Text(hr == null ? '—' : '$hr',
-              style: F.n24.copyWith(color: hr == null ? p.ink3 : p.ink)),
-          const SizedBox(width: 2),
-          Text('bpm', style: F.cap.copyWith(color: p.ink3)),
+          if (battery != null) ...[
+            const SizedBox(width: S.x3),
+            Row(mainAxisSize: MainAxisSize.min, children: [
+              Icon(
+                  battery.$2
+                      ? LucideIcons.batteryCharging
+                      : LucideIcons.battery,
+                  size: 15,
+                  color: low ? p.on(C.red) : p.ink2),
+              const SizedBox(width: 3),
+              Text('${battery.$1.round()}%',
+                  style: F.cap.copyWith(color: low ? p.on(C.red) : p.ink2)),
+            ]),
+          ],
         ]),
-        if (syncing) ...[
+        if (link == _Link.syncing) ...[
           const SizedBox(height: S.x3),
           LinearProgressIndicator(
-            minHeight: 3,
-            color: tone,
-            backgroundColor: p.track,
+              minHeight: 3, color: p.on(tone), backgroundColor: p.track),
+        ],
+        if (link != _Link.unpaired) ...[
+          const SizedBox(height: S.x4),
+          Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+            Icon(LucideIcons.heart, size: 22, color: p.on(C.red)),
+            const SizedBox(width: S.x2),
+            // The number scales down before the row can overflow at
+            // accessibility sizes; the unit keeps its size.
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(hr == null ? '—' : '$hr',
+                        style: F.n48.copyWith(
+                            color: hr == null ? p.ink3 : p.ink)),
+                    const SizedBox(width: S.x2),
+                    Text(l?.activityLiveBpmUnit ?? 'bpm',
+                        style: F.body.copyWith(color: p.ink3)),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: S.x3),
+            if (trace.length > 2)
+              SizedBox(
+                width: 96,
+                height: 36,
+                child: CustomPaint(
+                  painter: LineChart(
+                      [for (final v in trace) v.toDouble()], C.red,
+                      fill: false),
+                  size: Size.infinite,
+                ),
+              ),
+          ]),
+          const SizedBox(height: S.x1),
+          Text(
+            hr == null
+                ? 'Live heart rate shows while the band is on your wrist and '
+                    'this screen is open.'
+                : 'Live · updated just now · last ${trace.length} readings',
+            style: F.over.copyWith(color: p.ink3),
           ),
         ],
+        if (action != null) ...[
+          const SizedBox(height: S.x3),
+          BigButton(action,
+              icon: link == _Link.unpaired
+                  ? LucideIcons.bluetooth
+                  : LucideIcons.refreshCw,
+              color: tone == C.n400 ? C.blue : tone,
+              soft: true,
+              onTap: act),
+        ],
+      ]),
+    );
+  }
+}
+
+/// Today's strain in plain words. Four even steps of the 0–21 scale the gauge
+/// already draws — a label for a measured number, never a number of its own.
+String strainWord(num v) => v < 6
+    ? 'Light'
+    : v < 11
+        ? 'Moderate'
+        : v < 16
+            ? 'Hard'
+            : 'All out';
+
+/// Three overnight vitals the band measures, each with the night it came
+/// from, each a door into its own chart. Absent reads as words, like the
+/// rings: nothing here is ever filled in.
+class _VitalsRow extends StatelessWidget {
+  final HomeData d;
+
+  /// Which night the three numbers came from, as the header prints it.
+  final String when;
+  const _VitalsRow(this.d, {required this.when});
+
+  @override
+  Widget build(BuildContext c) {
+    final p = P.of(c);
+    final cells = [
+      ('Resting HR', d.rhr, 'bpm', 'resting_hr', 0),
+      ('HRV', d.hrv, 'ms', 'hrv', 0),
+      ('Breathing', d.resp, '/min', 'resp_rate', 1),
+    ];
+    return Surface(
+      elevation: 1,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Text('VITALS', style: F.over.copyWith(color: p.ink3)),
+          const Spacer(),
+          Text(when, style: F.cap.copyWith(color: p.ink3)),
+        ]),
+        const SizedBox(height: S.x3),
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          for (var i = 0; i < cells.length; i++) ...[
+            if (i > 0) const SizedBox(width: S.x2),
+            Expanded(
+              child: Builder(builder: (c) {
+                final (label, m, unit, key, dp) = cells[i];
+                final v = m.value;
+                final shown = v == null ? '—' : v.toStringAsFixed(dp);
+                return Pressable(
+                  onTap: () => go(c, MetricDetail(key)),
+                  semanticLabel:
+                      '$label, ${v == null ? 'not measured' : '$shown $unit'}, '
+                      '$when. Opens the chart.',
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(label, style: F.cap.copyWith(color: p.ink3)),
+                        const SizedBox(height: S.x1),
+                        Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Flexible(
+                                child: Text(shown,
+                                    style: F.n24.copyWith(
+                                        color: v == null ? p.ink3 : p.ink)),
+                              ),
+                              if (v != null) ...[
+                                const SizedBox(width: 3),
+                                Text(unit,
+                                    style: F.cap.copyWith(color: p.ink3)),
+                              ],
+                            ]),
+                      ]),
+                );
+              }),
+            ),
+          ],
+        ]),
       ]),
     );
   }
@@ -1167,7 +1362,9 @@ _RingState _ringOf(HomeRingKind k, HomeData d, AppLocalizations? l) {
           ? _gap(k, l?.homeRingStrain ?? 'Strain', LucideIcons.zap, C.purple,
               d.strain, l?.homeRingNoStrain ?? 'No strain', l, unit: 'days')
           : _RingState(k, l?.homeRingStrain ?? 'Strain', LucideIcons.zap, C.purple,
-              value: v.toStringAsFixed(1), sub: l?.homeStrainOf21 ?? 'of 21', frac: v / 21);
+              value: v.toStringAsFixed(1),
+              sub: '${strainWord(v)} · ${l?.homeStrainOf21 ?? 'of 21'}',
+              frac: v / 21);
     case HomeRingKind.sleep:
       final v = d.sleepMin.value;
       final need = d.sleepNeedMin.value;
@@ -1404,6 +1601,10 @@ class HomeData {
   final List<Map<String, dynamic>> drivers;
   final Metric sleepMin, rhr, steps, calories, caloriesTotal;
 
+  /// Overnight HRV (RMSSD, ms) and respiratory rate (breaths/min), gated the
+  /// same way [rhr] is: a night that is not today's stays off these cells.
+  final Metric hrv, resp;
+
   /// The day's 0–21 strain, read from the same `getToday` bundle the Workout
   /// tab reads. Nothing on this screen computes it.
   final Metric strain;
@@ -1462,6 +1663,8 @@ class HomeData {
     this.drivers = const [],
     this.sleepMin = Metric.empty,
     this.rhr = Metric.empty,
+    this.hrv = Metric.empty,
+    this.resp = Metric.empty,
     this.steps = Metric.empty,
     this.calories = Metric.empty,
     this.caloriesTotal = Metric.empty,
@@ -1491,6 +1694,8 @@ class HomeData {
         drivers: drivers,
         sleepMin: sleepMin,
         rhr: rhr,
+        hrv: hrv,
+        resp: resp,
         steps: steps,
         calories: calories,
         caloriesTotal: caloriesTotal,
@@ -1620,6 +1825,13 @@ class HomeData {
       strain: metricOf(d('strain')),
       sleepMin: overnightMetric(today, s('duration_min'), l),
       rhr: overnightMetric(today, d('resting_hr'), l),
+      hrv: overnightMetric(
+          today,
+          today['hrv'] is Map
+              ? {'value': (today['hrv'] as Map)['rmssd'], 'unit': 'ms'}
+              : null,
+          l),
+      resp: overnightMetric(today, today['resp'], l),
       steps: metricOf(d('steps')),
       calories: metricOf(d('calories')),
       caloriesTotal: metricOf(d('calories_total')),
@@ -1895,7 +2107,7 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
         ],
         const SizedBox(height: S.x3),
         if (widget.data == null) ...[
-          const _LiveStatus(),
+          const _DeviceCard(),
           const SizedBox(height: S.x3),
         ],
         const DetectedActivitiesCard(),
@@ -2031,7 +2243,7 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
       // Connected? Data moving? Heart rate right now? One glance, one tap to
       // sync. Today only, and only in the real app (goldens hand data in).
       if (isToday && widget.data == null) ...[
-        const _LiveStatus(),
+        const _DeviceCard(),
         const SizedBox(height: S.x3),
       ],
 
@@ -2133,6 +2345,21 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
               onFix: () => go(c, const ReadinessDetail()),
             );
           }),
+
+        // ── vitals ──
+        //
+        // The night's measurements under the rings, each naming its night.
+        // Only when at least one was measured: three dashes say less than
+        // the ring row's own gap rows already do.
+        if (d.rhr.value != null || d.hrv.value != null || d.resp.value != null) ...[
+          const SizedBox(height: S.x3),
+          _VitalsRow(d,
+              when: !isToday
+                  ? '${prettyDay(d.dayId, l)} night'
+                  : d.heldOverNight == null
+                      ? 'Last night'
+                      : prettyDay(d.heldOverNight, l)),
+        ],
 
         const SizedBox(height: S.x3),
         if (firstWeeks) ...[
@@ -2290,13 +2517,13 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
     // Sleep is a RING now, duration and all — the card here was the same
     // number twice on one screen, and the ring is the one that says what the
     // duration was measured against.
-    add(
+    // A measured resting rate is on the Vitals row above (beside HRV and
+    // breathing rate), so this section only carries the reason when there
+    // is none — one number, one place on the screen.
+    if (d.rhr.isEmpty) {
+      add(
       d.rhr,
-      () => SignalCard(LucideIcons.heart, C.red, l?.homeHeartRate ?? 'Heart rate',
-          '${d.rhr.value!.round()}',
-          unit: 'bpm',
-          sub: l?.homeRestingSub ?? 'Resting',
-          onTap: () => go(c, const MetricDetail('resting_hr'))),
+      () => const SizedBox.shrink(),
       // "no sleep was recorded" was stated as fact, unconditionally — and it
       // was rendered directly beside a Sleep card showing that night's
       // duration. Sleep duration and nocturnal RHR are gated separately: a
@@ -2312,7 +2539,8 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
               ? (l?.homeNoRestingHrWhy ??
                   'Resting heart rate is read from sleep, and no sleep was recorded.')
               : ''),
-    );
+      );
+    }
     // Steps keeps its tile whether or not a counter reported. Zero steps is a
     // real reading — an unmoved counter — and it renders as 0, not as absence.
     // When nothing counted at all the tile stays and says so in two words,
