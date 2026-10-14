@@ -53,6 +53,7 @@ import '../../l10n/presentation_text.dart';
 import '../../l10n/display_text.dart';
 import '../../l10n/decimal_text.dart';
 import '../../state/locale_controller.dart';
+import '../../state/prefs.dart';
 import 'package:intl/intl.dart';
 import 'package:openstrap_analytics/onehz.dart'
     show quietHrrMinDays, readinessCompositeMinBaseline;
@@ -73,6 +74,7 @@ import '../profile/wearable_numbers.dart'
 import '../ui2.dart';
 import 'ai_briefing.dart' show AiBriefingScreen;
 import 'coach.dart';
+import 'dashboard_tiles.dart';
 import 'detected_activities.dart';
 import 'day_timeline.dart' show DayTimelineScreen;
 import 'health_screen.dart' show HealthScreen;
@@ -1053,74 +1055,222 @@ String strainWord(num v) => v < 6
             ? 'Hard'
             : 'All out';
 
-/// Three overnight vitals the band measures, each with the night it came
-/// from, each a door into its own chart. Absent reads as words, like the
-/// rings: nothing here is ever filled in.
-class _VitalsRow extends StatelessWidget {
+/// "My dashboard": the day's numbers as tiles, each a door into its own
+/// chart. Which tiles show and in what order is the user's ([DashLayout],
+/// stored under [kDashboardPref]); the pencil opens the editor. Absent reads
+/// as words, like the rings: nothing here is ever filled in.
+class _Dashboard extends StatefulWidget {
   final HomeData d;
 
-  /// Which night the three numbers came from, as the header prints it.
+  /// Which night the overnight tiles came from, as the header prints it.
   final String when;
-  const _VitalsRow(this.d, {required this.when});
+  const _Dashboard(this.d, {required this.when});
+
+  @override
+  State<_Dashboard> createState() => _DashboardState();
+}
+
+/// One tile's content: label, value, unit, the chart it opens, decimals.
+typedef _TileSpec = (String, Metric, String, String, int);
+
+class _DashboardState extends State<_Dashboard> {
+  late DashLayout _layout =
+      parseDashLayout(Prefs.getString(kDashboardPref, ''));
+
+  static String _name(DashTile t) => switch (t) {
+        DashTile.rhr => 'Resting HR',
+        DashTile.hrv => 'HRV',
+        DashTile.resp => 'Breathing',
+        DashTile.skinTemp => 'Skin temp',
+        DashTile.steps => 'Steps',
+        DashTile.calories => 'Calories',
+      };
+
+  _TileSpec _spec(DashTile t) {
+    final d = widget.d;
+    return switch (t) {
+      DashTile.rhr => (_name(t), d.rhr, 'bpm', 'resting_hr', 0),
+      DashTile.hrv => (_name(t), d.hrv, 'ms', 'hrv', 0),
+      DashTile.resp => (_name(t), d.resp, '/min', 'resp_rate', 1),
+      // A deviation from your own nights, not °C — the unit says so.
+      DashTile.skinTemp => (_name(t), d.skinTemp, 'SD', 'skin_temp', 1),
+      DashTile.steps => (_name(t), d.steps, '', 'steps', 0),
+      DashTile.calories => (
+          _name(t),
+          d.caloriesTotal.value != null ? d.caloriesTotal : d.calories,
+          'kcal',
+          'calories',
+          0
+        ),
+    };
+  }
+
+  /// Steps and calories are today's; the rest are last night's.
+  String _sub(DashTile t) =>
+      t == DashTile.steps || t == DashTile.calories ? 'Today' : widget.when;
+
+  String _shown(DashTile t, num v, int dp) => switch (t) {
+        DashTile.steps || DashTile.calories => thousands(v.round()),
+        DashTile.skinTemp =>
+          '${v >= 0 ? '+' : '−'}${v.abs().toStringAsFixed(dp)}',
+        _ => v.toStringAsFixed(dp),
+      };
+
+  Future<void> _edit() async {
+    final next = await showModalBottomSheet<DashLayout>(
+      context: context,
+      isScrollControlled: true,
+      sheetAnimationStyle: sheetMotion(context),
+      backgroundColor: P.of(context).card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(R.xxl)),
+      ),
+      builder: (_) => _DashboardEditor(_layout, name: _name),
+    );
+    if (next == null || !mounted) return;
+    Prefs.setString(kDashboardPref, encodeDashLayout(next));
+    setState(() => _layout = next);
+  }
+
+  Widget _tile(BuildContext c, DashTile t) {
+    final p = P.of(c);
+    final (label, m, unit, key, dp) = _spec(t);
+    final v = m.value;
+    final sub = _sub(t);
+    return Pressable(
+      onTap: () => go(c, MetricDetail(key)),
+      semanticLabel: '$label, ${v == null ? 'not measured' : '${_shown(t, v, dp)} $unit'}, '
+          '$sub. Opens the chart.',
+      child: Surface(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(label.toUpperCase(),
+              style: F.over.copyWith(color: p.ink3),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis),
+          const SizedBox(height: S.x2),
+          if (v == null)
+            Text('Not measured', style: F.body.copyWith(color: p.ink3))
+          else
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(_shown(t, v, dp),
+                        style: F.n24.copyWith(color: p.ink)),
+                    if (unit.isNotEmpty) ...[
+                      const SizedBox(width: 3),
+                      Text(unit, style: F.cap.copyWith(color: p.ink3)),
+                    ],
+                  ]),
+            ),
+          const SizedBox(height: S.x1),
+          Text(sub,
+              style: F.cap.copyWith(color: p.ink3),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis),
+        ]),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext c) {
+    final shown = [
+      for (final t in _layout.order)
+        if (!_layout.hidden.contains(t)) t,
+    ];
+    return Section(
+      'My dashboard',
+      shown.isEmpty
+          ? Text('Every tile is hidden. Edit to bring them back.',
+              style: F.cap.copyWith(color: P.of(c).ink3))
+          : Column(children: [
+              for (var i = 0; i < shown.length; i += 2) ...[
+                if (i > 0) const SizedBox(height: S.x3),
+                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Expanded(child: _tile(c, shown[i])),
+                  const SizedBox(width: S.x3),
+                  Expanded(
+                      child: i + 1 < shown.length
+                          ? _tile(c, shown[i + 1])
+                          : const SizedBox.shrink()),
+                ]),
+              ],
+            ]),
+      action: 'Edit',
+      onAction: _edit,
+    );
+  }
+}
+
+/// Press and hold to reorder, switch to show or hide. Done hands the layout
+/// back.
+class _DashboardEditor extends StatefulWidget {
+  final DashLayout initial;
+  final String Function(DashTile) name;
+  const _DashboardEditor(this.initial, {required this.name});
+
+  @override
+  State<_DashboardEditor> createState() => _DashboardEditorState();
+}
+
+class _DashboardEditorState extends State<_DashboardEditor> {
+  late final List<DashTile> _order = List.of(widget.initial.order);
+  late final Set<DashTile> _hidden = Set.of(widget.initial.hidden);
 
   @override
   Widget build(BuildContext c) {
     final p = P.of(c);
-    final cells = [
-      ('Resting HR', d.rhr, 'bpm', 'resting_hr', 0),
-      ('HRV', d.hrv, 'ms', 'hrv', 0),
-      ('Breathing', d.resp, '/min', 'resp_rate', 1),
-    ];
-    return Surface(
-      elevation: 1,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Text('VITALS', style: F.over.copyWith(color: p.ink3)),
-          const Spacer(),
-          Text(when, style: F.cap.copyWith(color: p.ink3)),
-        ]),
-        const SizedBox(height: S.x3),
-        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          for (var i = 0; i < cells.length; i++) ...[
-            if (i > 0) const SizedBox(width: S.x2),
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(S.x5),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Row(children: [
             Expanded(
-              child: Builder(builder: (c) {
-                final (label, m, unit, key, dp) = cells[i];
-                final v = m.value;
-                final shown = v == null ? 'Not measured' : v.toStringAsFixed(dp);
-                return Pressable(
-                  onTap: () => go(c, MetricDetail(key)),
-                  semanticLabel:
-                      '$label, ${v == null ? 'not measured' : '$shown $unit'}, '
-                      '$when. Opens the chart.',
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(label, style: F.cap.copyWith(color: p.ink3)),
-                        const SizedBox(height: S.x1),
-                        Row(
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: [
-                              Flexible(
-                                child: Text(shown,
-                                    style: v == null
-                                        ? F.cap.copyWith(color: p.ink3)
-                                        : F.n24.copyWith(color: p.ink)),
-                              ),
-                              if (v != null) ...[
-                                const SizedBox(width: 3),
-                                Text(unit,
-                                    style: F.cap.copyWith(color: p.ink3)),
-                              ],
-                            ]),
-                      ]),
-                );
-              }),
+                child: Text('My dashboard',
+                    style: F.t2.copyWith(color: p.ink))),
+            TextButton(
+              onPressed: () => Navigator.of(c)
+                  .pop<DashLayout>((order: _order, hidden: _hidden)),
+              child: const Text('Done'),
             ),
-          ],
+          ]),
+          const SizedBox(height: S.x1),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+                'Press and hold a tile to move it. Switch off what you '
+                'don\'t need.',
+                style: F.cap.copyWith(color: p.ink3)),
+          ),
+          const SizedBox(height: S.x3),
+          ReorderableListView(
+            shrinkWrap: true,
+            onReorder: (from, to) => setState(() {
+              // `to` is the index BEFORE removal.
+              final t = _order.removeAt(from);
+              _order.insert(to > from ? to - 1 : to, t);
+            }),
+            children: [
+              for (var i = 0; i < _order.length; i++)
+                Row(key: ValueKey(_order[i]), children: [
+                  Expanded(
+                      child: Text(widget.name(_order[i]),
+                          style: F.body.copyWith(color: p.ink))),
+                  Switch(
+                    value: !_hidden.contains(_order[i]),
+                    onChanged: (on) => setState(() => on
+                        ? _hidden.remove(_order[i])
+                        : _hidden.add(_order[i])),
+                  ),
+                ]),
+            ],
+          ),
         ]),
-      ]),
+      ),
     );
   }
 }
@@ -1897,6 +2047,10 @@ class HomeData {
   /// same way [rhr] is: a night that is not today's stays off these cells.
   final Metric hrv, resp;
 
+  /// Last night's skin temperature as a deviation from your own nights, in
+  /// standard deviations (`skin_temp_z`) — there is no °C figure to show.
+  final Metric skinTemp;
+
   /// Last night's stress score (0–100) and its level word, off the day's
   /// `stress` block. Both null when the night did not score one.
   final num? stressScore;
@@ -1962,6 +2116,7 @@ class HomeData {
     this.rhr = Metric.empty,
     this.hrv = Metric.empty,
     this.resp = Metric.empty,
+    this.skinTemp = Metric.empty,
     this.stressScore,
     this.stressLevel,
     this.steps = Metric.empty,
@@ -1995,6 +2150,7 @@ class HomeData {
         rhr: rhr,
         hrv: hrv,
         resp: resp,
+        skinTemp: skinTemp,
         stressScore: stressScore,
         stressLevel: stressLevel,
         steps: steps,
@@ -2133,6 +2289,7 @@ class HomeData {
               : null,
           l),
       resp: overnightMetric(today, today['resp'], l),
+      skinTemp: overnightMetric(today, today['skin_temp'], l),
       stressScore: staleOvernightNote(today, l) != null
           ? null
           : (today['stress'] is Map
@@ -2699,14 +2856,15 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
         const SizedBox(height: S.x4),
         _Monitors(d),
 
-        // ── vitals ──
+        // ── my dashboard ──
         //
-        // The night's measurements, each naming its night. Only when at
-        // least one was measured: three dashes say less than the ring row's
-        // own gap rows already do.
-        if (d.rhr.value != null || d.hrv.value != null || d.resp.value != null) ...[
+        // The day's numbers as tiles, each naming its night (or today). Only
+        // when at least one was measured: a grid of "Not measured" says less
+        // than the rings above already do.
+        if ([d.rhr, d.hrv, d.resp, d.skinTemp, d.steps, d.calories,
+            d.caloriesTotal].any((m) => m.value != null)) ...[
           const SizedBox(height: S.x3),
-          _VitalsRow(d,
+          _Dashboard(d,
               when: !isToday
                   ? '${prettyDay(d.dayId, l)} night'
                   : d.heldOverNight == null

@@ -106,6 +106,9 @@ void main() {
     });
 
     test('the first week of nights is not announced', () async {
+      // The database outlives a single test here: start from no nights.
+      await (await LocalDb.instance)
+          .delete('metric_series', where: "key = 'rmssd'");
       await putTodayReadiness(hrvNights: 3);
       final app = make();
       app.debugDeriveRun = deriveHook();

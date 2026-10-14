@@ -131,6 +131,10 @@ void main() {
     final row = find.text('Breakdown of your day');
     await t.scrollUntilVisible(row, 300,
         scrollable: find.byType(Scrollable).first);
+    // Home is taller with the dashboard: scrollUntilVisible can stop with the
+    // row's centre just past the viewport edge. Bring the whole row in.
+    await t.ensureVisible(row);
+    await t.pumpAndSettle();
     await t.tap(row);
     await _settle(t);
     expect(t.widget<DayTimelineScreen>(find.byType(DayTimelineScreen)).day,

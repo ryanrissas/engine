@@ -47,7 +47,7 @@ import '../revision.dart';
 import '../theme.dart';
 import '../../data/day_label.dart' show calendarDaysBetween;
 import 'log_workout.dart';
-import 'metric_detail.dart' show detailLinkRow;
+import 'home_screen.dart' show HomeData, repoOf, strainWord;
 
 class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key});
@@ -69,6 +69,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
     // was restarted. `RevisionReload` re-reads when the data moves: the manual
     // finish, the gesture path, the Live Activity and an import alike.
     _load ??= _loadWorkoutData(context.read<AppState>());
+    _coach ??= _loadCoach();
   }
 
   @override
@@ -76,7 +77,15 @@ class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
   // setState asserts against (debug builds throw and skip the rebuild).
   void reload() => setState(() {
         _load = _loadWorkoutData(context.read<AppState>());
+        _coach = _loadCoach();
       });
+
+  /// Today's strain and its target, read the way Home reads them.
+  Future<HomeData>? _coach;
+  Future<HomeData>? _loadCoach() {
+    final repo = repoOf(context);
+    return repo == null ? null : HomeData.load(repo, AppLocalizations.of(context));
+  }
 
   @override
   Widget build(BuildContext c) {
@@ -126,12 +135,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
     final loc = AppLocalizations.of(c);
     return [
       ..._suggestionCards(c, d),
-      detailLinkRow(
-          c,
-          LucideIcons.zap,
-          loc?.workoutTodaysStrainAction ?? "Today's strain",
-          'Your effort today, minute by minute',
-          () => _push(c, const DayStrainDetail())),
+      FutureBuilder<HomeData>(
+        future: _coach,
+        builder: (c, snap) => _StrainCoach(
+          snap.data,
+          onOpen: () => _push(c, const DayStrainDetail()),
+        ),
+      ),
+      const SizedBox(height: S.x3),
       ..._overview(c, d),
       Section(
         loc?.workoutTabHistory ?? 'History',
@@ -2216,4 +2227,123 @@ Future<_WorkoutData> _loadWorkoutData(AppState app) async {
       suggestions: await activeSuggestions(),
       importedLast: await lastImportAt(HealthImport.workouts),
     );
+}
+
+/// Today's strain against today's target — the strain coach.
+///
+/// The target is the cross-day `strain_coach` band (centred on the morning's
+/// recovery); with no recovery yet there is no target, and the card says so
+/// rather than drawing an invented band. A 0–21 scale with the target shaded
+/// and today's strain marked; the words say where today sits.
+class _StrainCoach extends StatelessWidget {
+  final HomeData? d;
+  final VoidCallback onOpen;
+  const _StrainCoach(this.d, {required this.onOpen});
+
+  static const double _max = 21;
+
+  @override
+  Widget build(BuildContext c) {
+    final p = P.of(c);
+    final v = d?.strain.value?.toDouble();
+    final t = d?.strainTarget;
+    final lo = (t?['low'] as num?)?.toDouble();
+    final hi = (t?['high'] as num?)?.toDouble();
+    final tg = lo != null && hi != null && hi > lo ? (lo: lo, hi: hi) : null;
+    final line = v == null
+        ? 'Not scored yet. Strain is worked out from your heart rate once the '
+            'band has a few days of you.'
+        : tg == null
+            ? 'Your target appears once the morning\'s recovery is scored.'
+            : v < tg.lo
+                ? '${(tg.lo - v).toStringAsFixed(1)} more reaches today\'s target.'
+                : v <= tg.hi
+                    ? 'In today\'s target range.'
+                    : 'Above today\'s target range.';
+    return Pressable(
+      onTap: onOpen,
+      semanticLabel: [
+        "Today's strain",
+        v == null ? 'not scored' : '${v.toStringAsFixed(1)} of 21',
+        if (tg != null)
+          'target ${tg.lo.toStringAsFixed(1)} to ${tg.hi.toStringAsFixed(1)}',
+        line,
+        'Opens the day',
+      ].join(', '),
+      child: Surface(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Text("TODAY'S STRAIN", style: F.over.copyWith(color: p.ink3)),
+            const Spacer(),
+            if (tg != null)
+              Text(
+                  'Target ${tg.lo.toStringAsFixed(1)}–${tg.hi.toStringAsFixed(1)}',
+                  style: F.cap.copyWith(color: p.ink2)),
+            const SizedBox(width: S.x1),
+            Icon(LucideIcons.chevronRight, size: 15, color: p.ink3),
+          ]),
+          const SizedBox(height: S.x2),
+          Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(v == null ? 'Not scored' : v.toStringAsFixed(1),
+                    style: v == null
+                        ? F.t2.copyWith(color: p.ink3)
+                        : F.n48.copyWith(color: p.ink)),
+                if (v != null) ...[
+                  const SizedBox(width: S.x2),
+                  Text('of 21', style: F.body.copyWith(color: p.ink3)),
+                  const Spacer(),
+                  Text(strainWord(v),
+                      style: F.body.copyWith(
+                          color: p.on(C.blue), fontWeight: FontWeight.w600)),
+                ],
+              ]),
+          const SizedBox(height: S.x3),
+          SizedBox(
+            height: 14,
+            child: LayoutBuilder(builder: (c, box) {
+              final w = box.maxWidth;
+              double x(double s) => (s.clamp(0, _max) / _max) * w;
+              return Stack(clipBehavior: Clip.none, children: [
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 4,
+                  height: 6,
+                  child: DecoratedBox(
+                      decoration: BoxDecoration(
+                          color: p.track, borderRadius: R.rPill)),
+                ),
+                if (tg != null)
+                  Positioned(
+                    left: x(tg.lo),
+                    width: x(tg.hi) - x(tg.lo),
+                    top: 4,
+                    height: 6,
+                    child: DecoratedBox(
+                        decoration: BoxDecoration(
+                            color: p.wash(C.blue, strength: 2),
+                            borderRadius: R.rPill)),
+                  ),
+                if (v != null)
+                  Positioned(
+                    left: x(v) - 7,
+                    top: 0,
+                    width: 14,
+                    height: 14,
+                    child: DecoratedBox(
+                        decoration: BoxDecoration(
+                            color: p.on(C.blue), shape: BoxShape.circle)),
+                  ),
+              ]);
+            }),
+          ),
+          const SizedBox(height: S.x3),
+          Text(line, style: F.cap.copyWith(color: p.ink2, height: 1.4)),
+        ]),
+      ),
+    );
+  }
 }
