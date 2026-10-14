@@ -116,6 +116,11 @@ abstract class LocalRepository {
   Future<Map<String, dynamic>> getDayOverview(String date) =>
       throw UnimplementedError('re-layer: getDayOverview');
 
+  /// Nights with a measured overnight HRV, all time — the first-week
+  /// recovery calibration gate on Home. Null means unknown, which never
+  /// holds a score back (the default, so fakes and partial repos are inert).
+  Future<int?> hrvNightCount() async => null;
+
   /// TS-03/04/05 — the observed HR ceiling, the zone edges with the anchors
   /// they were built from, and (only when both anchors were measured) the
   /// 28-day session intensity distribution.

@@ -816,6 +816,114 @@ String driverLabel(Object? key, [AppLocalizations? l]) {
 ///
 /// Every ring opens something: recovery → [ReadinessDetail], strain →
 /// [DayStrainDetail], sleep → [SleepDetail].
+/// The live strip on today's Home: whether the band is connected, whether
+/// data is moving, and the heart rate right now. Tap it to sync.
+///
+/// Holds the live-HR stream open while it is on screen (the same
+/// retain/release the resting-HR screen uses), so the number is a reading
+/// from the last few seconds, not the last sync. Renders nothing without an
+/// AppState above it or before a band is paired.
+class _LiveStatus extends StatefulWidget {
+  const _LiveStatus();
+
+  @override
+  State<_LiveStatus> createState() => _LiveStatusState();
+}
+
+class _LiveStatusState extends State<_LiveStatus> {
+  AppState? _app;
+
+  @override
+  void initState() {
+    super.initState();
+    try {
+      _app = context.read<AppState>()..retainLiveHrView();
+    } catch (_) {
+      // No AppState above us (goldens): nothing to show.
+    }
+  }
+
+  @override
+  void dispose() {
+    _app?.releaseLiveHrView();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext c) {
+    final app = _app;
+    if (app == null) return const SizedBox.shrink();
+    final (paired, connected, syncing, hr, last) = c.select<AppState,
+            (bool, bool, bool, int?, DateTime?)>(
+        (a) => (a.isPaired, a.isConnected, a.syncingNow, a.liveHr,
+            a.lastRecordAt));
+    if (!paired) return const SizedBox.shrink();
+    final p = P.of(c);
+    final l = AppLocalizations.of(c);
+
+    final (Color tone, String title, String sub) = !connected
+        ? (
+            C.red,
+            'Band not connected',
+            'Reconnecting on its own. Tap to try now.',
+          )
+        : syncing
+            ? (
+                C.yellow,
+                'Syncing with your band…',
+                syncedThroughLabel(last, todayLabel(), l),
+              )
+            : (
+                C.green,
+                'Connected · live',
+                syncedThroughLabel(last, todayLabel(), l),
+              );
+
+    return Surface(
+      elevation: 2,
+      semanticLabel: [
+        title,
+        sub,
+        if (hr != null) 'Heart rate $hr beats per minute',
+      ].join('. '),
+      onTap: syncing ? null : () => unawaited(app.syncNow()),
+      child: Column(children: [
+        Row(children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(color: tone, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: S.x3),
+          Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(title, style: F.head.copyWith(color: p.ink)),
+              const SizedBox(height: 2),
+              Text(sub, style: F.cap.copyWith(color: p.ink3)),
+            ]),
+          ),
+          const SizedBox(width: S.x3),
+          Icon(LucideIcons.heart, size: 20, color: p.on(C.red)),
+          const SizedBox(width: S.x1),
+          Text(hr == null ? '—' : '$hr',
+              style: F.n24.copyWith(color: hr == null ? p.ink3 : p.ink)),
+          const SizedBox(width: 2),
+          Text('bpm', style: F.cap.copyWith(color: p.ink3)),
+        ]),
+        if (syncing) ...[
+          const SizedBox(height: S.x3),
+          LinearProgressIndicator(
+            minHeight: 3,
+            color: tone,
+            backgroundColor: p.track,
+          ),
+        ],
+      ]),
+    );
+  }
+}
+
 class RingTrio extends StatelessWidget {
   final HomeData d;
 
@@ -1155,10 +1263,10 @@ class _RingColumn extends StatelessWidget {
         semanticLabel: r.spoken,
         child: Column(children: [
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 96),
+            constraints: const BoxConstraints(maxWidth: 112),
             child: AspectRatio(
               aspectRatio: 1,
-              child: _Dial(r, stroke: 7, icon: 20),
+              child: _Dial(r, stroke: 10, icon: 22),
             ),
           ),
           const SizedBox(height: S.x3),
@@ -1403,9 +1511,9 @@ class HomeData {
 
   /// See [hrvNights]. A failed read leaves the gate open rather than hiding a
   /// score the pipeline already produced.
-  static Future<int?> _hrvNights() async {
+  static Future<int?> _hrvNights(LocalRepository repo) async {
     try {
-      return (await LocalDb.metricSeriesCounts(const ['rmssd']))['rmssd'];
+      return await repo.hrvNightCount();
     } catch (_) {
       return null;
     }
@@ -1438,7 +1546,7 @@ class HomeData {
       name: profile['name']?.toString(),
       dayId: date,
       readiness: readiness,
-      hrvNights: await _hrvNights(),
+      hrvNights: await _hrvNights(repo),
       absentDiag: absentDiag,
       rhr: metricOf(overview['resting_hr']),
       strain: metricOf(strain['strain']),
@@ -1501,7 +1609,7 @@ class HomeData {
       illnessDay: illness is Map ? illness['date']?.toString() : null,
       illnessZ: illness is Map ? (illness['z'] as num?)?.toDouble() : null,
       readiness: readiness,
-      hrvNights: await _hrvNights(),
+      hrvNights: await _hrvNights(repo),
       absentDiag: absentDiag,
       recoveryState: recoveryState,
       readinessUpdate: (head['recovery_update'] as Map?)?.cast<String, dynamic>(),
@@ -1786,6 +1894,10 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
           Align(alignment: Alignment.centerLeft, child: battery),
         ],
         const SizedBox(height: S.x3),
+        if (widget.data == null) ...[
+          const _LiveStatus(),
+          const SizedBox(height: S.x3),
+        ],
         const DetectedActivitiesCard(),
         if (_loading)
           const Center(child: CircularProgressIndicator())
@@ -1915,6 +2027,13 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
           const ProfileAvatar(accent: C.domHome),
         ]),
       ),
+
+      // Connected? Data moving? Heart rate right now? One glance, one tap to
+      // sync. Today only, and only in the real app (goldens hand data in).
+      if (isToday && widget.data == null) ...[
+        const _LiveStatus(),
+        const SizedBox(height: S.x3),
+      ],
 
       if (bare) ...[
         const DetectedActivitiesCard(),

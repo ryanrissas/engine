@@ -1710,6 +1710,10 @@ class LocalRepositoryImpl extends LocalRepository {
   }
 
   @override
+  Future<int?> hrvNightCount() async =>
+      (await LocalDb.metricSeriesCounts(const ['rmssd']))['rmssd'];
+
+  @override
   Future<Map<String, dynamic>> getDayOverview(String date) async {
     final b = await _bundleForDate(date);
     if (b == null) return const {};
