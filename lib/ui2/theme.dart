@@ -137,11 +137,11 @@ class P {
 
   // Dark: near-black page, charcoal cards. Neutral rather than the blue-black
   // it replaced, so the accents are the only colour on the page.
-  Color get bg => dark ? const Color(0xFF0A0B0D) : C.n50;
-  Color get card => dark ? const Color(0xFF151619) : C.white;
-  Color get card2 => dark ? const Color(0xFF1E1F24) : C.n100;
-  Color get line => dark ? const Color(0xFF2A2B32) : C.n200;
-  Color get track => dark ? const Color(0xFF2A2B32) : C.n200;
+  Color get bg => dark ? const Color(0xFF000000) : C.n50;
+  Color get card => dark ? const Color(0xFF17181C) : C.white;
+  Color get card2 => dark ? const Color(0xFF212228) : C.n100;
+  Color get line => dark ? const Color(0xFF2C2D34) : C.n200;
+  Color get track => dark ? const Color(0xFF2C2D34) : C.n200;
 
   Color get ink => dark ? const Color(0xFFF1F5F9) : C.n900;
   Color get ink2 => dark ? const Color(0xFF94A3B8) : C.n600;

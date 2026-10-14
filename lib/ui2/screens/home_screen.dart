@@ -75,6 +75,7 @@ import 'ai_briefing.dart' show AiBriefingScreen;
 import 'coach.dart';
 import 'detected_activities.dart';
 import 'day_timeline.dart' show DayTimelineScreen;
+import 'health_screen.dart' show HealthScreen;
 import 'metric_detail.dart';
 import 'readiness_detail.dart';
 import 'sleep_detail.dart';
@@ -1119,6 +1120,209 @@ class _VitalsRow extends StatelessWidget {
   }
 }
 
+/// The two monitors under the rings: the health watch and last night's
+/// stress. One chip, one word, one line about which night — the card is the
+/// door, the screen behind it is the explanation.
+class _MonitorCard extends StatelessWidget {
+  final String title, chip, word, sub;
+  final Color tone;
+  final IconData? chipIcon;
+  final VoidCallback onTap;
+  const _MonitorCard({
+    required this.title,
+    required this.chip,
+    required this.word,
+    required this.sub,
+    required this.tone,
+    required this.onTap,
+    this.chipIcon,
+  });
+
+  @override
+  Widget build(BuildContext c) {
+    final p = P.of(c);
+    return Surface(
+      elevation: 1,
+      onTap: onTap,
+      semanticLabel: '$title. $word. $sub. Opens the detail.',
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(
+            child: Text(title.toUpperCase(),
+                style: F.over.copyWith(color: p.ink)),
+          ),
+          Icon(LucideIcons.chevronRight, size: 16, color: p.ink3),
+        ]),
+        const SizedBox(height: S.x4),
+        Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+          Container(
+            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+            padding: const EdgeInsets.symmetric(horizontal: S.x2),
+            alignment: Alignment.center,
+            decoration:
+                BoxDecoration(color: p.wash(tone), borderRadius: R.rSm),
+            child: chipIcon != null
+                ? Icon(chipIcon, size: 20, color: p.on(tone))
+                : Text(chip,
+                    style: F.head.copyWith(
+                        color: p.on(tone), fontWeight: FontWeight.w700)),
+          ),
+          const SizedBox(width: S.x3),
+          Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(word.toUpperCase(),
+                  style: F.over.copyWith(color: p.on(tone)),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis),
+              const SizedBox(height: 2),
+              Text(sub,
+                  style: F.cap.copyWith(color: p.ink3),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis),
+            ]),
+          ),
+        ]),
+      ]),
+    );
+  }
+}
+
+/// Health and stress, side by side. Each says what it knows and nothing
+/// more: before the baselines exist both read as learning, not as scores.
+class _Monitors extends StatelessWidget {
+  final HomeData d;
+  const _Monitors(this.d);
+
+  @override
+  Widget build(BuildContext c) {
+    final l = AppLocalizations.of(c);
+    final (Color hTone, String hWord, String hSub, IconData? hIcon) =
+        switch (d.illnessState) {
+      'green' => (
+          C.green,
+          'Within range',
+          'Resting heart rate vs your usual',
+          LucideIcons.check,
+        ),
+      'amber' => (
+          C.orange,
+          'Outside range',
+          'Last night sat outside your normal',
+          LucideIcons.triangleAlert,
+        ),
+      'red' => (
+          C.red,
+          'Outside range',
+          'Recent nights add up above your usual',
+          LucideIcons.triangleAlert,
+        ),
+      _ => (C.n400, 'Learning your usual', 'Needs 7 nights', LucideIcons.moon),
+    };
+    final score = d.stressScore;
+    final level = d.stressLevel;
+    final sTone = score == null
+        ? C.n400
+        : score < 34
+            ? C.green
+            : score < 67
+                ? C.yellow
+                : C.red;
+    final night = d.heldOverNight == null
+        ? 'Last night'
+        : prettyDay(d.heldOverNight, l);
+    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Expanded(
+        child: _MonitorCard(
+          title: 'Health monitor',
+          chip: '',
+          chipIcon: hIcon,
+          word: hWord,
+          sub: hSub,
+          tone: hTone,
+          onTap: () => go(c, const HealthScreen()),
+        ),
+      ),
+      const SizedBox(width: S.x3),
+      Expanded(
+        child: _MonitorCard(
+          title: 'Stress monitor',
+          chip: score == null ? '—' : '${score.round()}',
+          word: score == null
+              ? 'Not scored yet'
+              : (level == null || level.isEmpty ? 'Stress' : level),
+          sub: score == null ? 'Read from the night' : '$night · of 100',
+          tone: sTone,
+          onTap: () => go(c, const MetricDetail('stress')),
+        ),
+      ),
+    ]);
+  }
+}
+
+/// Battery and link state in the header, the way a band app's corner reads:
+/// the percentage, the band glyph, a dot that is green when live. Opens My
+/// devices. Nothing without an AppState or a pairing.
+class _HeaderStatus extends StatelessWidget {
+  const _HeaderStatus();
+
+  @override
+  Widget build(BuildContext c) {
+    final p = P.of(c);
+    final (bool paired, bool connected, bool live) = (() {
+      try {
+        return c.select<AppState, (bool, bool, bool)>(
+            (a) => (a.isPaired, a.isConnected, a.liveHr != null));
+      } catch (_) {
+        return (false, false, false);
+      }
+    })();
+    if (!paired) return const SizedBox.shrink();
+    final battery = deviceBatteryOf(c);
+    final dot = live
+        ? C.green
+        : connected
+            ? C.yellow
+            : C.orange;
+    return Pressable(
+      semanticLabel: [
+        live
+            ? 'Band connected, live'
+            : connected
+                ? 'Band connected'
+                : 'Band reconnecting',
+        if (battery != null) 'battery ${battery.$1.round()} percent',
+        'Opens your devices',
+      ].join(', '),
+      onTap: () => go(c, const MyDevices()),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        if (battery != null)
+          Text('${battery.$1.round()}%',
+              style: F.cap.copyWith(
+                  color: lowBattery(battery.$1, battery.$2)
+                      ? p.on(C.red)
+                      : p.ink2)),
+        const SizedBox(width: S.x2),
+        Stack(clipBehavior: Clip.none, children: [
+          Icon(LucideIcons.watch, size: 24, color: p.ink),
+          Positioned(
+            right: -2,
+            top: -2,
+            child: Container(
+              width: 9,
+              height: 9,
+              decoration: BoxDecoration(
+                  color: p.on(dot),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: p.bg, width: 1.5)),
+            ),
+          ),
+        ]),
+      ]),
+    );
+  }
+}
+
 class RingTrio extends StatelessWidget {
   final HomeData d;
 
@@ -1249,6 +1453,10 @@ class _RingState {
   final IconData icon;
   final Color color;
 
+  /// A small suffix drawn beside [value] inside the ring ('%'), kept out of
+  /// [value] so the number stays one plain Text.
+  final String unit;
+
   /// What to sweep, 0…1 — null when there is nothing honest to sweep.
   final double? frac;
 
@@ -1270,6 +1478,7 @@ class _RingState {
     this.icon,
     this.color, {
     required this.value,
+    this.unit = '',
     this.sub = '',
     this.frac,
     this.calibrating = false,
@@ -1291,7 +1500,7 @@ class _RingState {
 
   String get spoken => [
         label,
-        measured ? value : value.toLowerCase(),
+        measured ? '$value$unit' : value.toLowerCase(),
         if (sub.isNotEmpty) sub,
         ?why,
       ].join('. ');
@@ -1329,6 +1538,7 @@ _RingState _ringOf(HomeRingKind k, HomeData d, AppLocalizations? l) {
         return _RingState(k, l?.homeRingRecovery ?? 'Recovery',
             LucideIcons.batteryCharging, band.color,
             value: '${v.round()}',
+            unit: '%',
             sub: l?.homeRecoveryFinishingUp ?? 'Finishing up',
             frac: v / 100,
             provisional: true);
@@ -1354,14 +1564,14 @@ _RingState _ringOf(HomeRingKind k, HomeData d, AppLocalizations? l) {
                   '')
           : _RingState(k, l?.homeRingRecovery ?? 'Recovery',
               LucideIcons.batteryCharging, band.color,
-              value: '${v.round()}', sub: band.label, frac: v / 100);
+              value: '${v.round()}', unit: '%', sub: band.label, frac: v / 100);
     case HomeRingKind.strain:
       final v = d.strain.value;
       // 0–21 is the scale's own ceiling, not a target invented here.
       return v == null
           ? _gap(k, l?.homeRingStrain ?? 'Strain', LucideIcons.zap, C.purple,
               d.strain, l?.homeRingNoStrain ?? 'No strain', l, unit: 'days')
-          : _RingState(k, l?.homeRingStrain ?? 'Strain', LucideIcons.zap, C.purple,
+          : _RingState(k, l?.homeRingStrain ?? 'Strain', LucideIcons.zap, C.blue,
               value: v.toStringAsFixed(1),
               sub: '${strainWord(v)} · ${l?.homeStrainOf21 ?? 'of 21'}',
               frac: v / 21);
@@ -1374,13 +1584,17 @@ _RingState _ringOf(HomeRingKind k, HomeData d, AppLocalizations? l) {
               fallbackWhy: l?.homeSleepGapFallback ??
                   'No night long enough to score was recorded.')
           : _RingState(k, l?.homeRingSleep ?? 'Sleep', LucideIcons.moon, C.blue,
-              value: hm(v),
-              // No computed need means no denominator. The hardcoded 480 in
-              // the sleep bundle is not this user's need and must never be
-              // shown as one, so the ring stays open and says so.
-              sub: need == null
+              // Slept as a share of YOUR need when one is computed, the
+              // duration otherwise. No computed need means no denominator:
+              // the hardcoded 480 in the sleep bundle is not this user's need
+              // and must never be shown as one, so the ring stays open.
+              value: need == null || need <= 0
+                  ? hm(v)
+                  : '${(v / need * 100).clamp(0, 999).round()}',
+              unit: need == null || need <= 0 ? '' : '%',
+              sub: need == null || need <= 0
                   ? (l?.homeSleepNoTarget ?? 'No target yet')
-                  : (l?.homeOfSpan(hm(need)) ?? 'of ${hm(need)}'),
+                  : '${hm(v)} ${l?.homeOfSpan(hm(need)) ?? 'of ${hm(need)}'}',
               frac: need == null || need <= 0 ? null : v / need);
   }
 }
@@ -1440,7 +1654,36 @@ class _Dial extends StatelessWidget {
             : Ring(r.frac ?? 0, r.arc(p), p.track,
                 stroke: stroke, t: animate(c, 1), solid: r.measured),
       ),
-      Icon(r.icon, size: icon, color: r.ink(p)),
+      // The number sits in the ring. It scales down before it can touch the
+      // stroke, so a duration or "100%" never overflows its own circle.
+      Padding(
+        padding: EdgeInsets.all(stroke + S.x2),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                r.calibrating
+                    ? '${r.have ?? 0}/${r.need ?? 0}'
+                    : r.measured
+                        ? presentationText(AppLocalizations.of(c), r.value)
+                        : '—',
+                style: F.n24.copyWith(
+                    color: r.measured && !r.provisional ? p.ink : p.ink3,
+                    fontWeight: FontWeight.w700),
+              ),
+              if (r.measured && r.unit.isNotEmpty)
+                Text(r.unit,
+                    style: F.cap.copyWith(
+                        color: r.provisional ? p.ink3 : p.ink,
+                        fontWeight: FontWeight.w700)),
+            ],
+          ),
+        ),
+      ),
     ]);
   }
 }
@@ -1460,10 +1703,10 @@ class _RingColumn extends StatelessWidget {
         semanticLabel: r.spoken,
         child: Column(children: [
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 112),
+            constraints: const BoxConstraints(maxWidth: 116),
             child: AspectRatio(
               aspectRatio: 1,
-              child: _Dial(r, stroke: 10, icon: 22),
+              child: _Dial(r, stroke: 11, icon: 22),
             ),
           ),
           const SizedBox(height: S.x3),
@@ -1510,29 +1753,39 @@ class _RingText extends StatelessWidget {
     final cross = align == TextAlign.center
         ? CrossAxisAlignment.center
         : CrossAxisAlignment.start;
+    // The number is in the ring (see _Dial); under it the name, a chevron
+    // saying it opens, and one short line: the band word, the calibration
+    // count, or the absence in words — never a dash standing in for a value.
+    final line = r.calibrating || r.measured ? r.sub : r.value;
     return Column(crossAxisAlignment: cross, children: [
-      Text(r.label.toUpperCase(),
-          style: F.over.copyWith(color: p.ink3), textAlign: align),
-        const SizedBox(height: S.x1),
-        // Absent reads as words, never as a dash and never as a zero — so it
-        // takes the sentence weight rather than the numeral one.
-        Text(
-          presentationText(AppLocalizations.of(c), r.value),
-          style: r.measured
-              ? F.n24.copyWith(color: r.provisional ? p.ink3 : p.ink)
-              : F.body.copyWith(color: p.ink2),
-          textAlign: align,
-        ),
-        if (r.sub.isNotEmpty) ...[
-          const SizedBox(height: 2),
-          Text(
-            presentationText(AppLocalizations.of(c), r.sub),
-            style: F.cap.copyWith(color: p.ink3),
-            textAlign: align,
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: align == TextAlign.center
+            ? MainAxisAlignment.center
+            : MainAxisAlignment.start,
+        children: [
+          Flexible(
+            child: Text(r.label.toUpperCase(),
+                style: F.over.copyWith(color: p.ink),
+                textAlign: align,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
           ),
+          const SizedBox(width: 2),
+          Icon(LucideIcons.chevronRight, size: 13, color: p.ink3),
         ],
+      ),
+      if (line.isNotEmpty) ...[
+        const SizedBox(height: 2),
+        Text(
+          presentationText(AppLocalizations.of(c), line),
+          style: F.cap.copyWith(color: p.ink3),
+          textAlign: align,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
-    );
+    ]);
   }
 }
 
@@ -1605,6 +1858,11 @@ class HomeData {
   /// same way [rhr] is: a night that is not today's stays off these cells.
   final Metric hrv, resp;
 
+  /// Last night's stress score (0–100) and its level word, off the day's
+  /// `stress` block. Both null when the night did not score one.
+  final num? stressScore;
+  final String? stressLevel;
+
   /// The day's 0–21 strain, read from the same `getToday` bundle the Workout
   /// tab reads. Nothing on this screen computes it.
   final Metric strain;
@@ -1665,6 +1923,8 @@ class HomeData {
     this.rhr = Metric.empty,
     this.hrv = Metric.empty,
     this.resp = Metric.empty,
+    this.stressScore,
+    this.stressLevel,
     this.steps = Metric.empty,
     this.calories = Metric.empty,
     this.caloriesTotal = Metric.empty,
@@ -1696,6 +1956,8 @@ class HomeData {
         rhr: rhr,
         hrv: hrv,
         resp: resp,
+        stressScore: stressScore,
+        stressLevel: stressLevel,
         steps: steps,
         calories: calories,
         caloriesTotal: caloriesTotal,
@@ -1832,6 +2094,14 @@ class HomeData {
               : null,
           l),
       resp: overnightMetric(today, today['resp'], l),
+      stressScore: staleOvernightNote(today, l) != null
+          ? null
+          : (today['stress'] is Map
+              ? (today['stress'] as Map)['score'] as num?
+              : null),
+      stressLevel: today['stress'] is Map
+          ? (today['stress'] as Map)['level']?.toString()
+          : null,
       steps: metricOf(d('steps')),
       calories: metricOf(d('calories')),
       caloriesTotal: metricOf(d('calories_total')),
@@ -2199,62 +2469,71 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
       // state on a morning whose own bundle has not derived yet, which is
       // exactly the morning you would most want to be told.
       ...?_bodyWatch(c, d, todayLabel(widget.now)),
-      // ── greeting ──
+      // ── header: profile · day · band ──
+      //
+      // The day switcher sits in the middle (it used to be its own row under
+      // the greeting); the band's battery and link dot sit on the right and
+      // open My devices. Profile is the same avatar every tab carries.
       Padding(
-        padding: const EdgeInsets.only(top: S.x3, bottom: S.x5),
+        padding: const EdgeInsets.only(top: S.x3, bottom: S.x4),
         child: Row(children: [
+          const ProfileAvatar(accent: C.domHome),
+          const SizedBox(width: S.x3),
           Expanded(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Flexible(
-                  child: Text(
-                    d.name == null || d.name!.isEmpty
-                        ? g.word
-                        : '${g.word}, ${d.name}',
-                    style: F.t2.copyWith(color: p.ink),
-                  ),
-                ),
-                const SizedBox(width: S.x2),
-                Icon(g.icon, size: 17, color: p.on(g.color)),
-              ]),
-              const SizedBox(height: 2),
-              Text(prettyDay(d.dayId, l), style: F.cap.copyWith(color: p.ink3)),
-              // How far the band's data reaches, and the battery. On today's
-              // Home the device card directly below carries both, so the
-              // header says them only on a past day (where the card is not
-              // shown) or when the screen was handed its data.
-              if (!(isToday && widget.data == null)) ...[
-                syncedThroughLine(c, d.dayId, l),
-                // Its own line, not squeezed into the sync line's row: at
-                // accessibility text sizes that row has no slack left, and
-                // `Expanded` would only shrink the sync text into extra
-                // wrapped lines to make room rather than ever overflow.
-                if (batteryLine(c) case final battery?) ...[
-                  const SizedBox(height: 2),
-                  battery,
-                ],
-              ],
-            ]),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 230),
+                child: _days.length < 2
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: S.x4, vertical: S.x2),
+                        decoration: BoxDecoration(
+                            color: p.card2, borderRadius: R.rMd),
+                        child: Text(
+                          isToday
+                              ? (l?.tabToday ?? 'Today').toUpperCase()
+                              : prettyDay(d.dayId, l),
+                          textAlign: TextAlign.center,
+                          style: F.body.copyWith(
+                              color: p.ink, fontWeight: FontWeight.w600),
+                        ),
+                      )
+                    : DayNav(day: _day ?? d.dayId, days: _days, onDay: _goDay),
+              ),
+            ),
           ),
           const SizedBox(width: S.x3),
-          // The coach moved to its own chip under the plan, and Profile is the
-          // same avatar every tab carries.
-          const ProfileAvatar(accent: C.domHome),
+          if (widget.data == null) const _HeaderStatus(),
         ]),
       ),
 
-      // Connected? Data moving? Heart rate right now? One glance, one tap to
-      // sync. Today only, and only in the real app (goldens hand data in).
-      if (isToday && widget.data == null) ...[
-        const _DeviceCard(),
-        const SizedBox(height: S.x3),
-      ],
+      // ── wordmark + greeting ──
+      Center(
+        child: Column(children: [
+          Text('ENGINE',
+              style: F.t2.copyWith(
+                  color: p.ink,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 4)),
+          const SizedBox(height: 2),
+          Text(
+            d.name == null || d.name!.isEmpty
+                ? '${g.word} · ${prettyDay(d.dayId, l)}'
+                : '${g.word}, ${d.name} · ${prettyDay(d.dayId, l)}',
+            style: F.cap.copyWith(color: p.ink3),
+            textAlign: TextAlign.center,
+          ),
+          // A past day, or a screen handed its data: the band card is not
+          // shown, so how far the data reaches is said here.
+          if (!(isToday && widget.data == null))
+            syncedThroughLine(c, d.dayId, l),
+        ]),
+      ),
+      const SizedBox(height: S.x5),
 
       if (bare) ...[
         const DetectedActivitiesCard(),
       ],
-      ...dayNavRow(_day ?? d.dayId, _days, _goDay),
       // Stepped back through the record: one tap home.
       if (!isToday)
         Align(
@@ -2278,6 +2557,12 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
         WearableCells(kHomeWearableRows, date: isToday ? null : _day),
 
       if (bare) ...[
+        // The band first, even on a day with nothing scored: "is it reading
+        // me?" is the question a bare day asks loudest.
+        if (isToday && widget.data == null) ...[
+          const _DeviceCard(),
+          const SizedBox(height: S.x3),
+        ],
         // A live workout holds derivation, so a bare day with a session open
         // is the hold at work, not a sync problem — see [workoutHoldCard].
         // Only for TODAY: a live workout right now says nothing about why a
@@ -2350,11 +2635,23 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
             );
           }),
 
+        // ── monitors ──
+        const SizedBox(height: S.x3),
+        _Monitors(d),
+
+        // ── the band: connected? reading me? ──
+        //
+        // Today only, and only in the real app (goldens hand data in).
+        if (isToday && widget.data == null) ...[
+          const SizedBox(height: S.x3),
+          const _DeviceCard(),
+        ],
+
         // ── vitals ──
         //
-        // The night's measurements under the rings, each naming its night.
-        // Only when at least one was measured: three dashes say less than
-        // the ring row's own gap rows already do.
+        // The night's measurements, each naming its night. Only when at
+        // least one was measured: three dashes say less than the ring row's
+        // own gap rows already do.
         if (d.rhr.value != null || d.hrv.value != null || d.resp.value != null) ...[
           const SizedBox(height: S.x3),
           _VitalsRow(d,
@@ -2384,7 +2681,7 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
         // Skipped on a past day — "3,000 steps left" or "aim for 11.4
         // strain" about a day already over is an instruction, not a fact.
         if (isToday)
-          Section(l?.homeTodaysPlan ?? "Today's plan", _plan(c, p, d)),
+          Section('My day', _plan(c, p, d)),
 
         // ── the way into the whole day ──
         //
