@@ -32,6 +32,7 @@ import 'strain_backfill.dart' show backfillStrainScale;
 import 'readiness_calibration_backfill.dart'
     show backfillReadinessCalibration, seedRecentReadinessZ;
 import 'workout_rhr_ref.dart';
+import 'long_workout.dart' show recoverLongWorkouts;
 
 import 'package:crypto/crypto.dart' show sha1;
 import 'package:flutter/foundation.dart';
@@ -1808,7 +1809,14 @@ import 'vendor_sleep.dart';
 // before its first recorded night. Days WITH a detected night are unchanged
 // (goldens carry only the version). TRIMP/strain/readiness still need the
 // nocturnal RHR. Edge-only.
-const int kAlgoVersion = 113;
+// 113 → 114 (workouts past two hours): the analytics detector drops any
+// merged span over its 120-min cap as lifestyle activity, so a 2½-hour
+// high-HR session produced no suggestion. `recoverLongWorkouts`
+// (compute/long_workout.dart) runs the SAME detector over overlapping
+// 100-min windows and stitches the pieces with its own 5-min merge gap,
+// adding only spans > 120 min (≤ 6 h) that overlap nothing the whole-day
+// pass found. Days without such a session are unchanged. Edge-only.
+const int kAlgoVersion = 114;
 /// The sibling SHAs this version was derived against, asserted against
 /// pubspec.yaml in test/db_serve_version_and_reads_test.dart.
 ///
@@ -9643,7 +9651,7 @@ class DerivationEngine {
       // workout and the app never proposed it. A null reference does not
       // loosen the floor — the default (60) with an unknown HRmax prices it at
       // ~119 bpm sustained for 12 min, above anything ordinary daytime does.
-      final bouts = ana.autoDetectWorkouts(
+      final dayBouts = ana.autoDetectWorkouts(
             hrTs: hrTs,
             hrBpm: hrBpm,
             restingBpm: restingRef.bpm,
@@ -9652,6 +9660,20 @@ class DerivationEngine {
             savedSpans: savedSpans,
           ).value ??
           const <ana.DetectedWorkout>[];
+      // Sessions past the detector's two-hour cap, which the pass above drops
+      // outright — see `recoverLongWorkouts`. Empty on any day without one.
+      final bouts = [
+        ...dayBouts,
+        ...recoverLongWorkouts(
+          hrTs: hrTs,
+          hrBpm: hrBpm,
+          found: dayBouts,
+          restingBpm: restingRef.bpm,
+          maxBpm: maxHr,
+          motion: motion,
+          savedSpans: savedSpans,
+        ),
+      ]..sort((a, b) => a.startSec.compareTo(b.startSec));
       // Provenance for a bout priced on something other than the night's own
       // resting HR. Omitted on the normal path, so a day with a detected night
       // stores exactly what it stored before.
