@@ -76,7 +76,7 @@ import 'ai_briefing.dart' show AiBriefingScreen;
 import 'coach.dart';
 import 'dashboard_tiles.dart';
 import 'detected_activities.dart';
-import 'day_timeline.dart' show DayTimelineScreen;
+import 'day_timeline.dart' show DayGraph, DayTimelineScreen, dayGraph;
 import 'health_screen.dart' show HealthScreen;
 import 'metric_detail.dart';
 import 'readiness_detail.dart';
@@ -2872,7 +2872,14 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
                       : prettyDay(d.heldOverNight, l)),
         ],
 
-        const SizedBox(height: S.x3),
+        // ── the day, as a strip ──
+        //
+        // Sleep, naps and workouts along the clock, with the heart rate over
+        // them. The whole-day picture is behind a tap; this is the glance.
+        if (widget.data == null && d.dayId != null) ...[
+          _DayStrip(d.dayId!, key: ValueKey('strip-${d.dayId}')),
+          const SizedBox(height: S.x3),
+        ],
         if (firstWeeks) ...[
           firstWeekCard(c, days: _days.length, strainScored: !d.strain.isEmpty),
           const SizedBox(height: S.x3),
@@ -3408,4 +3415,126 @@ Widget coachChip(BuildContext c) {
       ),
     ),
   );
+}
+
+/// The day along the clock: asleep and naps as a tint, workouts as blocks,
+/// the movement strip, and the heart rate over them — the same lanes the
+/// day timeline draws, at a glance. Taps through to that screen. Nothing on
+/// a day with nothing recorded.
+class _DayStrip extends StatefulWidget {
+  final String dayId;
+  const _DayStrip(this.dayId, {super.key});
+
+  @override
+  State<_DayStrip> createState() => _DayStripState();
+}
+
+class _DayStripState extends State<_DayStrip> with RevisionReload {
+  DayGraph _g = const DayGraph();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => reload());
+  }
+
+  @override
+  void reload() => _load();
+
+  Future<void> _load() async {
+    final repo = repoOf(context);
+    if (repo == null) return;
+    try {
+      final g = dayGraph(await repo.getDayTimeline(widget.dayId));
+      if (mounted) setState(() => _g = g);
+    } catch (_) {
+      // A failed read leaves the strip as it was; the day screen says more.
+    }
+  }
+
+  @override
+  Widget build(BuildContext c) {
+    final g = _g;
+    if (g.isEmpty) return const SizedBox.shrink();
+    final p = P.of(c);
+    final l = AppLocalizations.of(c);
+    final n = g.slots;
+    double at(int m) => n <= 0 ? 0 : m / n;
+    final asleep = p.on(C.blue), workout = p.on(C.orange);
+    final axis = AxisSpec.of([for (final v in g.hr) ?v], ticks: 3);
+    final gaps = g.unmeasured;
+    final legend = <(String, Color)>[
+      if (g.rest.isNotEmpty) ('Asleep', asleep),
+      if (g.work.isNotEmpty) ('Workout', workout),
+      if (g.hasCurve) ('Heart rate', p.on(C.red)),
+    ];
+    return Pressable(
+      onTap: () => go(c, DayTimelineScreen(day: widget.dayId)),
+      semanticLabel: 'Your day: ${legend.map((e) => e.$1).join(', ')}. '
+          'Opens the breakdown of your day.',
+      child: Surface(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Text('YOUR DAY', style: F.over.copyWith(color: p.ink3)),
+            const Spacer(),
+            for (final (word, col) in legend) ...[
+              Container(
+                  width: 8,
+                  height: 8,
+                  decoration:
+                      BoxDecoration(color: col, shape: BoxShape.circle)),
+              const SizedBox(width: S.x1),
+              Text(word, style: F.cap.copyWith(color: p.ink3)),
+              const SizedBox(width: S.x3),
+            ],
+            Icon(LucideIcons.chevronRight, size: 15, color: p.ink3),
+          ]),
+          const SizedBox(height: S.x3),
+          SizedBox(
+            height: 64,
+            child: ClipRRect(
+              borderRadius: R.rSm,
+              child: Stack(children: [
+                Positioned.fill(
+                  child: CustomPaint(
+                    size: Size.infinite,
+                    painter: DayLanes(
+                      p: p,
+                      gaps: [for (final (a, b) in gaps) (at(a), at(b))],
+                      rest: [
+                        for (final (a, b, _) in g.rest)
+                          (at(a), at(b), asleep),
+                      ],
+                      work: [
+                        for (final (a, b, _) in g.work)
+                          (at(a), at(b), workout),
+                      ],
+                      movement: g.movement,
+                    ),
+                  ),
+                ),
+                if (axis != null)
+                  Positioned.fill(
+                    child: CustomPaint(
+                      size: Size.infinite,
+                      painter: LineChart(g.hr, p.on(C.red),
+                          fill: false, axis: axis),
+                    ),
+                  ),
+              ]),
+            ),
+          ),
+          const SizedBox(height: S.x1),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(l?.dayTimelineMidnight ?? 'Midnight',
+                style: F.cap.copyWith(color: p.ink3)),
+            Text(l?.dayTimelineNoon ?? 'Noon',
+                style: F.cap.copyWith(color: p.ink3)),
+            Text(l?.dayTimelineMidnight ?? 'Midnight',
+                style: F.cap.copyWith(color: p.ink3)),
+          ]),
+        ]),
+      ),
+    );
+  }
 }

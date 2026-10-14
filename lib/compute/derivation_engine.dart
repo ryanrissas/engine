@@ -9703,6 +9703,10 @@ class DerivationEngine {
       final rhrRefNote = restingRef.ref == WorkoutRhrRef.night
           ? null
           : restingRef.ref.name;
+      // A bout the rests pass produced held the work floor only part of the
+      // time; the review card says so (`detectionConfidence`). Only ever set,
+      // so a day without one stores what it stored before.
+      bool withRests(ana.DetectedWorkout b) => !continuous.contains(b);
 
       // HRR per bout from the per-second HR tail bracketing each bout end.
       final drops = <double>[];
@@ -9723,6 +9727,7 @@ class DerivationEngine {
           if (m != null) 'hrr_bpm': double.parse(m.toStringAsFixed(1)),
           if (r.tauSec != null) 'hrr_tau_s': r.tauSec!.round(),
           'rhr_ref': ?rhrRefNote,
+          if (withRests(b)) 'rests': true,
         });
       }
       // Also fill HRR for already-saved sessions (manual/live) retrospectively
@@ -9772,6 +9777,7 @@ class DerivationEngine {
             'sport': b.sport,
             'dismissed': 0,
             'rhr_ref': ?rhrRefNote,
+            if (withRests(b)) 'rests': true,
           });
         }
 

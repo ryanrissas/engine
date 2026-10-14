@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../compute/detection_confidence.dart';
 import '../../compute/nap_edits.dart';
 import '../../models/activity_suggestion.dart';
 import '../../theme/theme_switcher.dart' show themedRoute;
@@ -248,6 +249,19 @@ class ActivityProposalCard extends StatelessWidget {
                 '${suggestion.durationMin} min',
             style: F.cap.copyWith(color: p.ink3),
           ),
+          // The evidence, and how sure the detection is on it. The heart
+          // rates are the band's; the word comes from what the detection
+          // recorded about itself (`detectionConfidence`), never a number
+          // made up here.
+          if (!nap) ...[
+            if (_evidence(suggestion) case final e?) ...[
+              const SizedBox(height: S.x1),
+              Text(e, style: F.cap.copyWith(color: p.ink2)),
+            ],
+            const SizedBox(height: S.x1),
+            Text(detectionConfidenceLine(suggestion.details),
+                style: F.cap.copyWith(color: p.ink3)),
+          ],
           const SizedBox(height: S.x3),
           Wrap(
             spacing: S.x4,
@@ -280,6 +294,18 @@ class ActivityProposalCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// "Avg 117 · peak 156 bpm", or null when the detection carried neither.
+  static String? _evidence(ActivitySuggestion s) {
+    final avg = s.details['avg_bpm'] as num?;
+    final peak = s.details['peak_bpm'] as num?;
+    if (avg == null && peak == null) return null;
+    final parts = [
+      if (avg != null) 'Avg ${avg.round()}',
+      if (peak != null) 'peak ${peak.round()}',
+    ].join(' · ');
+    return '$parts bpm';
   }
 
   Widget _action(
