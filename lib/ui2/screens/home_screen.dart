@@ -1352,9 +1352,49 @@ class RingTrio extends StatelessWidget {
     // ([overnightMetric]), so a ring with no night behind it is a gap row with
     // the reason in it — same place every other absence on this screen goes.
 
-    return Surface(
-      elevation: 2,
-      child: Column(children: [
+    final extras = <Widget>[
+      for (final r in gaps) ...[
+        const SizedBox(height: S.x2),
+        Divider(color: p.line, height: 1),
+        _GapRow(r, onTap: _open(r.kind)),
+      ],
+      if (recoveryUpdatedLine(d.readinessUpdate, l) case final note?) ...[
+        const SizedBox(height: S.x2),
+        Text(note, style: F.cap.copyWith(color: p.ink3)),
+      ],
+      if (d.readiness.value != null && d.drivers.isNotEmpty) ...[
+        const SizedBox(height: S.x3),
+        Divider(color: p.line, height: 1),
+        const SizedBox(height: S.x3),
+        Pressable(
+          onTap: _open(HomeRingKind.recovery),
+          // Top-aligned: at an accessibility size the driver list is three
+          // lines and "Why?" was centred against the middle of them.
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(l?.homeWhyLabel ?? 'Why?', style: F.cap.copyWith(color: p.ink3)),
+            const SizedBox(width: S.x2),
+            Expanded(
+              child: Text(
+                d.drivers
+                    .take(3)
+                    .map((e) => driverLabel(e['label'], l))
+                    .join(' · '),
+                style: F.cap.copyWith(color: p.ink2),
+              ),
+            ),
+            Icon(LucideIcons.chevronRight, size: 15, color: p.ink3),
+          ]),
+        ),
+      ],
+    ];
+
+    // The rings sit on the page, the way a dashboard's dials do. Whatever
+    // needs saying about them — a gap's reason, the recovery drivers — goes
+    // in a quiet card underneath, and only when there is something to say.
+    return Column(children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: S.x2),
+        child: Column(children: [
         if (bigText(c))
           // Past ~1.3× a 100 pt column cannot hold the word "Recovery" on one
           // line and there is nowhere for it to wrap to. The ring keeps its
@@ -1374,42 +1414,16 @@ class RingTrio extends StatelessWidget {
               ],
             ],
           ),
-        for (final r in gaps) ...[
-          const SizedBox(height: S.x2),
-          Divider(color: p.line, height: 1),
-          _GapRow(r, onTap: _open(r.kind)),
-        ],
-        if (recoveryUpdatedLine(d.readinessUpdate, l) case final note?) ...[
-          const SizedBox(height: S.x2),
-          Text(note, style: F.cap.copyWith(color: p.ink3)),
-        ],
-        if (d.readiness.value != null && d.drivers.isNotEmpty) ...[
-          const SizedBox(height: S.x3),
-          Divider(color: p.line, height: 1),
-          const SizedBox(height: S.x3),
-          Pressable(
-            onTap: _open(HomeRingKind.recovery),
-            // Top-aligned: at an accessibility size the driver list is three
-            // lines and "Why?" was centred against the middle of them.
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(l?.homeWhyLabel ?? 'Why?', style: F.cap.copyWith(color: p.ink3)),
-              const SizedBox(width: S.x2),
-              Expanded(
-                child: Text(
-                  d.drivers
-                      .take(3)
-                      .map((e) => driverLabel(e['label'], l))
-                      .join(' · '),
-                  style: F.cap.copyWith(color: p.ink2),
-                ),
-              ),
-              Icon(LucideIcons.chevronRight, size: 15, color: p.ink3),
-            ]),
-            ),
-          ],
-        ],
+        ]),
       ),
-    );
+      if (extras.isNotEmpty) ...[
+        const SizedBox(height: S.x4),
+        Surface(
+          elevation: 1,
+          child: Column(children: extras),
+        ),
+      ],
+    ]);
   }
 
   VoidCallback? _open(HomeRingKind k) {
@@ -1652,7 +1666,10 @@ class _Dial extends StatelessWidget {
             ? DashedRing(r.frac ?? 0, r.arc(p), p.track,
                 stroke: stroke, segments: r.need ?? 24)
             : Ring(r.frac ?? 0, r.arc(p), p.track,
-                stroke: stroke, t: animate(c, 1), solid: r.measured),
+                stroke: stroke,
+                t: animate(c, 1),
+                solid: r.measured,
+                glow: p.dark),
       ),
       // The number sits in the ring. It scales down before it can touch the
       // stroke, so a duration or "100%" never overflows its own circle.
@@ -2491,7 +2508,9 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
                         padding: const EdgeInsets.symmetric(
                             horizontal: S.x4, vertical: S.x2),
                         decoration: BoxDecoration(
-                            color: p.card2, borderRadius: R.rMd),
+                            color: p.card2,
+                            borderRadius: R.rMd,
+                            border: Border.all(color: p.line)),
                         child: Text(
                           isToday
                               ? (l?.tabToday ?? 'Today').toUpperCase()
@@ -2519,9 +2538,9 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
                 : '${g.word}, ${d.name}',
             child: Text('ENGINE',
                 style: F.t2.copyWith(
-                    color: p.ink,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 4)),
+                    color: p.ink2,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 7)),
           ),
           // A past day, or a screen handed its data: the band card is not
           // shown, so how far the data reaches is said here.

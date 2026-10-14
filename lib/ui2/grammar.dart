@@ -252,6 +252,9 @@ class Surface extends StatelessWidget {
           color: color ?? p.card,
           borderRadius: R.rLg,
           boxShadow: p.el(elevation),
+          // A charcoal card on a black page needs an edge to be a card at
+          // all; the shadow alone disappears into the black.
+          border: p.dark ? Border.all(color: p.line) : null,
         ),
         child: child,
       ),

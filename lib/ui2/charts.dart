@@ -611,8 +611,13 @@ class Ring extends CustomPainter {
   /// calibrating" and "this is missing" into one look.
   final bool solid;
 
+  /// A soft halo under a solid arc — the glow a lit ring throws on a black
+  /// page. Dark theme only (the caller decides): on a light card it reads as
+  /// a smudge.
+  final bool glow;
+
   Ring(this.v, this.color, this.track,
-      {this.stroke = 10, this.t = 1, this.solid = false});
+      {this.stroke = 10, this.t = 1, this.solid = false, this.glow = false});
 
   @override
   void paint(Canvas cv, Size s) {
@@ -629,6 +634,20 @@ class Ring extends CustomPainter {
     );
     final sweep = 2 * pi * v.clamp(0, 1) * t.clamp(0, 1);
     if (sweep <= 0) return;
+    if (glow && solid) {
+      cv.drawArc(
+        Rect.fromCircle(center: c, radius: r),
+        -pi / 2,
+        sweep,
+        false,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke
+          ..strokeCap = StrokeCap.round
+          ..color = color.withValues(alpha: .38)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, stroke * .9),
+      );
+    }
     cv.drawArc(
       Rect.fromCircle(center: c, radius: r),
       -pi / 2,
@@ -652,7 +671,11 @@ class Ring extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant Ring o) =>
-      o.v != v || o.t != t || o.solid != solid || o.color != color;
+      o.v != v ||
+      o.t != t ||
+      o.solid != solid ||
+      o.color != color ||
+      o.glow != glow;
 }
 
 /// A ring made of discrete dashes rather than a continuous arc — for a value
