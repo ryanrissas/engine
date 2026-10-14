@@ -3,7 +3,7 @@ a workflow ::error annotation, so failures are readable from the check-run API
 (the raw job log is not always reachable)."""
 import json, sys
 
-tests, out = {}, []
+tests, out, prints = {}, [], {}
 for line in open(sys.argv[1], encoding="utf-8"):
     try:
         e = json.loads(line)
@@ -12,6 +12,8 @@ for line in open(sys.argv[1], encoding="utf-8"):
     t = e.get("type")
     if t == "testStart":
         tests[e["test"]["id"]] = e["test"]
+    elif t == "print":
+        prints.setdefault(e.get("testID"), []).append(e.get("message") or "")
     elif t == "error":
         test = tests.get(e.get("testID"), {})
         name = test.get("name", "?")
@@ -19,6 +21,12 @@ for line in open(sys.argv[1], encoding="utf-8"):
         path = url.split("/test/", 1)[-1] if "/test/" in url else "?"
         line_no = test.get("root_line") or test.get("line") or 1
         msg = (e.get("error") or "").strip().replace("\r", "")
+        if "exception logs above" in msg:
+            # The real expectation was printed before this line.
+            logged = "\n".join(prints.get(e.get("testID"), []))
+            keep = [l for l in logged.splitlines()
+                    if l.strip() and not set(l.strip()) <= set("═─=")]
+            msg = "\n".join(keep[:12]) or msg
         msg = " | ".join(l.strip() for l in msg.splitlines() if l.strip())[:900]
         out.append((f"test/{path}", line_no, name, msg))
 for path, line_no, name, msg in out[:40]:

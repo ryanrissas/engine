@@ -105,6 +105,17 @@ void main() {
       expect(sink.shown, [sink.todayKey]);
     });
 
+    test('the first week of nights is not announced', () async {
+      await putTodayReadiness(hrvNights: 3);
+      final app = make();
+      app.debugDeriveRun = deriveHook();
+      await app.debugAfterDrain();
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      expect(sink.shown, isEmpty,
+          reason: 'Home shows calibration progress, not a grade, until '
+              'a week of nights is banked');
+    });
+
     test('a heavy pass announces it too', () async {
       await putTodayReadiness();
       final app = make();

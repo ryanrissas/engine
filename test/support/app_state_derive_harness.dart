@@ -11,6 +11,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:openstrap_edge/compute/derivation_engine.dart';
+import 'package:openstrap_edge/compute/recovery_calibration.dart';
 import 'package:openstrap_edge/compute/profile.dart';
 import 'package:openstrap_edge/data/db.dart';
 import 'package:openstrap_edge/data/day_label.dart';
@@ -148,17 +149,27 @@ class RecoverySink {
 /// Writes today's day_result with a computed readiness, the row the
 /// recovery-ready check reads. [payloadJson] decides whether the night counts
 /// as settled.
+/// Today's recovery, plus [hrvNights] nights of measured HRV behind it. The
+/// recovery-ready note stays silent through the first-week calibration
+/// ([kRecoveryCalibrationNights]), so by default a full week is seeded.
 Future<void> putTodayReadiness({
   double readiness = 80,
   String payloadJson = '{}',
-}) =>
-    LocalDb.putDayResult(
-      dayId: todayLabel(),
-      algoVersion: kAlgoVersion,
-      payloadJson: payloadJson,
-      windowJson: '{}',
-      readiness: readiness,
-    );
+  int hrvNights = kRecoveryCalibrationNights,
+}) async {
+  final now = DateTime.now();
+  for (var i = 0; i < hrvNights; i++) {
+    await LocalDb.putMetricSeriesValue(
+        dayLabelOf(DateTime(now.year, now.month, now.day - i)), 'rmssd', 60);
+  }
+  await LocalDb.putDayResult(
+    dayId: todayLabel(),
+    algoVersion: kAlgoVersion,
+    payloadJson: payloadJson,
+    windowJson: '{}',
+    readiness: readiness,
+  );
+}
 
 /// Wraps a body in a zone that tracks every Timer created in it, so a test can
 /// assert none is still live. Periodic timers count until cancelled.

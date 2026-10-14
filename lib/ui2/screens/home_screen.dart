@@ -992,12 +992,16 @@ class _DeviceCardState extends State<_DeviceCard> {
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    Text(hr == null ? '—' : '$hr',
-                        style: F.n48.copyWith(
-                            color: hr == null ? p.ink3 : p.ink)),
-                    const SizedBox(width: S.x2),
-                    Text(l?.activityLiveBpmUnit ?? 'bpm',
-                        style: F.body.copyWith(color: p.ink3)),
+                    // No reading is said in words, never a bare dash.
+                    if (hr == null)
+                      Text('Waiting for a reading',
+                          style: F.t2.copyWith(color: p.ink3))
+                    else ...[
+                      Text('$hr', style: F.n48.copyWith(color: p.ink)),
+                      const SizedBox(width: S.x2),
+                      Text(l?.activityLiveBpmUnit ?? 'bpm',
+                          style: F.body.copyWith(color: p.ink3)),
+                    ],
                   ],
                 ),
               ),
@@ -1083,7 +1087,7 @@ class _VitalsRow extends StatelessWidget {
               child: Builder(builder: (c) {
                 final (label, m, unit, key, dp) = cells[i];
                 final v = m.value;
-                final shown = v == null ? '—' : v.toStringAsFixed(dp);
+                final shown = v == null ? 'Not measured' : v.toStringAsFixed(dp);
                 return Pressable(
                   onTap: () => go(c, MetricDetail(key)),
                   semanticLabel:
@@ -1100,8 +1104,9 @@ class _VitalsRow extends StatelessWidget {
                             children: [
                               Flexible(
                                 child: Text(shown,
-                                    style: F.n24.copyWith(
-                                        color: v == null ? p.ink3 : p.ink)),
+                                    style: v == null
+                                        ? F.cap.copyWith(color: p.ink3)
+                                        : F.n24.copyWith(color: p.ink)),
                               ),
                               if (v != null) ...[
                                 const SizedBox(width: 3),
@@ -1208,7 +1213,7 @@ class _Monitors extends StatelessWidget {
       'amber' => (
           C.orange,
           'Outside range',
-          'Last night sat outside your normal',
+          'A recent night sat outside your normal',
           LucideIcons.triangleAlert,
         ),
       'red' => (
@@ -1247,7 +1252,8 @@ class _Monitors extends StatelessWidget {
       Expanded(
         child: _MonitorCard(
           title: 'Stress monitor',
-          chip: score == null ? '—' : '${score.round()}',
+          chip: score == null ? '' : '${score.round()}',
+          chipIcon: score == null ? LucideIcons.moon : null,
           word: score == null
               ? 'Not scored yet'
               : (level == null || level.isEmpty ? 'Stress' : level),
@@ -1689,15 +1695,18 @@ class _Dial extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
+              // An empty ring says what it is waiting for ("Sleeping…",
+              // "No sleep"), never a bare dash.
               Text(
                 r.calibrating
                     ? '${r.have ?? 0}/${r.need ?? 0}'
-                    : r.measured
-                        ? presentationText(AppLocalizations.of(c), r.value)
-                        : '—',
-                style: F.n24.copyWith(
-                    color: r.measured && !r.provisional ? p.ink : p.ink3,
-                    fontWeight: FontWeight.w700),
+                    : presentationText(AppLocalizations.of(c), r.value),
+                style: r.calibrating || r.measured
+                    ? F.n24.copyWith(
+                        color: r.measured && !r.provisional ? p.ink : p.ink3,
+                        fontWeight: FontWeight.w700)
+                    : F.body.copyWith(
+                        color: p.ink3, fontWeight: FontWeight.w600),
               ),
               if (r.measured && r.unit.isNotEmpty)
                 Text(r.unit,
@@ -1782,7 +1791,10 @@ class _RingText extends StatelessWidget {
     // are spoken, shown in the accessibility row layout, and on the gap rows
     // under the trio; the three-across layout keeps the line clean.
     final line = r.calibrating || r.measured ? r.sub : r.value;
-    final showLine = align != TextAlign.center && line.isNotEmpty;
+    // A provisional number keeps its "Finishing up" in every layout: the
+    // number may still move, and the ring alone cannot say so.
+    final showLine =
+        (align != TextAlign.center || r.provisional) && line.isNotEmpty;
     return Column(crossAxisAlignment: cross, children: [
       Row(
         mainAxisSize: MainAxisSize.min,
