@@ -1681,6 +1681,12 @@ class BleEngine {
   // link should be running at; [_applyLinkPriority] is the one place that talks
   // to the radio, and it is a no-op when nothing changed.
   bool _backgrounded = false;
+
+  /// True only once AppState has said the app is on screen. NOT `!_backgrounded`:
+  /// the headless background-sync engine never calls [setBackground], so its
+  /// `_backgrounded` stays at the false default, and it must keep the short
+  /// background ceiling on auto-continue.
+  bool _foregroundConfirmed = false;
   LinkPriority? _appliedPriority;
   bool _priorityInFlight = false;
   bool _priorityRestale = false;
@@ -1959,6 +1965,7 @@ class BleEngine {
   /// Told by AppState on every foreground/background transition. Drives the
   /// connection interval — see [desiredLinkPriority].
   void setBackground(bool value) {
+    _foregroundConfirmed = !value;
     if (_backgrounded == value) return;
     _backgrounded = value;
     unawaited(_applyLinkPriority());
@@ -7703,6 +7710,9 @@ class BleEngine {
       // Monotonic, not wall-clock: this ceiling must not un-arm itself if the
       // phone's clock steps backward mid-chain.
       elapsedSeconds: _autoContinue.elapsed(_monotonicSecs()),
+      maxAutoContinueSeconds: _foregroundConfirmed
+          ? BackfillContinuation.foregroundMaxAutoContinueSeconds
+          : BackfillContinuation.defaultMaxAutoContinueSeconds,
     );
     d.resetOffloadCounters();
     if (cont) {

@@ -605,6 +605,15 @@ class BackfillContinuation {
   /// runs out on a background wake is time, not rounds.
   static const int defaultMaxAutoContinueSeconds = 600;
 
+  /// The same ceiling while the app is confirmed ON SCREEN. The 10-minute cap
+  /// is a background budget (an iOS wake is killed for running long); applied
+  /// in the foreground it turned a multi-day backlog into ten minutes of
+  /// transfer, then a wait for the next scheduled backfill, then ten more —
+  /// a first sync watched for twenty minutes on one day. With the user
+  /// looking at the screen there is no wake to protect, so the run continues
+  /// while it is productive; the unproductive-round cap still ends it.
+  static const int foregroundMaxAutoContinueSeconds = 3600;
+
   /// Whether to immediately re-trigger an offload after a chunk drain / idle cap.
   /// ALL gates must hold: still connected, inside the time ceiling, under the
   /// unproductive-round cap, the trim cursor actually advanced (not spinning on

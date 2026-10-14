@@ -1330,7 +1330,13 @@ class RingTrio extends StatelessWidget {
   /// worth pushing onto.
   final void Function(HomeRingKind)? onOpen;
 
-  const RingTrio({super.key, required this.d, this.onOpen});
+  /// Whether each empty ring gets its reason row underneath. Off on a day
+  /// with nothing measured at all, where the one status card below the
+  /// dashboard already says why, and three rows saying it again would bury
+  /// the screen.
+  final bool showGaps;
+
+  const RingTrio({super.key, required this.d, this.onOpen, this.showGaps = true});
 
   /// Whether ANY of the three has something to draw. When none do, the screen
   /// owes the user one written absence, not three empty circles.
@@ -1353,6 +1359,7 @@ class RingTrio extends StatelessWidget {
     // the reason in it — same place every other absence on this screen goes.
 
     final extras = <Widget>[
+      if (showGaps)
       for (final r in gaps) ...[
         const SizedBox(height: S.x2),
         Divider(color: p.line, height: 1),
@@ -2578,7 +2585,27 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
         WearableCells(kHomeWearableRows, date: isToday ? null : _day),
 
       if (bare) ...[
-        // The band first, even on a day with nothing scored: "is it reading
+        // The dashboard keeps its shape on a day with nothing scored: the
+        // three rings as empty dials and the two monitors, so the first
+        // morning (or a sync that has not landed yet) looks like the app it
+        // will be, not a stack of absence cards. The rings carry no numbers —
+        // each says what it is waiting for — and the one status card below
+        // gives the reason, so the per-ring reason rows stay off.
+        RingTrio(
+          d: d,
+          showGaps: false,
+          onOpen: (k) => go(
+              c,
+              switch (k) {
+                HomeRingKind.recovery => const ReadinessDetail(),
+                HomeRingKind.strain => const DayStrainDetail(),
+                HomeRingKind.sleep => SleepDetail(day: isToday ? null : _day),
+              }),
+        ),
+        const SizedBox(height: S.x4),
+        _Monitors(d),
+        const SizedBox(height: S.x4),
+        // The band next, even on a day with nothing scored: "is it reading
         // me?" is the question a bare day asks loudest.
         if (isToday && widget.data == null) ...[
           const _DeviceCard(),
