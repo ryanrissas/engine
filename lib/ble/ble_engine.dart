@@ -2416,6 +2416,9 @@ class BleEngine {
   // said" apart from "we correctly, silently rejected some as implausible
   // (stale-clock block) and never tallied them." See _handleSyncMarker.
   int _burstDroppedAtStart = 0;
+  // Same snapshot for `_recordGate.droppedBelowFloor` — see
+  // [TrimAckPolicy.blockingDrops].
+  int _burstBelowFloorAtStart = 0;
   // Consecutive HISTORY_END refuses where the burst banked nothing durable
   // but the RecordGate dropped samples. After a short streak we re-issue
   // SET_CLOCK and bounce — the usual cause is a bad post-reconnect window
@@ -3084,6 +3087,7 @@ class BleEngine {
       // banked. The startless HISTORY_END is expected, not hypothetical: the
       // historyEnd branch has its own `history_end_while_not_syncing` terminal.
       _burstDroppedAtStart = 0;
+      _burstBelowFloorAtStart = 0;
       // Re-seed the counter-regression watch from the durable counter_hw
       // cursor so a reboot is caught even across the reconnect it usually
       // causes, instead of only within a single unbroken connection.
@@ -7119,6 +7123,7 @@ class BleEngine {
       // live traffic from here.
       _historyAwaitingFirstStart = false;
       _burstDroppedAtStart = _recordGate.dropped;
+      _burstBelowFloorAtStart = _recordGate.droppedBelowFloor;
       d?.rearm();
       // The one place a new burst is really declared — the only safe point to
       // clear the discarded-burst poison (see DrainController.beginBurst).
@@ -7183,6 +7188,19 @@ class BleEngine {
       // kGateDroppedReason archives, but that path deliberately skips the
       // burst count for them, so they never entered currentBurstPacketCount.
       final droppedThisBurst = _recordGate.dropped - _burstDroppedAtStart;
+      // Of those, the ones that may hold the band's flash. A below-floor stamp
+      // can never be admitted, so once the strap clock is verified sane it
+      // must not wedge the queue — see [TrimAckPolicy.blockingDrops]. The
+      // count gate below still sees every drop.
+      final belowFloorThisBurst =
+          _recordGate.droppedBelowFloor - _burstBelowFloorAtStart;
+      final clockRef = _clockRef;
+      final trimBlockingDrops = TrimAckPolicy.blockingDrops(
+        dropped: droppedThisBurst,
+        droppedBelowFloor: belowFloorThisBurst,
+        strapClockSane:
+            clockRef != null && clockRef.device >= kMinPlausibleUnix,
+      );
       // Read before validateBurst, which zeroes the counter on a pass — this is
       // the attempt number, and the slack, the gate actually judged this burst
       // under.
@@ -7346,6 +7364,7 @@ class BleEngine {
         'historical=${d.currentBurstHistoricalPacketCount} '
         'traffic=${d.currentBurstTrafficCount} token=$tokenHex '
         'dropped_this_burst=$droppedThisBurstForLog '
+        'below_floor=$belowFloorThisBurst trim_blocking=$trimBlockingDrops '
         'durable_buffered=${d.bufferedRecords}+${d.bufferedArchives}'
         '+${d.bufferedEcgRaw} '
         'recTs=${r == null ? "none" : "${r.$1}..${r.$2}"}',
@@ -7368,7 +7387,7 @@ class BleEngine {
         burstDiscarded: d.burstDiscarded,
         commitDurable: true,
         hadDurableRows: hadDurableRows,
-        droppedThisBurst: droppedThisBurst,
+        droppedThisBurst: trimBlockingDrops,
       );
       if (progressVerdict != TrimAckVerdict.send) {
         await _refuseHistoryEndTrim(
@@ -7403,7 +7422,7 @@ class BleEngine {
         burstDiscarded: d.burstDiscarded,
         commitDurable: durable,
         hadDurableRows: hadDurableRows,
-        droppedThisBurst: droppedThisBurst,
+        droppedThisBurst: trimBlockingDrops,
         // The count gate already refused a short burst (failure result
         // + band re-offer) before this point, so the one-shot shortfall
         // refusal is never spent here.

@@ -678,6 +678,35 @@ enum TrimAckVerdict {
 class TrimAckPolicy {
   const TrimAckPolicy._();
 
+  /// How many of a burst's gate drops may hold the band's flash.
+  ///
+  /// Refusing the trim on a drop-only burst exists so a WANDERING clock can
+  /// recover: a record the gate distrusts today may be admitted once the
+  /// phone or the strap clock is right again. A record stamped below the
+  /// absolute floor ([kMinPlausibleUnix], i.e. before 2023-11) never will be:
+  /// the stamp is already written into the band's flash, SET_CLOCK does not
+  /// restamp stored records, and nothing re-times them (see the NO RTC
+  /// SALVAGE note in sync_policy.dart). Holding such a chunk can only
+  /// re-deliver it forever, and the band hands chunks over oldest first, so
+  /// every record banked after it waits behind it for good. Seen on a WHOOP
+  /// 4.0 left flat long enough for its RTC to reset to 2023-09-01: the
+  /// pre-SET_CLOCK stretch blocked a day of correctly stamped workout and
+  /// sleep behind it, and the app showed nothing but live heart rate.
+  ///
+  /// So once the strap's clock is known to be sane NOW ([strapClockSane]: a
+  /// correlation at or above the floor this session, i.e. new records are
+  /// stamped correctly), below-floor drops stop blocking the trim. Their bytes
+  /// are not discarded: every gate drop rides the same pre-ACK commit into
+  /// `raw_archive`. In-range drops (future, outside the strap's own range)
+  /// still block, and nothing changes while the strap clock is unknown or
+  /// still unset.
+  static int blockingDrops({
+    required int dropped,
+    required int droppedBelowFloor,
+    required bool strapClockSane,
+  }) =>
+      strapClockSane ? max(0, dropped - droppedBelowFloor) : dropped;
+
   /// [sessionCurrent]  — the receiving session is still the engine's session
   ///                     AND still connected.
   /// [burstDiscarded]  — this burst's open chunk was discarded un-committed.

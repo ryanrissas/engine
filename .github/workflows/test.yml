@@ -85,7 +85,11 @@ jobs:
       # beside the repo rather than committed to it, so the two derivation-replay
       # tests SKIP here and run locally.
       - name: Test
-        run: flutter test --concurrency=1 --reporter=github
+        run: flutter test --concurrency=1 --reporter=github --file-reporter json:test-results.json
+
+      - name: Annotate test failures
+        if: failure()
+        run: python3 .github/scripts/annotate_test_failures.py test-results.json || true
 
       # The WHOOP freeze goldens are per timezone (day labels are local), and
       # the run above is UTC, so it only enforces the *_utc files and the other
