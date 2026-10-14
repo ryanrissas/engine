@@ -22,7 +22,7 @@ import 'theme.dart';
 enum ShellDomain {
   today('Today', LucideIcons.house, C.domHome),
   sleep('Sleep', LucideIcons.moon, C.domSleep),
-  activity('Activity', LucideIcons.dumbbell, C.domMove),
+  activity('Strain', LucideIcons.zap, C.domMove),
   health('Health', LucideIcons.heartPulse, C.domHealth);
 
   const ShellDomain(this.label, this.icon, this.accent);

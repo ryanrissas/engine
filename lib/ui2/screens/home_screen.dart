@@ -2720,7 +2720,6 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
           const SizedBox(height: S.x3),
         ],
         const DetectedActivitiesCard(),
-        const CommunityNudge(),
 
         // ── the rollup was withheld, not absent ──
         if (stale != null) ...[const SizedBox(height: S.x3), stale],

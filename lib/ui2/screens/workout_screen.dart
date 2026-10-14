@@ -1,8 +1,11 @@
 import '../../l10n/display_text.dart';
-// WORKOUT — the interaction domain. Not "here are your numbers", but "what do
-// you want to do, and what did you do".
+// STRAIN — what the band saw you do. Read-first: the day's strain, the
+// efforts it spotted, the week and the training load, then the sessions. Nothing
+// here asks for input; starting or back-logging a session is one quiet row at
+// the bottom, for when you want it. (It used to open on "Start a session" and
+// quick-start tiles, which read as a form to fill in on every visit.)
 //
-// Three tabs. There is deliberately no Programs tab: a training programme is a
+// Formerly three sub-tabs. There is deliberately no Programs tab: a training programme is a
 // data model this app does not have (UI_WIRING §2c), and a tab of four fake
 // plans with fake progress bars is the exact thing the absence contract
 // exists to stop.
@@ -44,9 +47,7 @@ import '../revision.dart';
 import '../theme.dart';
 import '../../data/day_label.dart' show calendarDaysBetween;
 import 'log_workout.dart';
-import 'metric_detail.dart' show MetricDetail, detailLinkRow;
-import 'nutrition_screen.dart';
-import 'start_card.dart';
+import 'metric_detail.dart' show detailLinkRow;
 
 class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key});
@@ -56,12 +57,6 @@ class WorkoutScreen extends StatefulWidget {
 }
 
 class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
-  int tab = 0;
-  List<String> _tabs(AppLocalizations? loc) => [
-        loc?.workoutTabForYou ?? 'For you',
-        loc?.workoutTabActivities ?? 'Activities',
-        loc?.workoutTabHistory ?? 'History',
-      ];
 
   Future<_WorkoutData>? _load;
 
@@ -101,23 +96,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
           padding: const EdgeInsets.fromLTRB(0, S.x2, 0, S.x16),
           children: [
             for (final w in <Widget>[
-              ScreenTitle(loc?.tabActivity ?? 'Activity',
+              ScreenTitle(loc?.tabActivity ?? 'Strain',
                   trailing: const ProfileAvatar(accent: C.domMove)),
-              SubTabs(_tabs(loc), tab, (i) => setState(() => tab = i),
-                  color: C.domMove),
-              const SizedBox(height: S.x5),
-              ...switch (tab) {
-                0 => _forYou(c, d),
-                1 => _activities(c, d),
-                _ => _history(c, d),
-              },
+              const SizedBox(height: S.x3),
+              ..._strain(c, d),
             ])
-              if (w is StartCard)
-                w
-              else
-                Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: S.x4),
-                    child: w),
+              Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: S.x4),
+                  child: w),
           ],
         );
       },
@@ -132,58 +118,90 @@ class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
   ActivityHost _host(_WorkoutData d) =>
       activityHost(context.read<AppState>(), history: d.setHistory);
 
-  // ─────────────── FOR YOU ───────────────
-  List<Widget> _forYou(BuildContext c, _WorkoutData d) {
+  // ─────────────── THE TAB ───────────────
+  /// The whole tab, read-first: the detected efforts waiting on a yes or no,
+  /// the day's strain, the week and the load, the sessions, and last of all
+  /// the one door for adding a session yourself.
+  List<Widget> _strain(BuildContext c, _WorkoutData d) {
+    final loc = AppLocalizations.of(c);
+    return [
+      ..._suggestionCards(c, d),
+      detailLinkRow(
+          c,
+          LucideIcons.zap,
+          loc?.workoutTodaysStrainAction ?? "Today's strain",
+          'Your effort today, minute by minute',
+          () => _push(c, const DayStrainDetail())),
+      ..._overview(c, d),
+      Section(
+        loc?.workoutTabHistory ?? 'History',
+        Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: _history(c, d)),
+      ),
+      const SizedBox(height: S.x3),
+      _addRow(c, d),
+    ];
+  }
+
+  /// The one way to add a session by hand. Quiet on purpose: the band finds
+  /// workouts on its own, and this is for the one it missed or the one you
+  /// want to time live.
+  Widget _addRow(BuildContext c, _WorkoutData d) {
+    final p = P.of(c);
+    return Pressable(
+      onTap: () => _openAdd(c, d),
+      semanticLabel: 'Add a workout yourself',
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: S.x3),
+        child: Row(children: [
+          Icon(LucideIcons.plus, size: 16, color: p.ink3),
+          const SizedBox(width: S.x2),
+          Expanded(
+            child: Text('Add a workout yourself',
+                style: F.body.copyWith(color: p.ink2)),
+          ),
+          Icon(LucideIcons.chevronRight, size: 15, color: p.ink3),
+        ]),
+      ),
+    );
+  }
+
+  /// Everything that writes a session — back-logging one, or starting one
+  /// live from the activity library — on its own page, off the tab.
+  void _openAdd(BuildContext c, _WorkoutData d) => _push(
+        c,
+        Builder(builder: (pc) {
+          final p = P.of(pc);
+          return Scaffold(
+            backgroundColor: p.bg,
+            body: SafeArea(
+              child: Column(children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: S.x4),
+                  child: NavBar('Add a workout', sub: 'OPTIONAL'),
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(S.x4, S.x2, S.x4, S.x16),
+                    children: [
+                      _logPastCard(c),
+                      const SizedBox(height: S.x5),
+                      ..._activities(c, d),
+                    ],
+                  ),
+                ),
+              ]),
+            ),
+          );
+        }),
+      );
+
+  /// The week and the load, read off what the band recorded.
+  List<Widget> _overview(BuildContext c, _WorkoutData d) {
     final p = P.of(c);
     final loc = AppLocalizations.of(c);
     return [
-      StartCard(
-        label: loc?.workoutStartSessionLabel ?? 'START A SESSION',
-        count: allActivities.length,
-        noun: loc?.workoutActivitiesNoun ?? 'activities',
-        asset: 'mascot_workout.png',
-        accent: C.purple,
-        deep: C.indigo,
-        onTap: () => _openPicker(c, d),
-      ),
-      const SizedBox(height: S.x3),
-      Row(
-        children: [
-          for (var i = 0; i < 3; i++) ...[
-            if (i > 0) const SizedBox(width: S.x3),
-            Expanded(
-              child: WorkoutQuickTile(
-              quickStart[i],
-              () => Navigator.of(c).push(MaterialPageRoute(
-                  builder: (_) => ActivitySetup(quickStart[i],
-                      weightKg: d.weightKg, host: _host(d)))),
-            ),
-            ),
-          ],
-        ],
-      ),
-      // Steps and food, which used to be a Home tile and a tab of their own.
-      // Doors, not cards: the numbers live one tap down.
-      Section(
-        loc?.activityStepsFoodTitle ?? 'Steps and food',
-        Column(children: [
-          detailLinkRow(
-              c,
-              LucideIcons.footprints,
-              loc?.homeSteps ?? 'Steps',
-              loc?.activityStepsSub ?? 'Today and every day before it',
-              () => Navigator.of(c).push(MaterialPageRoute<void>(
-                  builder: (_) => const MetricDetail('steps')))),
-          const SizedBox(height: S.x3),
-          detailLinkRow(
-              c,
-              LucideIcons.utensils,
-              loc?.nutritionTitle ?? 'Nutrition',
-              loc?.activityNutritionSub ?? 'Log food and see today\'s protein',
-              () => Navigator.of(c).push(MaterialPageRoute<void>(
-                  builder: (_) => const NutritionScreen(page: true)))),
-        ]),
-      ),
       Section(
         loc?.workoutThisWeek ?? 'This week',
         Surface(
@@ -571,22 +589,18 @@ class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
     final p = P.of(c);
     final loc = AppLocalizations.of(c);
     if (d.workouts.isEmpty) {
+      // The empty state asks for nothing: the band finds workouts on its own.
       return [
-        ..._suggestionCards(c, d),
         StatusCard(
           loc?.workoutNoSessionsTitle ?? 'No sessions recorded yet',
-          loc?.workoutNoSessionsBody ?? 'Sessions appear here once you start one.',
-          fix: loc?.workoutStartWorkoutFix ?? 'Start a workout',
-          onFix: () => _openPicker(c, d),
+          'A workout the band spots shows up above for a quick yes or no, '
+              'and lands here once you say yes.',
           icon: LucideIcons.dumbbell,
         ),
-        const SizedBox(height: S.x5),
-        _logPastCard(c),
       ];
     }
     final importedThisWeek = d.weekImported;
     return [
-      ..._suggestionCards(c, d),
       Row(children: [
         Expanded(child: _sum(p, '${d.workoutsTracked ?? d.workouts.length}',
             loc?.workoutTrackedLabel ?? 'Tracked')),
@@ -657,8 +671,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
                 : null),
         const SizedBox(height: S.x3),
       ],
-      const SizedBox(height: S.x3),
-      _logPastCard(c),
     ];
   }
 
