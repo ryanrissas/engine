@@ -31,6 +31,7 @@ import 'quiet_level_seed.dart' show seedQuietHrrHistoryOnce;
 import 'strain_backfill.dart' show backfillStrainScale;
 import 'readiness_calibration_backfill.dart'
     show backfillReadinessCalibration, seedRecentReadinessZ;
+import 'workout_rhr_ref.dart';
 
 import 'package:crypto/crypto.dart' show sha1;
 import 'package:flutter/foundation.dart';
@@ -1798,7 +1799,16 @@ import 'vendor_sleep.dart';
 // 110 → 111 (#315): new scalar `sdnn_window`, the mean of 5-min-window SDNNs over the sleep NN (windows under 21 beats left out); the Apple Health HRV SDNN sample now carries it instead of the drift-inflated whole-night `sdnn`, which is unchanged. Edge-only.
 // (no bump) The multi-device wearable paths (`compute/inputs/`, the partial readiness composite, wearable worn-minutes and skin-temp cadence, ring nights) only run for a wearable whose developer flag is on and which is the active wearable; flags default off and a flag-off device contributes nothing. WHOOP output is unchanged, pinned by test/whoop_freeze_golden_test.dart against goldens generated from main.
 // 111 → 112 (recovery calibration): analytics main @ 77fe373 (#95). Readiness merges HRV and RHR into one autonomic input (mean of their oriented z's, weight 0.70) and maps the composite z through the user's own spread once 14 prior nights exist: score = logistic(0.65·(z − ĉ)/σ̂), σ̂ = MAD×1.4826 of the trailing `readiness_z` series floored at 0.3, ĉ = its median capped to ±0.5 (re-centring; calibrating before 14 nights). The per-day composite z is stored as `readiness_z`; `readiness_calibration_backfill.dart` rebuilds it from stored drivers and re-scores days whose raw is pruned. readiness_lnrmssd's z/SWC/band use the prior window's median + MAD.
-const int kAlgoVersion = 112;
+// 112 → 113 (workout detection on days without a detected night): auto workout
+// detection no longer requires the day's OWN nocturnal resting HR. Its floor
+// is priced on the night's RHR when there is one, else the profile's manual
+// RHR, else the median of the trailing nights, else the detector's own 60 bpm
+// default (`compute/workout_rhr_ref.dart`); a bout priced on anything but the
+// night carries `rhr_ref`. A fresh install could not detect a workout at all
+// before its first recorded night. Days WITH a detected night are unchanged
+// (goldens carry only the version). TRIMP/strain/readiness still need the
+// nocturnal RHR. Edge-only.
+const int kAlgoVersion = 113;
 /// The sibling SHAs this version was derived against, asserted against
 /// pubspec.yaml in test/db_serve_version_and_reads_test.dart.
 ///
@@ -5541,6 +5551,15 @@ class DerivationEngine {
         // had already refused to publish. `rhr_nocturnal` is null unless a
         // sleep session was detected — exactly the gate readiness uses.
         rhr: (scMap?['rhr_nocturnal'] as num?)?.toDouble(),
+        // Workout DETECTION only needs a resting reference for its floor, not
+        // tonight's — see `workoutRestingRef`. Gating it on `rhr` above made
+        // every day without a detected night (a fresh install's first days
+        // above all) unable to spot a workout at all.
+        workoutRhr: workoutRestingRef(
+          nocturnal: (scMap?['rhr_nocturnal'] as num?)?.toDouble(),
+          manual: profile.restingHrManual,
+          recentNocturnal: history.valuesBefore('rhr', day.date),
+        ),
         maxHrUsed: (bundle['max_hr_used'] as num?)?.round(),
         liveStepsReal: liveSteps.total,
         liveStepsFromStrap: liveSteps.strap,
@@ -9486,7 +9505,7 @@ class DerivationEngine {
     final wc = _computeWorkouts(
       s: daySub,
       maxHr: inp.maxHrUsed,
-      rhrScalar: inp.rhr,
+      restingRef: inp.workoutRhr,
       saved: inp.savedSessions,
       date: inp.date,
       dayEndSec: inp.dayEndSec,
@@ -9574,7 +9593,7 @@ class DerivationEngine {
   static _WorkoutCompute _computeWorkouts({
     required Substrate s,
     required int? maxHr,
-    required double? rhrScalar,
+    required WorkoutRestingRef restingRef,
     required List<Map<String, dynamic>> saved,
     required String date,
     required int dayEndSec,
@@ -9616,22 +9635,29 @@ class DerivationEngine {
               r['end_ts'] is int ? r['end_ts'] as int : dataNowSec,
             ),
       ];
-      final rhr = rhrScalar?.round();
-      // Auto-detection needs a real resting-HR baseline. Without one the detector
-      // can't compute a trustworthy %HRR floor and ordinary daytime HR reads as a
-      // workout. If we don't have a nightly RHR for this day yet, skip detection
-      // entirely (HRR for already-saved sessions below still runs).
-      final bouts = rhr == null
-          ? const <ana.DetectedWorkout>[]
-          : (ana.autoDetectWorkouts(
-                hrTs: hrTs,
-                hrBpm: hrBpm,
-                restingBpm: rhr,
-                maxBpm: maxHr,
-                motion: motion,
-                savedSpans: savedSpans,
-              ).value ??
-              const <ana.DetectedWorkout>[]);
+      // The floor is priced on the best resting reference available — the
+      // night's, the profile's, the trailing nights', or the detector's own
+      // default (see `workoutRestingRef`). This used to skip detection
+      // outright without a same-day nocturnal RHR, which is every day of a
+      // fresh install until its first recorded night: the band saw the whole
+      // workout and the app never proposed it. A null reference does not
+      // loosen the floor — the default (60) with an unknown HRmax prices it at
+      // ~119 bpm sustained for 12 min, above anything ordinary daytime does.
+      final bouts = ana.autoDetectWorkouts(
+            hrTs: hrTs,
+            hrBpm: hrBpm,
+            restingBpm: restingRef.bpm,
+            maxBpm: maxHr,
+            motion: motion,
+            savedSpans: savedSpans,
+          ).value ??
+          const <ana.DetectedWorkout>[];
+      // Provenance for a bout priced on something other than the night's own
+      // resting HR. Omitted on the normal path, so a day with a detected night
+      // stores exactly what it stored before.
+      final rhrRefNote = restingRef.ref == WorkoutRhrRef.night
+          ? null
+          : restingRef.ref.name;
 
       // HRR per bout from the per-second HR tail bracketing each bout end.
       final drops = <double>[];
@@ -9651,6 +9677,7 @@ class DerivationEngine {
           'sport': b.sport,
           if (m != null) 'hrr_bpm': double.parse(m.toStringAsFixed(1)),
           if (r.tauSec != null) 'hrr_tau_s': r.tauSec!.round(),
+          if (rhrRefNote != null) 'rhr_ref': rhrRefNote,
         });
       }
       // Also fill HRR for already-saved sessions (manual/live) retrospectively
@@ -9699,6 +9726,7 @@ class DerivationEngine {
             'duration_min': b.durationMin,
             'sport': b.sport,
             'dismissed': 0,
+            if (rhrRefNote != null) 'rhr_ref': rhrRefNote,
           });
         }
 
@@ -10141,6 +10169,12 @@ class _DayBlocksInput {
   /// sleep session was detected. NOT `scalars.rhr`, which is allowed to fall
   /// back to daytime HR for the resting-HR card and is not a TRIMP reference.
   final double? rhr;
+
+  /// The resting reference workout DETECTION prices its floor on — the
+  /// night's when there is one, else the profile's, else the trailing
+  /// nights' median, else none (the detector's own default). Never feeds
+  /// TRIMP or readiness; those stay on [rhr].
+  final WorkoutRestingRef workoutRhr;
   final int? maxHrUsed;
   final int liveStepsReal;
   /// Step-counter calibration read on the main isolate; null = uncalibrated.
@@ -10217,6 +10251,7 @@ class _DayBlocksInput {
     required this.offsetSec,
     this.napExcludeEndSec,
     required this.rhr,
+    this.workoutRhr = (bpm: null, ref: WorkoutRhrRef.none),
     required this.maxHrUsed,
     required this.liveStepsReal,
     this.counterProfile,
