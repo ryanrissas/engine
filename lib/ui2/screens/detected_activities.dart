@@ -7,6 +7,7 @@ import '../../compute/nap_edits.dart';
 import '../../models/activity_suggestion.dart';
 import '../../theme/theme_switcher.dart' show themedRoute;
 import '../activity/catalogue.dart';
+import '../activity/sport_question.dart';
 import '../ui2.dart';
 import '../../data/day_label.dart' show dayLabelOf;
 import 'day_timeline.dart' show DayTimelineScreen;
@@ -80,6 +81,15 @@ class _DetectedActivitiesScreenState extends State<DetectedActivitiesScreen>
     if (_busy) return;
     final repo = repoOf(context);
     if (repo == null) return;
+    // A workout is confirmed with its sport: the band cannot tell a bullpen
+    // from a squat rack, so ask — unless the detection already named it.
+    // Dismissing the question confirms nothing.
+    var sport = activityByName(s.sport)?.typeKey;
+    if (!discard && s.kind == ActivityKind.workout && sport == null) {
+      final picked = await askWorkoutSport(context);
+      if (picked == null || !mounted) return;
+      sport = picked.typeKey;
+    }
     setState(() => _busy = true);
     String? error;
     try {
@@ -90,7 +100,7 @@ class _DetectedActivitiesScreenState extends State<DetectedActivitiesScreen>
           s,
           startTs: start,
           endTs: end,
-          workoutType: activityByName(s.sport)?.typeKey ?? 'other',
+          workoutType: sport ?? 'other',
         );
       }
     } catch (e) {

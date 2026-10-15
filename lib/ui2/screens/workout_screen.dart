@@ -38,6 +38,7 @@ import '../activity/day_strain.dart';
 import '../activity/live.dart';
 import '../activity/picker.dart';
 import '../activity/poster.dart' show PosterStatRow;
+import '../activity/sport_question.dart';
 import '../activity/setup.dart';
 import '../activity/summary.dart';
 import '../charts.dart';
@@ -658,6 +659,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
       for (final w in d.workouts) ...[
         _HistoryRow(w,
             weightKg: d.weightKg,
+            onName: w.unnamed && w.id.isNotEmpty && w.importedFrom == null
+                ? () => _nameWorkout(c, w)
+                : null,
             onDelete: w.id.isEmpty
                 ? null
                 : () => _confirmDeleteWorkout(c, w),
@@ -697,6 +701,23 @@ class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
   /// (manual, or the hourly auto path) would bring the very row the user just
   /// removed straight back. A copy in Apple Health / Health Connect itself is
   /// out of our reach by design and the confirm says so.
+  /// Name a session saved without a sport: ask, then the same narrow UPDATE
+  /// the summary's "Change activity type" uses.
+  Future<void> _nameWorkout(BuildContext c, _PastWorkout w) async {
+    final a = await askWorkoutSport(c);
+    if (a == null || !mounted) return;
+    try {
+      await LocalDb.setSessionType(w.id, a.typeKey);
+    } catch (_) {
+      return;
+    }
+    if (!mounted) return;
+    bumpInsights(context);
+    setState(() {
+      _load = _loadWorkoutData(context.read<AppState>());
+    });
+  }
+
   Future<void> _confirmDeleteWorkout(BuildContext c, _PastWorkout w) async {
     final loc = AppLocalizations.of(c);
     final ok = await confirmRemove(
@@ -1030,8 +1051,15 @@ class _HistoryRow extends StatelessWidget {
   /// An imported row's tap: score its window from the band (#325).
   final VoidCallback? onScore;
 
+  /// An unnamed session's "what was it?" — asks the sport and saves it.
+  final VoidCallback? onName;
+
   const _HistoryRow(this.w,
-      {this.weightKg, this.onRetime, this.onDelete, this.onScore});
+      {this.weightKg,
+      this.onRetime,
+      this.onDelete,
+      this.onScore,
+      this.onName});
 
   Future<void> _open(BuildContext c) async {
     final nav = Navigator.of(c);
@@ -1095,6 +1123,18 @@ class _HistoryRow extends StatelessWidget {
                           ? w.when(loc)
                           : '${w.importedFrom} · ${w.when(loc)}',
                       style: F.over.copyWith(color: p.ink3)),
+                  if (onName case final name?)
+                    Pressable(
+                      onTap: name,
+                      semanticLabel: 'Say what kind of workout this was',
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: S.x1),
+                        child: Text('What kind of workout? Tap to say',
+                            style: F.cap.copyWith(
+                                color: p.on(C.domMove),
+                                fontWeight: FontWeight.w600)),
+                      ),
+                    ),
                 ]),
           ),
           if (w.strain != null) ...[
@@ -1861,6 +1901,10 @@ class _PastWorkout {
   /// session's distance is read on open with its route.
   final double? distanceM;
 
+  /// Saved without a sport (`other`): a detected workout confirmed before
+  /// the app asked what it was. Its row offers to name it.
+  final bool unnamed;
+
   const _PastWorkout(this.id, this.activity, this.start, this.duration,
       {this.strain,
       this.calories,
@@ -1873,7 +1917,8 @@ class _PastWorkout {
       this.private = false,
       this.importedFrom,
       this.importedTitle,
-      this.distanceM});
+      this.distanceM,
+      this.unnamed = false});
 
   String when(AppLocalizations? loc) {
     final days = calendarDaysBetween(start, DateTime.now());
@@ -2068,9 +2113,10 @@ Future<_WorkoutData> _loadWorkoutData(AppState app) async {
           if (ts == null) continue;
           // An unknown type keeps its own name: a scored import is saved
           // under the store's sport (`surfing`), which the catalogue may lack.
+          final unnamed = isUnnamedWorkoutType(r['type'] as String?);
           final a = activityByName(r['type'] as String?) ??
-              Activity(importedWorkoutTitle(r['type']), LucideIcons.activity,
-                  C.purple, Track.duration, 5.0);
+              Activity(unnamed ? 'Workout' : importedWorkoutTitle(r['type']),
+                  LucideIcons.activity, C.purple, Track.duration, 5.0);
           past.add(_PastWorkout(
             (r['id'] as String?) ?? '',
             a,
@@ -2089,6 +2135,7 @@ Future<_WorkoutData> _loadWorkoutData(AppState app) async {
             steps: (r['steps'] as num?)?.toInt(),
             zoneMinutes: _decodeZoneMinutes(r['zone_min']),
             private: r['private'] == true,
+            unnamed: unnamed,
           ));
         }
       }

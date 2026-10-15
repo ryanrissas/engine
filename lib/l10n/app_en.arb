@@ -3537,7 +3537,7 @@
   "@dayTimelineAlarmWentOff": {
     "description": "Timeline event: the band's alarm fired."
   },
-  "dayTimelineAsleep": "Asleep",
+  "dayTimelineAsleep": "Sleep",
   "@dayTimelineAsleep": {
     "description": "Timeline/legend title for a night's sleep span."
   },
@@ -12633,7 +12633,7 @@
   "@tabHome": {
     "description": "Bottom tab bar labels (tabHome..tabWellness). Keep short; the five must read as different words."
   },
-  "activityCatalogueName": "{key, select, other{{name}}}",
+  "activityCatalogueName": "{key, select, kweighttraining{Strength training} other{{name}}}",
   "@activityCatalogueName": {
     "description": "Display name only. Never persist translated activity or group names.",
     "placeholders": {

@@ -60,11 +60,11 @@ void main() {
       final m = dayMoments(timeline: {
         'day_start': _day,
         'events': [
-          {'event_id': 14, 'ts': _at(20)},
-          {'event_id': 14, 'ts': _at(20)},
-          {'event_id': 14, 'ts': _at(20)},
-          // A different id at the same instant is a different fact.
           {'event_id': 15, 'ts': _at(20)},
+          {'event_id': 15, 'ts': _at(20)},
+          {'event_id': 15, 'ts': _at(20)},
+          // A different id at the same instant is a different fact.
+          {'event_id': 57, 'ts': _at(20)},
           // Not in the allow-list: a bond is about the strap, not the day.
           {'event_id': 31, 'ts': _at(20)},
         ],
@@ -72,11 +72,11 @@ void main() {
       expect(m, hasLength(2));
     });
 
-    test('charger and battery-pack on/off are not lines in the day', () {
+    test('charger, battery-pack and double-tap are not lines in the day', () {
       final m = dayMoments(timeline: {
         'day_start': _day,
         'events': [
-          for (final id in [7, 8, 21, 22]) {'event_id': id, 'ts': _at(id)},
+          for (final id in [7, 8, 14, 21, 22]) {'event_id': id, 'ts': _at(id)},
         ],
       });
       expect(m, isEmpty);
@@ -406,7 +406,7 @@ void _graphTests() {
       expect(find.text('Midnight'), findsNWidgets(2));
       expect(find.text('Noon'), findsOneWidget);
       // Every lane with something in it is named, and none that is empty.
-      expect(find.text('Asleep'), findsOneWidget);
+      expect(find.text('Sleep'), findsOneWidget);
       expect(find.text('Workout'), findsOneWidget);
       expect(find.text('Moving'), findsOneWidget);
       expect(find.text('Not recorded'), findsOneWidget);

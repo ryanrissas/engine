@@ -122,6 +122,33 @@ void main() {
     expect(find.text('Nothing to review'), findsOneWidget);
   });
 
+  testWidgets('confirming a workout asks what it was, and saves the answer',
+      (t) async {
+    final repo = await pump(t);
+    // The workout's Confirm (the nap's comes first).
+    await t.tap(find.text('Confirm').last);
+    await t.pumpAndSettle();
+    expect(find.text('What kind of workout was it?'), findsOneWidget);
+    // "Strength training" in English; this harness has no localizations, so
+    // the catalogue's own name shows.
+    expect(find.textContaining(RegExp('(Strength|Weight) training')),
+        findsOneWidget);
+    expect(find.text('Baseball'), findsOneWidget);
+
+    // Dismissing the question confirms nothing.
+    await t.tapAt(const Offset(10, 10));
+    await t.pumpAndSettle();
+    expect(repo.items, hasLength(2));
+    expect(repo.savedType, isNull);
+
+    await t.tap(find.text('Confirm').last);
+    await t.pumpAndSettle();
+    await t.tap(find.text('Baseball'));
+    await t.pumpAndSettle();
+    expect(repo.items.single.id, 'nap');
+    expect(repo.savedType, 'baseball');
+  });
+
   testWidgets('cancelling a nap edit leaves it pending', (t) async {
     final repo = await pump(t);
     await t.tap(find.text('Edit').first);

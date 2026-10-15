@@ -84,6 +84,9 @@ import 'log_workout.dart' show LogWorkout;
 import 'sleep_tab.dart' show SleepTab;
 import 'workout_screen.dart' show WorkoutScreen, activityHost, loadSetHistory;
 import '../activity/picker.dart' show ActivityPicker;
+import '../activity/catalogue.dart' show activityByName;
+import '../activity/sport_question.dart' show isUnnamedWorkoutType;
+import '../../health/health_workout_import.dart' show importedWorkoutTitle;
 import 'metric_detail.dart';
 import 'readiness_detail.dart';
 
@@ -3360,7 +3363,7 @@ class _DayStripState extends State<_DayStrip> with RevisionReload {
     final axis = AxisSpec.of([for (final v in g.hr) ?v], ticks: 3);
     final gaps = g.unmeasured;
     final legend = <(String, Color)>[
-      if (g.rest.isNotEmpty) ('Asleep', asleep),
+      if (g.rest.isNotEmpty) ('Sleep', asleep),
       if (g.work.isNotEmpty) ('Workout', workout),
       if (g.hasCurve) ('Heart rate', p.on(C.red)),
     ];
@@ -3696,6 +3699,7 @@ class _TodaysActivitiesState extends State<_TodaysActivities>
     if (!mounted) return;
     final repo = repoOf(context);
     if (repo == null) return;
+    final l = AppLocalizations.of(context);
     try {
       final rows = <({String name, int startTs, int endTs, IconData icon, Color color})>[];
       final day = DateTime.parse(widget.dayId);
@@ -3723,11 +3727,17 @@ class _TodaysActivitiesState extends State<_TodaysActivities>
         if (r is! Map) continue;
         final st = r['start_ts'], en = r['end_ts'];
         if (st is! num || st < dayStart || st >= dayEnd) continue;
+        // The sport's own name and icon; a session saved without one reads
+        // "Workout", never the stored key ("other").
+        final type = r['type'] as String?;
+        final act = activityByName(type);
         rows.add((
-          name: (r['title'] ?? r['type'] ?? 'Workout').toString(),
+          name: (r['title'] as String?) ??
+              act?.localizedName(l) ??
+              (isUnnamedWorkoutType(type) ? 'Workout' : importedWorkoutTitle(type)),
           startTs: st.toInt(),
           endTs: en is num ? en.toInt() : st.toInt(),
-          icon: LucideIcons.zap,
+          icon: act?.icon ?? LucideIcons.zap,
           color: C.blue,
         ));
       }

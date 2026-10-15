@@ -45,6 +45,7 @@ import '../../l10n/app_localizations.dart';
 import '../../state/app_state.dart';
 import '../../state/locale_controller.dart';
 import '../activity/catalogue.dart' show activityByName;
+import '../activity/sport_question.dart' show isUnnamedWorkoutType;
 import '../profile/devices.dart'
     show DeviceFilter, DeviceOption, signalCandidates;
 import '../profile/wearable_numbers.dart' show deviceScoreLabel, observationTitle;
@@ -93,9 +94,9 @@ class DayNote {
 /// Band events worth a line. Everything else the strap emits is about the
 /// strap — bonds, flash writes, sync bookkeeping — and belongs on Devices, not
 /// in somebody's day. Charging and battery-pack on/off (7, 8, 21, 22) are
-/// left out too: with a pack they fire constantly and buried the day.
+/// left out too: with a pack they fire constantly and buried the day — and
+/// so is the double-tap (14), which says nothing about the day.
 Map<int, (String, IconData)> _events(AppLocalizations? l) => {
-  14: (l?.dayTimelineDoubleTap ?? 'You double-tapped the band', LucideIcons.hand),
   15: (l?.dayTimelineRestarted ?? 'The band restarted', LucideIcons.rotateCw),
   57: (l?.dayTimelineAlarmWentOff ?? 'Alarm went off', LucideIcons.alarmClock),
 };
@@ -143,7 +144,7 @@ List<Moment> dayMoments({
       Moment(
         at: on,
         until: off,
-        title: l?.dayTimelineAsleep ?? 'Asleep',
+        title: l?.dayTimelineAsleep ?? 'Sleep',
         detail: '${_span(on, off)} · ${_dur((off - on) / 60, l)}',
         icon: LucideIcons.moon,
         color: C.blue,
@@ -184,9 +185,9 @@ List<Moment> dayMoments({
         until: asInt(s['end_ts']),
         title:
             act?.localizedName(l) ??
-          (type == null
+          (isUnnamedWorkoutType(type)
               ? (l?.dayTimelineWorkout ?? 'Workout')
-              : type.replaceAll('_', ' ')),
+              : type!.replaceAll('_', ' ')),
       detail: bits.join(' · '),
       icon: act?.icon ?? LucideIcons.dumbbell,
       color: act?.color ?? C.orange,
@@ -993,7 +994,7 @@ Widget? dayGraphCard(BuildContext c, DayGraph g,
               message: l?.dayTimelineZoomNoHr ?? 'No heart rate in this stretch')
           : null,
       legend: [
-        if (g.rest.isNotEmpty) (l?.dayTimelineAsleep ?? 'Asleep', asleep),
+        if (g.rest.isNotEmpty) (l?.dayTimelineAsleep ?? 'Sleep', asleep),
         if (g.work.isNotEmpty) (l?.dayTimelineWorkout ?? 'Workout', workout),
         if (g.movement.any((v) => v != null))
           (l?.dayTimelineMoving ?? 'Moving', p.on(C.domMove)),
