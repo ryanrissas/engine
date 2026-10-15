@@ -422,7 +422,7 @@ void main() {
     ])).single;
     await LocalDb.putSession(
         {'id': 'live-1', 'start_ts': start + 60, 'end_ts': start + 900,
-         'type': 'other', 'status': 'done'});
+         'type': 'other', 'status': 'done', 'created_at': start});
     expect((await store.get(s.id))!.status, ActivityReviewStatus.superseded);
     // Still covered: a re-detection stays hidden.
     await store.reconcile(ActivityKind.workout, [

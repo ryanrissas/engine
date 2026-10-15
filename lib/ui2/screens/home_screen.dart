@@ -3442,6 +3442,9 @@ class _DayStripState extends State<_DayStrip> with RevisionReload {
   void reload() => _load();
 
   Future<void> _load() async {
+    // Post-frame and revision-driven: the strip may be gone by now (a day
+    // switch re-keys it).
+    if (!mounted) return;
     final repo = repoOf(context);
     if (repo == null) return;
     try {

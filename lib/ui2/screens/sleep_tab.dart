@@ -87,6 +87,8 @@ class _ConsistencyState extends State<_Consistency> with RevisionReload {
   void reload() => _load();
 
   Future<void> _load() async {
+    // Post-frame and revision-driven: the card may be gone by now.
+    if (!mounted) return;
     final repo = repoOf(context);
     if (repo == null) return;
     try {
