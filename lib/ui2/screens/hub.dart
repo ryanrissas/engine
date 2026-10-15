@@ -21,13 +21,12 @@ import 'sleep_detail.dart';
 
 enum HubKind { sleep, recovery, strain }
 
-/// One trend series: the last 30 days by date label, oldest first.
-typedef _Series = Map<String, double>;
-
 /// Everything one sub-tab draws, loaded in one go.
 class HubTabData {
   final HomeData today;
-  final Map<String, _Series> series;
+  /// One trend series per metric: the last 30 days by date label, oldest
+  /// first.
+  final Map<String, Map<String, double>> series;
   const HubTabData({required this.today, this.series = const {}});
 
   static const _metrics = {
@@ -39,7 +38,7 @@ class HubTabData {
   static Future<HubTabData> load(
       LocalRepository repo, HubKind kind, AppLocalizations? l) async {
     final today = await HomeData.load(repo, l);
-    final series = <String, _Series>{};
+    final series = <String, Map<String, double>>{};
     for (final m in _metrics[kind]!) {
       try {
         final pts = (await repo.getChart(m))['points'];
@@ -417,10 +416,10 @@ class _HubScoreTabState extends State<HubScoreTab> with RevisionReload {
       ScoreHero(
         label: 'Recovery',
         color: v == null ? C.green : band.color,
-        value: v == null ? null : v.round().toString(),
+        value: v?.round().toString(),
         unit: v == null ? '' : '%',
         frac: v == null
-            ? (calibrating ? (nights ?? 0) / kRecoveryCalibrationNights : null)
+            ? (calibrating ? nights / kRecoveryCalibrationNights : null)
             : v / 100,
         word: calibrating ? 'Learning' : head,
         sub: calibrating ? '$nights of $kRecoveryCalibrationNights nights' : '',

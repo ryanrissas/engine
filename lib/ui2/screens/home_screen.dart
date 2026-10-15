@@ -41,7 +41,7 @@ import '../../compute/findings.dart'
         kReadinessEasyBelow,
         kReadinessGoodFrom,
         kReadinessRestBelow;
-import '../../data/day_label.dart' show todayLabel, calendarDaysBetween;
+import '../../data/day_label.dart' show todayLabel, dayLabelOf, calendarDaysBetween;
 import '../../compute/onehz_pipeline.dart'
     show readinessInputShortfallNote, readinessUnstableBaselineNote;
 import '../../compute/recovery_calibration.dart';
@@ -2890,6 +2890,8 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
           _TonightCard(d),
           const SizedBox(height: S.x3),
           _journalRow(c),
+          const SizedBox(height: S.x3),
+          _briefingDoor(c, d),
         ],
 
         // ── my dashboard ──
@@ -3247,7 +3249,87 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
       },
     );
   }
+}
 
+/// What happens in the first weeks, with the counts the pipeline actually
+/// gates on: sleep after the first night, strain once [quietHrrMinDays] earlier
+/// days give it a resting level, recovery once [readinessCompositeMinBaseline]
+/// earlier nights give it a normal range. Read from the analytics constants so
+/// the card cannot drift from the gate.
+Widget firstWeekCard(BuildContext c,
+    {required int days, required bool strainScored}) {
+  final p = P.of(c);
+  final l = AppLocalizations.of(c);
+  final strainDay = quietHrrMinDays + 1;
+  final recoveryNight = readinessCompositeMinBaseline + 1;
+  Widget step(bool done, String text) => Semantics(
+        // The tick is drawn, so it is also said.
+        label: done ? (l?.homeFirstWeekDone(text) ?? 'Done: $text') : text,
+        excludeSemantics: true,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: S.x2),
+          child: Row(children: [
+            Icon(done ? LucideIcons.circleCheck : LucideIcons.circle,
+                size: 18, color: done ? p.on(C.green) : p.ink3),
+            const SizedBox(width: S.x3),
+            Expanded(
+                child: Text(text, style: F.body.copyWith(color: p.ink))),
+          ]),
+        ),
+      );
+  return Surface(
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(l?.homeFirstWeekTitle ?? 'Your first weeks',
+          style: F.head.copyWith(color: p.ink)),
+      const SizedBox(height: S.x2),
+      step(days > 0, l?.homeFirstWeekWear ?? 'Wear the band tonight'),
+      step(days > 0,
+          l?.homeFirstWeekSleep ?? 'Sleep: the morning after your first night'),
+      step(strainScored,
+          l?.homeFirstWeekStrain(strainDay) ?? 'Strain: from day $strainDay'),
+      step(false,
+          l?.homeFirstWeekRecovery(recoveryNight) ??
+              'Recovery: from night $recoveryNight, once it knows your normal'),
+      const SizedBox(height: S.x1),
+      Text(l?.homeFirstWeekSoFar(days) ?? '$days days recorded so far',
+          style: F.cap.copyWith(color: p.ink3)),
+    ]),
+  );
+}
+
+/// The coach's one door on Today, as the reference's assistant prompt: a
+/// quiet full-width bar. Not set up, it says what the coach is for and opens
+/// the setup instead.
+Widget coachChip(BuildContext c) {
+  final l = AppLocalizations.of(c);
+  final ready = coachReady(c);
+  final text = ready
+      ? (l?.homeAskCoach ?? 'Ask the coach')
+      : (l?.homeCoachSetUpChip ?? 'Ask questions about your data: set up the coach');
+  return PromptBar(text,
+      onTap: () => go(c, ready ? const CoachScreen() : const CoachSetup()));
+}
+
+/// The day along the clock: asleep and naps as a tint, workouts as blocks,
+/// the movement strip, and the heart rate over them — the same lanes the
+/// day timeline draws, at a glance. Taps through to that screen. Nothing on
+/// a day with nothing recorded.
+class _DayStrip extends StatefulWidget {
+  final String dayId;
+  const _DayStrip(this.dayId, {super.key});
+
+  @override
+  State<_DayStrip> createState() => _DayStripState();
+}
+
+class _DayStripState extends State<_DayStrip> with RevisionReload {
+  DayGraph _g = const DayGraph();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => reload());
+  }
 
   @override
   void reload() => _load();
