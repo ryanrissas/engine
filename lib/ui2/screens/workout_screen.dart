@@ -132,7 +132,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
   /// the day's strain, the week and the load, the sessions, and last of all
   /// the one door for adding a session yourself.
   List<Widget> _strain(BuildContext c, _WorkoutData d) {
-    final loc = AppLocalizations.of(c);
     return [
       ..._suggestionCards(c, d),
       FutureBuilder<HomeData>(
@@ -143,15 +142,16 @@ class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
         ),
       ),
       const SizedBox(height: S.x3),
-      ..._overview(c, d),
+      // Your workouts come right after today's strain: they are what this tab
+      // is opened for. The week and the load follow.
       Section(
-        loc?.workoutTabHistory ?? 'History',
+        'Your workouts',
         Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: _history(c, d)),
       ),
-      const SizedBox(height: S.x3),
       _addRow(c, d),
+      ..._overview(c, d),
     ];
   }
 
