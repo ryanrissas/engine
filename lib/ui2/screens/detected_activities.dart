@@ -8,6 +8,8 @@ import '../../models/activity_suggestion.dart';
 import '../../theme/theme_switcher.dart' show themedRoute;
 import '../activity/catalogue.dart';
 import '../ui2.dart';
+import '../../data/day_label.dart' show dayLabelOf;
+import 'day_timeline.dart' show DayTimelineScreen;
 import 'home_screen.dart';
 import 'log_workout.dart';
 
@@ -173,6 +175,11 @@ class _DetectedActivitiesScreenState extends State<DetectedActivitiesScreen>
                           onDiscard: _busy
                               ? null
                               : () => _act(s, discard: true),
+                          onView: () => Navigator.of(context).push(
+                              themedActivityRoute<void>(DayTimelineScreen(
+                                  day: dayLabelOf(
+                                      DateTime.fromMillisecondsSinceEpoch(
+                                          s.startTs * 1000))))),
                         ),
                       ),
                 ],
@@ -197,10 +204,14 @@ class ActivityProposalCard extends StatelessWidget {
     this.onConfirm,
     this.onEdit,
     this.onDiscard,
+    this.onView,
   });
   final ActivitySuggestion suggestion;
   final bool highlighted;
   final VoidCallback? onConfirm, onEdit, onDiscard;
+
+  /// Look at the bout before deciding: its day's heart rate, the bout marked.
+  final VoidCallback? onView;
 
   @override
   Widget build(BuildContext c) {
@@ -267,6 +278,8 @@ class ActivityProposalCard extends StatelessWidget {
             spacing: S.x4,
             runSpacing: S.x2,
             children: [
+              if (onView != null && !nap)
+                _action(c, 'See heart rate', onView, accent),
               _action(c, l?.activityConfirm ?? 'Confirm', onConfirm, accent),
               // The workout editor is where the sport is picked, so it says
               // that; a nap only has times to edit.
