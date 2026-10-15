@@ -92,15 +92,11 @@ class DayNote {
 
 /// Band events worth a line. Everything else the strap emits is about the
 /// strap — bonds, flash writes, sync bookkeeping — and belongs on Devices, not
-/// in somebody's day.
+/// in somebody's day. Charging and battery-pack on/off (7, 8, 21, 22) are
+/// left out too: with a pack they fire constantly and buried the day.
 Map<int, (String, IconData)> _events(AppLocalizations? l) => {
-  7: (l?.dayTimelineChargerOn ?? 'On the charger', LucideIcons.batteryCharging),
-  8: (l?.dayTimelineChargerOff ?? 'Off the charger', LucideIcons.batteryFull),
   14: (l?.dayTimelineDoubleTap ?? 'You double-tapped the band', LucideIcons.hand),
   15: (l?.dayTimelineRestarted ?? 'The band restarted', LucideIcons.rotateCw),
-  21: (l?.dayTimelineBatteryPackAttached ?? 'Battery pack attached',
-      LucideIcons.batteryCharging),
-  22: (l?.dayTimelineBatteryPackRemoved ?? 'Battery pack removed', LucideIcons.battery),
   57: (l?.dayTimelineAlarmWentOff ?? 'Alarm went off', LucideIcons.alarmClock),
 };
 

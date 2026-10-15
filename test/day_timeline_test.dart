@@ -60,16 +60,26 @@ void main() {
       final m = dayMoments(timeline: {
         'day_start': _day,
         'events': [
-          {'event_id': 7, 'ts': _at(20)},
-          {'event_id': 7, 'ts': _at(20)},
-          {'event_id': 7, 'ts': _at(20)},
+          {'event_id': 14, 'ts': _at(20)},
+          {'event_id': 14, 'ts': _at(20)},
+          {'event_id': 14, 'ts': _at(20)},
           // A different id at the same instant is a different fact.
-          {'event_id': 8, 'ts': _at(20)},
+          {'event_id': 15, 'ts': _at(20)},
           // Not in the allow-list: a bond is about the strap, not the day.
           {'event_id': 31, 'ts': _at(20)},
         ],
       });
       expect(m, hasLength(2));
+    });
+
+    test('charger and battery-pack on/off are not lines in the day', () {
+      final m = dayMoments(timeline: {
+        'day_start': _day,
+        'events': [
+          for (final id in [7, 8, 21, 22]) {'event_id': id, 'ts': _at(id)},
+        ],
+      });
+      expect(m, isEmpty);
     });
 
     test('a meal with no time is never placed, and is not lost either', () {
