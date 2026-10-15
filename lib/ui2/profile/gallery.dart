@@ -168,6 +168,45 @@ Map<String, Widget> componentCases() => {
       // screen which can say more — including the one absence nothing
       // explained, which says exactly that.
       'rings_absent': const RingTrio(d: _ringsAbsent),
+      // The overview hero: recovery outside, strain inside, four numbers.
+      'overview_hero': const OverviewHero(d: _ringsMeasured),
+      'overview_hero_calibrating': const OverviewHero(d: _ringsCalibrating),
+      // The sub-tabs' parts, data in.
+      'score_hero': const ScoreHero(
+          label: 'Recovery', color: C.green, value: '90', unit: '%', frac: .9),
+      'score_hero_learning': const ScoreHero(
+          label: 'Recovery',
+          color: C.green,
+          frac: 3 / 7,
+          word: 'Learning',
+          sub: '3 of 7 nights'),
+      'score_words': const ScoreWords(
+          headline: 'HRV above your usual',
+          body: 'Your HRV is 21% higher than your 30-day average. Your body '
+              'is ready for a hard day.'),
+      'prompt_bar': const PromptBar('Learn more about your recovery'),
+      'stat_row': const StatRow(
+          icon: LucideIcons.activity,
+          label: 'HRV',
+          value: '58',
+          baseline: '48',
+          direction: 1,
+          upIsGood: true),
+      'week_chart': WeekChart(
+          title: 'Recovery',
+          icon: LucideIcons.batteryCharging,
+          unit: '%',
+          values: const [90, 90, 94, 63, 37, 77, 90],
+          dayLetters: const ['W', 'T', 'F', 'S', 'S', 'M', 'T'],
+          color: C.green),
+      'week_chart_line': const WeekChart(
+          title: 'Resting heart rate',
+          icon: LucideIcons.heart,
+          unit: 'bpm',
+          values: [55, 55, 55, 56, 62, 55, 55],
+          dayLetters: ['W', 'T', 'F', 'S', 'S', 'M', 'T'],
+          color: C.blue,
+          bars: false),
       // The ONE card, both faces: the map as the background, and a photograph
       // as the background with the route dissolved into its corner.
       'share_card': _shareCard(photo: false),

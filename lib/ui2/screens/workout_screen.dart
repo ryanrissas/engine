@@ -50,7 +50,11 @@ import 'log_workout.dart';
 import 'home_screen.dart' show HomeData, repoOf, strainWord;
 
 class WorkoutScreen extends StatefulWidget {
-  const WorkoutScreen({super.key});
+  const WorkoutScreen({super.key, this.header = const []});
+
+  /// Above the tab's own content — Home's Strain sub-tab passes the strain
+  /// score. With [header] set the tab title is not drawn.
+  final List<Widget> header;
 
   @override
   State<WorkoutScreen> createState() => _WorkoutScreenState();
@@ -105,8 +109,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
           padding: const EdgeInsets.fromLTRB(0, S.x2, 0, S.x16),
           children: [
             for (final w in <Widget>[
-              ScreenTitle(loc?.tabActivity ?? 'Strain',
-                  trailing: const ProfileAvatar(accent: C.domMove)),
+              if (widget.header.isEmpty)
+                ScreenTitle(loc?.tabActivity ?? 'Strain',
+                    trailing: const ProfileAvatar(accent: C.domMove))
+              else
+                ...widget.header,
               const SizedBox(height: S.x3),
               ..._strain(c, d),
             ])

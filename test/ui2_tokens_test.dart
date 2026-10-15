@@ -271,6 +271,9 @@ const _notComponents = {
   'StartCard',
   // tabs and drill-downs
   'HomeScreen', 'HealthScreen', 'WorkoutScreen', 'NutritionScreen',
+  // Home's Sleep / Recovery / Strain sub-tab: reads today and four trend
+  // series, and is a tab body, not a component.
+  'HubScoreTab',
   'WellnessScreen', 'CycleTab', 'MetricDetail', 'ReadinessDetail',
   'SleepDetail', 'SleepTab', 'CircadianDetail', 'DayStrainDetail',
   'DayStepsDetail',

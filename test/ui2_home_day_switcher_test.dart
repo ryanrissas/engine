@@ -167,7 +167,9 @@ void main() {
 
     // Today, reached through the switcher, is still today: no explicit day,
     // so Sleep resolves the night the ring is drawn from.
-    t.widget<RingTrio>(find.byType(RingTrio)).onOpen!(HomeRingKind.sleep);
+    // The hero's sleep number opens the Sleep sub-tab, whose night resolves
+    // the same way: no explicit day.
+    t.widget<OverviewHero>(find.byType(OverviewHero)).onOpen!(HomeRingKind.sleep);
     await _settle(t);
     expect(t.widget<SleepDetail>(find.byType(SleepDetail)).day, isNull);
   });

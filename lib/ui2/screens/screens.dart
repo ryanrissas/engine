@@ -9,6 +9,8 @@ export 'coach_figures.dart';
 export 'findings_log.dart';
 export 'health_screen.dart';
 export 'home_screen.dart';
+export 'hub.dart';
+export 'hub_parts.dart';
 export 'calm_breathing.dart';
 export 'cycle_screen.dart';
 export 'day_steps.dart';

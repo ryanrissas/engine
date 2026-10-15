@@ -64,9 +64,8 @@ import '../../state/app_state.dart';
 import '../../state/clock_format.dart' show formatClockOf;
 import '../../state/units_controller.dart';
 import '../../theme/theme_switcher.dart' show themedRoute;
-import '../activity/day_strain.dart' show DayStrainDetail;
 import '../profile/alarm.dart'
-    show AlarmArmState, alarmArmOf, alarmDoor, alarmGlanceCard;
+    show AlarmArmState, AlarmScreen, alarmArmOf, alarmDoor, alarmGlanceCard;
 import '../profile/devices.dart' show MyDevices, formatDayTime;
 import '../profile/profile.dart';
 import '../profile/wearable_numbers.dart'
@@ -78,9 +77,15 @@ import 'dashboard_tiles.dart';
 import 'detected_activities.dart';
 import 'day_timeline.dart' show DayGraph, DayTimelineScreen, dayGraph;
 import 'health_screen.dart' show HealthScreen;
+import 'hub.dart';
+import 'hub_parts.dart';
+import 'journal_compose.dart' show JournalCompose;
+import 'log_workout.dart' show LogWorkout;
+import 'sleep_tab.dart' show SleepTab;
+import 'workout_screen.dart' show WorkoutScreen, activityHost, loadSetHistory;
+import '../activity/picker.dart' show ActivityPicker;
 import 'metric_detail.dart';
 import 'readiness_detail.dart';
-import 'sleep_detail.dart';
 
 // ═══════════════════ shared plumbing ═══════════════════
 
@@ -1073,9 +1078,49 @@ class _Dashboard extends StatefulWidget {
 /// One tile's content: label, value, unit, the chart it opens, decimals.
 typedef _TileSpec = (String, Metric, String, String, int);
 
-class _DashboardState extends State<_Dashboard> {
+class _DashboardState extends State<_Dashboard> with RevisionReload {
   late DashLayout _layout =
       parseDashLayout(Prefs.getString(kDashboardPref, ''));
+
+  /// Your 30-day average per tile, from the trend series — what the small
+  /// number under each value is. Missing until read, or under 3 days.
+  final Map<DashTile, double> _avg = {};
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => reload());
+  }
+
+  @override
+  void reload() => _load();
+
+  Future<void> _load() async {
+    if (!mounted) return;
+    final repo = repoOf(context);
+    if (repo == null) return;
+    final today = todayLabel();
+    final out = <DashTile, double>{};
+    for (final t in DashTile.values) {
+      try {
+        final pts = (await repo.getChart(_spec(t).$4))['points'];
+        final vs = <double>[];
+        for (final e in (pts is List ? pts : const [])) {
+          if (e is! Map || e['t'] is! num || e['v'] is! num) continue;
+          final day = dayLabelOf(DateTime.fromMillisecondsSinceEpoch(
+              (e['t'] as num).toInt() * 1000));
+          if (day != today) vs.add((e['v'] as num).toDouble());
+        }
+        if (vs.length >= 3) {
+          final last = vs.length > 30 ? vs.sublist(vs.length - 30) : vs;
+          out[t] = last.reduce((a, b) => a + b) / last.length;
+        }
+      } catch (_) {
+        // No average for this tile; the row shows the value alone.
+      }
+    }
+    if (mounted) setState(() => _avg..clear()..addAll(out));
+  }
 
   static String _name(DashTile t) => switch (t) {
         DashTile.rhr => 'Resting HR',
@@ -1105,10 +1150,6 @@ class _DashboardState extends State<_Dashboard> {
     };
   }
 
-  /// Steps and calories are today's; the rest are last night's.
-  String _sub(DashTile t) =>
-      t == DashTile.steps || t == DashTile.calories ? 'Today' : widget.when;
-
   String _shown(DashTile t, num v, int dp) => switch (t) {
         DashTile.steps || DashTile.calories => thousands(v.round()),
         DashTile.skinTemp =>
@@ -1132,47 +1173,40 @@ class _DashboardState extends State<_Dashboard> {
     setState(() => _layout = next);
   }
 
-  Widget _tile(BuildContext c, DashTile t) {
-    final p = P.of(c);
+  static IconData _icon(DashTile t) => switch (t) {
+        DashTile.rhr => LucideIcons.heart,
+        DashTile.hrv => LucideIcons.activity,
+        DashTile.resp => LucideIcons.wind,
+        DashTile.skinTemp => LucideIcons.thermometer,
+        DashTile.steps => LucideIcons.footprints,
+        DashTile.calories => LucideIcons.flame,
+      };
+
+  /// Up is good for HRV and steps, bad for resting HR; the rest are neutral.
+  static bool? _upIsGood(DashTile t) => switch (t) {
+        DashTile.hrv || DashTile.steps => true,
+        DashTile.rhr => false,
+        _ => null,
+      };
+
+  Widget _row(BuildContext c, DashTile t) {
     final (label, m, unit, key, dp) = _spec(t);
     final v = m.value;
-    final sub = _sub(t);
-    return Pressable(
+    final avg = _avg[t];
+    return StatRow(
+      icon: _icon(t),
+      label: label,
+      value: v == null ? 'Not measured' : '${_shown(t, v, dp)}${unit.isEmpty ? '' : ' $unit'}',
+      baseline: v == null || avg == null
+          ? null
+          : '${_shown(t, avg, dp)}${unit.isEmpty ? '' : ' $unit'} · 30-day',
+      direction: v == null || avg == null
+          ? null
+          : (v - avg).abs() < 0.05 * avg.abs()
+              ? 0
+              : (v > avg ? 1 : -1),
+      upIsGood: _upIsGood(t),
       onTap: () => go(c, MetricDetail(key)),
-      semanticLabel: '$label, ${v == null ? 'not measured' : '${_shown(t, v, dp)} $unit'}, '
-          '$sub. Opens the chart.',
-      child: Surface(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label.toUpperCase(),
-              style: F.over.copyWith(color: p.ink3),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis),
-          const SizedBox(height: S.x2),
-          if (v == null)
-            Text('Not measured', style: F.body.copyWith(color: p.ink3))
-          else
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Text(_shown(t, v, dp),
-                        style: F.n24.copyWith(color: p.ink)),
-                    if (unit.isNotEmpty) ...[
-                      const SizedBox(width: 3),
-                      Text(unit, style: F.cap.copyWith(color: p.ink3)),
-                    ],
-                  ]),
-            ),
-          const SizedBox(height: S.x1),
-          Text(sub,
-              style: F.cap.copyWith(color: p.ink3),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis),
-        ]),
-      ),
     );
   }
 
@@ -1183,24 +1217,17 @@ class _DashboardState extends State<_Dashboard> {
         if (!_layout.hidden.contains(t)) t,
     ];
     return Section(
-      'My dashboard',
+      'My dashboard · ${widget.when}',
       shown.isEmpty
           ? Text('Every tile is hidden. Edit to bring them back.',
               style: F.cap.copyWith(color: P.of(c).ink3))
           : Column(children: [
-              for (var i = 0; i < shown.length; i += 2) ...[
-                if (i > 0) const SizedBox(height: S.x3),
-                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Expanded(child: _tile(c, shown[i])),
-                  const SizedBox(width: S.x3),
-                  Expanded(
-                      child: i + 1 < shown.length
-                          ? _tile(c, shown[i + 1])
-                          : const SizedBox.shrink()),
-                ]),
+              for (final t in shown) ...[
+                _row(c, t),
+                const SizedBox(height: S.x2),
               ],
             ]),
-      action: 'Edit',
+      action: 'Customize',
       onAction: _edit,
     );
   }
@@ -1621,7 +1648,18 @@ String? recoveryStateLine(Map<String, dynamic> head, AppLocalizations? l) =>
 
 /// Which ring. The three the app can stand behind on a home screen: what the
 /// night gave back, what the day has cost, and what the night was made of.
-enum HomeRingKind { recovery, strain, sleep }
+enum HomeRingKind {
+  recovery,
+  strain,
+  sleep;
+
+  /// The Home sub-tab that opens this score.
+  int get tab => switch (this) {
+        HomeRingKind.sleep => 1,
+        HomeRingKind.recovery => 2,
+        HomeRingKind.strain => 3,
+      };
+}
 
 /// One ring's resolved state — the only place a metric becomes a shape.
 class _RingState {
@@ -2406,6 +2444,9 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
   @override
   void reload() => _load();
 
+  /// Overview · Sleep · Recovery · Strain, under the header.
+  int _tab = 0;
+
   Future<void> _load() async {
     final repo = repoOf(context);
     if (repo == null) {
@@ -2535,27 +2576,12 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
     );
   }
 
-  /// Morning / afternoon / evening / night. One split at 18:00 greeted 00:30
-  /// and 15:40 alike with "Good morning" beside a sun.
-  ({String word, IconData icon, Color color}) _greeting(int h, AppLocalizations? l) {
-    if (h < 5) {
-      return (word: l?.homeGreetingStillUp ?? 'Still up', icon: LucideIcons.moon, color: C.indigo);
-    }
-    if (h < 12) {
-      return (word: l?.homeGreetingMorning ?? 'Good morning', icon: LucideIcons.sun, color: C.yellow);
-    }
-    if (h < 18) {
-      return (word: l?.homeGreetingAfternoon ?? 'Good afternoon', icon: LucideIcons.sun, color: C.orange);
-    }
-    return (word: l?.homeGreetingEvening ?? 'Good evening', icon: LucideIcons.moon, color: C.indigo);
-  }
 
   @override
   Widget build(BuildContext c) {
     final p = P.of(c);
     final l = AppLocalizations.of(c);
     final d = _d;
-    final g = _greeting(widget.hour ?? DateTime.now().hour, l);
 
     if (d == null) {
       return _refreshable(ListView(padding: pad, children: [
@@ -2652,26 +2678,8 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
     // to start, that outranks anything else this screen has to say today.
     final rebuilt = dbRebuiltCard(dbRebuildOf(c), l);
 
-    return _refreshable(ListView(padding: pad, children: [
-      if (rebuilt != null) ...[const SizedBox(height: S.x3), rebuilt],
-
-      // ── the one observation Home is allowed to make ──
-      //
-      // OUTSIDE the derived / not-derived split, and above the rings, for two
-      // separate reasons. It outranks them: when this fires it is what matters
-      // today, which is the question this screen answers, and under them it
-      // would read as a footnote to three numbers. And it does not depend on
-      // them — the watch comes off the CROSSDAY rollup, so it can carry a real
-      // state on a morning whose own bundle has not derived yet, which is
-      // exactly the morning you would most want to be told.
-      ...?_bodyWatch(c, d, todayLabel(widget.now)),
-      // ── header: profile · day · band ──
-      //
-      // The day switcher sits in the middle (it used to be its own row under
-      // the greeting); the band's battery and link dot sit on the right and
-      // open My devices. Profile is the same avatar every tab carries.
-      Padding(
-        padding: const EdgeInsets.only(top: S.x3, bottom: S.x4),
+    final header = Padding(
+        padding: const EdgeInsets.only(top: S.x3, bottom: S.x3),
         child: Row(children: [
           const ProfileAvatar(accent: C.domHome),
           const SizedBox(width: S.x3),
@@ -2703,29 +2711,58 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
           const SizedBox(width: S.x3),
           if (widget.data == null) const _HeaderStatus(),
         ]),
-      ),
+      );
+    // Overview · Sleep · Recovery · Strain. The three score tabs are the same
+    // screens the bottom bar reaches, with the score drawn large on top.
+    final tabs = SubTabs(
+      const ['Overview', 'Sleep', 'Recovery', 'Strain'],
+      _tab,
+      (i) => setState(() => _tab = i),
+      color: C.domHome,
+    );
+    if (_tab != 0) {
+      return Column(children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: S.x4),
+          child: Column(children: [header, tabs]),
+        ),
+        Expanded(
+          child: switch (_tab) {
+            1 => const SleepTab(
+                header: [HubScoreTab(HubKind.sleep, inline: true)]),
+            2 => const HubScoreTab(HubKind.recovery),
+            _ => const WorkoutScreen(
+                header: [HubScoreTab(HubKind.strain, inline: true)]),
+          },
+        ),
+      ]);
+    }
 
-      // ── wordmark ──
-      Center(
-        child: Column(children: [
-          Semantics(
-            label: d.name == null || d.name!.isEmpty
-                ? g.word
-                : '${g.word}, ${d.name}',
-            child: Text('ENGINE',
-                style: F.t2.copyWith(
-                    color: p.ink2,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 7)),
-          ),
-          // A past day, or a screen handed its data: the band card is not
-          // shown, so how far the data reaches is said here.
-          if (!(isToday && widget.data == null)) ...[
-            const SizedBox(height: 2),
-            syncedThroughLine(c, d.dayId, l),
-          ],
-        ]),
-      ),
+    return _refreshable(ListView(padding: pad, children: [
+      if (rebuilt != null) ...[const SizedBox(height: S.x3), rebuilt],
+
+      // ── the one observation Home is allowed to make ──
+      //
+      // OUTSIDE the derived / not-derived split, and above the rings, for two
+      // separate reasons. It outranks them: when this fires it is what matters
+      // today, which is the question this screen answers, and under them it
+      // would read as a footnote to three numbers. And it does not depend on
+      // them — the watch comes off the CROSSDAY rollup, so it can carry a real
+      // state on a morning whose own bundle has not derived yet, which is
+      // exactly the morning you would most want to be told.
+      ...?_bodyWatch(c, d, todayLabel(widget.now)),
+      // ── header: profile · day · band — then the four sub-tabs ──
+      header,
+      tabs,
+      // A past day, or a screen handed its data: the band card is not
+      // shown, so how far the data reaches is said here.
+      if (!(isToday && widget.data == null))
+        Padding(
+          padding: const EdgeInsets.only(top: S.x2),
+          child: Align(
+              alignment: Alignment.centerLeft,
+              child: syncedThroughLine(c, d.dayId, l)),
+        ),
       const SizedBox(height: S.x6),
 
       if (bare) ...[
@@ -2760,17 +2797,7 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
         // will be, not a stack of absence cards. The rings carry no numbers —
         // each says what it is waiting for — and the one status card below
         // gives the reason, so the per-ring reason rows stay off.
-        RingTrio(
-          d: d,
-          showGaps: false,
-          onOpen: (k) => go(
-              c,
-              switch (k) {
-                HomeRingKind.recovery => const ReadinessDetail(),
-                HomeRingKind.strain => const DayStrainDetail(),
-                HomeRingKind.sleep => SleepDetail(day: isToday ? null : _day),
-              }),
-        ),
+        OverviewHero(d: d, onOpen: (k) => setState(() => _tab = k.tab)),
         const SizedBox(height: S.x4),
         _Monitors(d),
         const SizedBox(height: S.x4),
@@ -2805,22 +2832,17 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
         // diagnostic used to go nowhere but a Firebase breadcrumb. It belongs
         // one tap away, on the Readiness screen: a wall of per-input
         // diagnostics on Home makes the app read as broken.
-        if (RingTrio.has(d))
-          RingTrio(
-            d: d,
-            onOpen: (k) => go(
-                c,
-                switch (k) {
-                  HomeRingKind.recovery => const ReadinessDetail(),
-                  HomeRingKind.strain => const DayStrainDetail(),
-                  // The night the ring was drawn from, not last night. Today
-                  // stays null even after the switcher steps back onto it:
-                  // today's ring is the held-over night, and only the default
-                  // pick resolves to that one.
-                  HomeRingKind.sleep => SleepDetail(day: isToday ? null : _day),
-                }),
-          )
-        else
+        OverviewHero(d: d, onOpen: (k) => setState(() => _tab = k.tab)),
+        if (isToday) ...[
+          const SizedBox(height: S.x4),
+          _Recommendation(d, key: ValueKey('rec-${d.dayId}')),
+          const SizedBox(height: S.x3),
+          coachChip(c),
+        ],
+        if (d.readiness.value == null &&
+            !(d.hrvNights != null && recoveryCalibrating(d.hrvNights!)) &&
+            d.recoveryState != 'night_in_progress') ...[
+          const SizedBox(height: S.x3),
           Builder(builder: (c) {
             final need = needMessageFromNote(d.readiness.note);
             // readinessInputShortfallNote/readinessUnstableBaselineNote off
@@ -2851,10 +2873,24 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
               onFix: () => go(c, const ReadinessDetail()),
             );
           }),
+        ],
 
         // ── monitors ──
         const SizedBox(height: S.x4),
         _Monitors(d),
+
+        // ── my day: today's activities, tonight's sleep, the journal ──
+        if (isToday && widget.data == null) ...[
+          const SizedBox(height: S.x5),
+          Text('My day', style: F.t2.copyWith(color: p.ink)),
+          const SizedBox(height: S.x3),
+          _TodaysActivities(d.dayId ?? todayLabel(),
+              key: ValueKey('acts-${d.dayId}')),
+          const SizedBox(height: S.x3),
+          _TonightCard(d),
+          const SizedBox(height: S.x3),
+          _journalRow(c),
+        ],
 
         // ── my dashboard ──
         //
@@ -2893,12 +2929,6 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
         Section(l?.homeAtAGlance ?? 'At a glance',
             _glance(c, d, isToday: isToday)),
 
-        // ── today's plan: only what the app can actually stand behind ──
-        // Skipped on a past day — "3,000 steps left" or "aim for 11.4
-        // strain" about a day already over is an instruction, not a fact.
-        if (isToday)
-          Section('My day', _plan(c, p, d)),
-
       // ── the band: connected? reading me? ──
       //
       // Today only, and only in the real app (goldens hand data in). The
@@ -2930,8 +2960,8 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
           const SizedBox(height: S.x3),
           alarmDoor(c, a.$1, a.$2),
         ],
-      // The coach, set up or not, on every ordinary or bare today.
-      if (isToday) ...[
+      // The coach on a bare today too — the loaded day has it under the hero.
+      if (isToday && bare) ...[
         const SizedBox(height: S.x4),
         coachChip(c),
       ],
@@ -3166,94 +3196,6 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
   }
 
 
-  Widget _plan(BuildContext c, P p, HomeData d) {
-    final l = AppLocalizations.of(c);
-    final rows = <Widget>[];
-
-    final stepsLeft = d.steps.value == null
-        ? null
-        : (d.stepGoal - d.steps.value!).round();
-    if (stepsLeft != null && stepsLeft > 0) {
-      rows.add(_row(
-          p,
-          LucideIcons.footprints,
-          C.green,
-          l?.homeStepsLeft(thousands(stepsLeft)) ?? '${thousands(stepsLeft)} steps left',
-          l?.homeMovement ?? 'Movement',
-          l?.homeGoalSteps(thousands(d.stepGoal)) ?? 'Goal ${thousands(d.stepGoal)}',
-          false));
-    } else if (stepsLeft != null) {
-      rows.add(_row(p, LucideIcons.footprints, C.green,
-          l?.homeStepGoalMet ?? 'Step goal met',
-          l?.homeMovement ?? 'Movement', l?.actionDone ?? 'Done', true));
-    }
-
-    final target = d.strainTarget;
-    if (target != null && target['value'] is num) {
-      final aim = target['value'] as num;
-      // The strain ring is on this screen now, so a row still saying "aim for
-      // 11.4" beside a ring reading 14.2 is a plan the day already overtook.
-      // Same shape the step goal above it has always had.
-      final met = (d.strain.value ?? -1) >= aim;
-      rows.add(_row(
-          p,
-          LucideIcons.zap,
-          C.purple,
-          met
-              ? (l?.homeStrainTargetMet ?? 'Strain target met')
-              : (l?.homeAimForStrain(aim.toStringAsFixed(1)) ??
-                  'Aim for ${aim.toStringAsFixed(1)} strain'),
-          // Built on a wearable's estimated TRIMP: say so.
-          [
-            l?.homeTraining ?? 'Training',
-            if (target['estimated'] == true) l?.wearableEstimated ?? 'Estimated',
-          ].join(' · '),
-          met
-              ? (l?.actionDone ?? 'Done')
-              : '${(target['low'] as num?)?.toStringAsFixed(1) ?? ''}–'
-                  '${(target['high'] as num?)?.toStringAsFixed(1) ?? ''}',
-          met));
-    }
-
-    final need = d.sleepNeedMin.value;
-    if (need != null) {
-      rows.add(_row(
-          p,
-          LucideIcons.bedDouble,
-          C.blue,
-          l?.homeSleepNeedRow(hm(need)) ?? '${hm(need)} of sleep',
-          l?.homeTonight ?? 'Tonight',
-          d.bedtime.value == null
-              ? (l?.homeNeed ?? 'Need')
-              : (l?.homeBedTime(clock(d.bedtime.value)) ?? 'Bed ${clock(d.bedtime.value)}'),
-          false));
-    }
-
-    final planBody = rows.isEmpty
-        ? StatusCard.forMetric(l?.homeNoPlanTitle ?? 'No plan for today yet', d.sleepNeedMin,
-                // "none are established yet" is the COLD-START reason, and it
-                // is a wrong answer when the baselines exist and are being
-                // withheld.
-                why: d.insightsStale != null
-                    ? (l?.homeNoPlanWhyStale ?? 'Your trends are being updated. This takes a minute after a sync.')
-                    : (l?.homeNoPlanWhyNone ?? 'None are established yet.')) ??
-            const SizedBox.shrink()
-        : Surface(
-            pad: const EdgeInsets.symmetric(horizontal: S.x4, vertical: S.x2),
-            child: Column(children: [
-              for (var i = 0; i < rows.length; i++) ...[
-                if (i > 0) Divider(color: p.line, height: 1),
-                rows[i],
-              ],
-            ]),
-          );
-
-    return Column(children: [
-      planBody,
-      const SizedBox(height: S.x3),
-      _briefingDoor(c, d),
-    ]);
-  }
 
   /// The only quick way into [AiBriefingScreen] used to be the notification
   /// that fires when a briefing is ready — dismiss or miss it, and the
@@ -3306,137 +3248,6 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
     );
   }
 
-  Widget _row(P p, IconData i, Color col, String title, String kind,
-          String meta, bool done) =>
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: S.x3),
-        child: Row(children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration:
-                BoxDecoration(color: p.wash(col), borderRadius: R.rSm),
-            child: Icon(i, size: 16, color: p.on(col)),
-          ),
-          const SizedBox(width: S.x3),
-          Expanded(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(kind, style: F.over.copyWith(color: p.ink3)),
-                  const SizedBox(height: 2),
-                  Text(title, style: F.body.copyWith(color: p.ink)),
-                ]),
-          ),
-          const SizedBox(width: S.x2),
-          Text(meta,
-              textAlign: TextAlign.right,
-              style: F.cap.copyWith(
-                  color: done ? p.on(C.green) : p.ink3,
-                  fontWeight: done ? FontWeight.w600 : FontWeight.w400)),
-        ]),
-      );
-}
-
-/// What happens in the first weeks, with the counts the pipeline actually
-/// gates on: sleep after the first night, strain once [quietHrrMinDays] earlier
-/// days give it a resting level, recovery once [readinessCompositeMinBaseline]
-/// earlier nights give it a normal range. Read from the analytics constants so
-/// the card cannot drift from the gate.
-Widget firstWeekCard(BuildContext c,
-    {required int days, required bool strainScored}) {
-  final p = P.of(c);
-  final l = AppLocalizations.of(c);
-  final strainDay = quietHrrMinDays + 1;
-  final recoveryNight = readinessCompositeMinBaseline + 1;
-  Widget step(bool done, String text) => Semantics(
-        // The tick is drawn, so it is also said.
-        label: done ? (l?.homeFirstWeekDone(text) ?? 'Done: $text') : text,
-        excludeSemantics: true,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: S.x2),
-          child: Row(children: [
-            Icon(done ? LucideIcons.circleCheck : LucideIcons.circle,
-                size: 18, color: done ? p.on(C.green) : p.ink3),
-            const SizedBox(width: S.x3),
-            Expanded(
-                child: Text(text, style: F.body.copyWith(color: p.ink))),
-          ]),
-        ),
-      );
-  return Surface(
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(l?.homeFirstWeekTitle ?? 'Your first weeks',
-          style: F.head.copyWith(color: p.ink)),
-      const SizedBox(height: S.x2),
-      step(days > 0, l?.homeFirstWeekWear ?? 'Wear the band tonight'),
-      step(days > 0,
-          l?.homeFirstWeekSleep ?? 'Sleep: the morning after your first night'),
-      step(strainScored,
-          l?.homeFirstWeekStrain(strainDay) ?? 'Strain: from day $strainDay'),
-      step(false,
-          l?.homeFirstWeekRecovery(recoveryNight) ??
-              'Recovery: from night $recoveryNight, once it knows your normal'),
-      const SizedBox(height: S.x1),
-      Text(l?.homeFirstWeekSoFar(days) ?? '$days days recorded so far',
-          style: F.cap.copyWith(color: p.ink3)),
-    ]),
-  );
-}
-
-/// The coach's one door on Today. It used to be an icon that appeared only
-/// once a model was configured, so a new user never learned there was a
-/// coach. Not set up, the chip says what it is for and opens the setup.
-Widget coachChip(BuildContext c) {
-  final p = P.of(c);
-  final l = AppLocalizations.of(c);
-  final ready = coachReady(c);
-  final text = ready
-      ? (l?.homeAskCoach ?? 'Ask the coach')
-      : (l?.homeCoachSetUpChip ?? 'Ask questions about your data: set up the coach');
-  return Align(
-    alignment: Alignment.centerLeft,
-    child: Pressable(
-      semanticLabel: text,
-      onTap: () => go(c, ready ? const CoachScreen() : const CoachSetup()),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: S.x4, vertical: S.x3),
-        decoration:
-            BoxDecoration(color: p.wash(kCoachAccent), borderRadius: R.rPill),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(LucideIcons.sparkles, size: 16, color: p.on(kCoachAccent)),
-          const SizedBox(width: S.x2),
-          Flexible(
-            child: Text(text,
-                style: F.cap.copyWith(
-                    color: p.on(kCoachAccent), fontWeight: FontWeight.w600)),
-          ),
-        ]),
-      ),
-    ),
-  );
-}
-
-/// The day along the clock: asleep and naps as a tint, workouts as blocks,
-/// the movement strip, and the heart rate over them — the same lanes the
-/// day timeline draws, at a glance. Taps through to that screen. Nothing on
-/// a day with nothing recorded.
-class _DayStrip extends StatefulWidget {
-  final String dayId;
-  const _DayStrip(this.dayId, {super.key});
-
-  @override
-  State<_DayStrip> createState() => _DayStripState();
-}
-
-class _DayStripState extends State<_DayStrip> with RevisionReload {
-  DayGraph _g = const DayGraph();
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => reload());
-  }
 
   @override
   void reload() => _load();
@@ -3540,4 +3351,497 @@ class _DayStripState extends State<_DayStrip> with RevisionReload {
       ),
     );
   }
+}
+
+// ═══════════════════ the overview hero ═══════════════════
+
+/// The one picture the overview is about: recovery and strain as two rings,
+/// one inside the other, with the four numbers that matter beside them —
+/// recovery and HRV on the left, strain and sleep performance on the right.
+/// Each number is a door into its score's tab. Absent reads as words, like
+/// everything else on this screen.
+class OverviewHero extends StatelessWidget {
+  final HomeData d;
+  final void Function(HomeRingKind)? onOpen;
+  const OverviewHero({super.key, required this.d, this.onOpen});
+
+  @override
+  Widget build(BuildContext c) {
+    final p = P.of(c);
+    final l = AppLocalizations.of(c);
+    final rec = _ringOf(HomeRingKind.recovery, d, l);
+    final str = _ringOf(HomeRingKind.strain, d, l);
+    final slp = _ringOf(HomeRingKind.sleep, d, l);
+    final hrv = d.hrv.value;
+    return Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+      Expanded(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+          _stat(c, rec, 'Recovery', HomeRingKind.recovery, end: true),
+          const SizedBox(height: S.x4),
+          _plain(c, hrv == null ? 'Not yet' : '${hrv.round()}', 'HRV',
+              measured: hrv != null, end: true, kind: HomeRingKind.recovery),
+        ]),
+      ),
+      const SizedBox(width: S.x3),
+      SizedBox(
+        width: 150,
+        height: 150,
+        child: Stack(alignment: Alignment.center, children: [
+          CustomPaint(
+            size: Size.infinite,
+            painter: Ring(
+              rec.frac ?? 0,
+              rec.arc(p),
+              p.track,
+              stroke: 11,
+              solid: rec.measured,
+              glow: p.dark && rec.measured,
+              t: animate(c, 1),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(S.x5),
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: Ring(
+                str.frac ?? 0,
+                str.arc(p),
+                p.track,
+                stroke: 11,
+                solid: str.measured,
+                glow: p.dark && str.measured,
+                t: animate(c, 1),
+              ),
+            ),
+          ),
+          Icon(LucideIcons.zap, size: 22, color: p.ink3),
+        ]),
+      ),
+      const SizedBox(width: S.x3),
+      Expanded(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          _stat(c, str, 'Strain', HomeRingKind.strain, end: false),
+          const SizedBox(height: S.x4),
+          _stat(c, slp, 'Sleep performance', HomeRingKind.sleep, end: false),
+        ]),
+      ),
+    ]);
+  }
+
+  /// A ring's number in its colour, the name under it in small caps.
+  Widget _stat(BuildContext c, _RingState r, String name, HomeRingKind k,
+      {required bool end}) {
+    final p = P.of(c);
+    final value = r.measured
+        ? '${r.value}${r.unit}'
+        : r.calibrating
+            ? '${r.have ?? 0}/${r.need ?? 0}'
+            : r.value;
+    return _plain(c, value, name,
+        measured: r.measured,
+        color: r.measured ? r.ink(p) : null,
+        end: end,
+        kind: k,
+        sub: r.calibrating ? 'Learning' : '');
+  }
+
+  Widget _plain(BuildContext c, String value, String name,
+      {required bool measured,
+      required bool end,
+      required HomeRingKind kind,
+      Color? color,
+      String sub = ''}) {
+    final p = P.of(c);
+    final f = onOpen;
+    return Pressable(
+      onTap: f == null ? null : () => f(kind),
+      semanticLabel: '$name $value. Opens $name.',
+      child: Column(
+          crossAxisAlignment:
+              end ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: end ? Alignment.centerRight : Alignment.centerLeft,
+              child: Text(value,
+                  style: measured
+                      ? F.n24.copyWith(
+                          color: color ?? p.ink, fontWeight: FontWeight.w800)
+                      : F.body.copyWith(
+                          color: p.ink3, fontWeight: FontWeight.w600)),
+            ),
+            Text(name.toUpperCase(),
+                textAlign: end ? TextAlign.end : TextAlign.start,
+                style: F.over.copyWith(
+                    color: measured ? (color ?? p.ink2) : p.ink3,
+                    fontWeight: FontWeight.w700)),
+            if (sub.isNotEmpty)
+              Text(sub, style: F.cap.copyWith(color: p.ink3)),
+          ]),
+    );
+  }
+}
+
+/// "Today's recommendation": the strain range for the day, from the
+/// morning's recovery, and what yesterday came to. The one card on the
+/// overview that tells you what to do, and only when the numbers behind it
+/// are real.
+class _Recommendation extends StatefulWidget {
+  final HomeData d;
+  const _Recommendation(this.d, {super.key});
+
+  @override
+  State<_Recommendation> createState() => _RecommendationState();
+}
+
+class _RecommendationState extends State<_Recommendation> with RevisionReload {
+  double? _yesterday;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => reload());
+  }
+
+  @override
+  void reload() => _load();
+
+  Future<void> _load() async {
+    if (!mounted) return;
+    final repo = repoOf(context);
+    if (repo == null) return;
+    try {
+      final pts = (await repo.getChart('strain'))['points'];
+      final now = DateTime.now();
+      final y = dayLabelOf(DateTime(now.year, now.month, now.day - 1));
+      double? v;
+      for (final e in (pts is List ? pts : const [])) {
+        if (e is! Map || e['t'] is! num) continue;
+        final day = dayLabelOf(DateTime.fromMillisecondsSinceEpoch(
+            (e['t'] as num).toInt() * 1000));
+        if (day == y && e['v'] is num) v = (e['v'] as num).toDouble();
+      }
+      if (mounted) setState(() => _yesterday = v);
+    } catch (_) {
+      // The card reads fine without yesterday's number.
+    }
+  }
+
+  @override
+  Widget build(BuildContext c) {
+    final p = P.of(c);
+    final d = widget.d;
+    final t = d.strainTarget;
+    final lo = (t?['low'] as num?)?.toDouble();
+    final hi = (t?['high'] as num?)?.toDouble();
+    final aim = (t?['value'] as num?)?.toDouble();
+    final nights = d.hrvNights;
+    final String body;
+    if (lo != null && hi != null && aim != null) {
+      final y = _yesterday;
+      body = 'Your optimal strain range is ${lo.toStringAsFixed(1)}–'
+          '${hi.toStringAsFixed(1)}, with a target of ${aim.toStringAsFixed(1)}.'
+          '${y == null ? '' : ' Yesterday you reached ${y.toStringAsFixed(1)}.'}'
+          ' What will today be?';
+    } else if (nights != null && recoveryCalibrating(nights)) {
+      body = 'A strain target comes with your first recovery score, once a '
+          'week of your nights is banked — $nights of '
+          '$kRecoveryCalibrationNights so far. Until then, train by feel and '
+          'keep the band on.';
+    } else if (d.readiness.value == null) {
+      body = 'A strain target needs this morning\'s recovery, and no night was '
+          'scored for today. Train by feel; tonight\'s sleep sets tomorrow\'s.';
+    } else {
+      body = 'Your recovery is in; the strain target appears once the day\'s '
+          'rollup catches up — usually a minute after a sync.';
+    }
+    return Surface(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(
+              child: Text("Today's recommendation",
+                  style: F.head.copyWith(color: p.ink))),
+          Icon(LucideIcons.zap, size: 16, color: p.on(C.blue)),
+        ]),
+        const SizedBox(height: S.x2),
+        Text(body, style: F.body.copyWith(color: p.ink2, height: 1.45)),
+      ]),
+    );
+  }
+}
+
+/// "Today's activities": the night and the day's workouts as rows, each a
+/// chip with its length, then the two quiet ways to add one.
+class _TodaysActivities extends StatefulWidget {
+  final String dayId;
+  const _TodaysActivities(this.dayId, {super.key});
+
+  @override
+  State<_TodaysActivities> createState() => _TodaysActivitiesState();
+}
+
+class _TodaysActivitiesState extends State<_TodaysActivities>
+    with RevisionReload {
+  List<({String name, int startTs, int endTs, IconData icon, Color color})>
+      _rows = const [];
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => reload());
+  }
+
+  @override
+  void reload() => _load();
+
+  Future<void> _load() async {
+    if (!mounted) return;
+    final repo = repoOf(context);
+    if (repo == null) return;
+    try {
+      final rows = <({String name, int startTs, int endTs, IconData icon, Color color})>[];
+      final day = DateTime.parse(widget.dayId);
+      final dayStart = day.millisecondsSinceEpoch ~/ 1000;
+      final dayEnd = DateTime(day.year, day.month, day.day + 1)
+              .millisecondsSinceEpoch ~/
+          1000;
+      // The night that ended on this day.
+      for (final n in await repo.sleepWindows(days: 3)) {
+        final on = n['onset_ts'], off = n['wake_ts'];
+        if (on is! num || off is! num) continue;
+        if (off >= dayStart && off < dayEnd) {
+          rows.add((
+            name: 'Sleep',
+            startTs: on.toInt(),
+            endTs: off.toInt(),
+            icon: LucideIcons.moon,
+            color: C.blueSoft,
+          ));
+          break;
+        }
+      }
+      final w = (await repo.getWorkouts(range: 'week'))['workouts'];
+      for (final r in (w is List ? w : const [])) {
+        if (r is! Map) continue;
+        final st = r['start_ts'], en = r['end_ts'];
+        if (st is! num || st < dayStart || st >= dayEnd) continue;
+        rows.add((
+          name: (r['title'] ?? r['type'] ?? 'Workout').toString(),
+          startTs: st.toInt(),
+          endTs: en is num ? en.toInt() : st.toInt(),
+          icon: LucideIcons.zap,
+          color: C.blue,
+        ));
+      }
+      rows.sort((a, b) => a.startTs.compareTo(b.startTs));
+      if (mounted) setState(() => (_rows = rows, _loaded = true));
+    } catch (_) {
+      if (mounted) setState(() => _loaded = true);
+    }
+  }
+
+  Future<void> _start(BuildContext c) async {
+    final app = c.read<AppState>();
+    final repo = repoOf(c);
+    final weight = (await repo?.getProfile())?['weight_kg'] as double?;
+    final history = await loadSetHistory();
+    if (!c.mounted) return;
+    go(
+        c,
+        ActivityPicker(
+            weightKg: weight,
+            host: activityHost(app, history: history),
+            recent: const []));
+  }
+
+  @override
+  Widget build(BuildContext c) {
+    final p = P.of(c);
+    return Surface(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Text("TODAY'S ACTIVITIES", style: F.over.copyWith(color: p.ink3)),
+          const Spacer(),
+          Pressable(
+            onTap: () => go(c, DayTimelineScreen(day: widget.dayId)),
+            semanticLabel: 'Open the whole day',
+            child: Icon(LucideIcons.maximize2, size: 15, color: p.ink3),
+          ),
+        ]),
+        const SizedBox(height: S.x3),
+        if (!_loaded)
+          Text('Reading your day…', style: F.cap.copyWith(color: p.ink3))
+        else if (_rows.isEmpty)
+          Text('Nothing yet today. Sleep and workouts the band records land '
+              'here on their own.',
+              style: F.cap.copyWith(color: p.ink3))
+        else
+          for (final r in _rows) ...[
+            Container(
+              padding: const EdgeInsets.all(S.x2),
+              decoration:
+                  BoxDecoration(color: p.card2, borderRadius: R.rMd),
+              child: Row(children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: S.x3, vertical: S.x2),
+                  decoration: BoxDecoration(
+                      color: p.wash(r.color, strength: 1.5),
+                      borderRadius: R.rSm),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(r.icon, size: 14, color: p.on(r.color)),
+                    const SizedBox(width: S.x1),
+                    Text(hm((r.endTs - r.startTs) / 60),
+                        style: F.body.copyWith(
+                            color: p.ink, fontWeight: FontWeight.w700)),
+                  ]),
+                ),
+                const SizedBox(width: S.x3),
+                Expanded(
+                    child: Text(r.name.toUpperCase(),
+                        style: F.over.copyWith(
+                            color: p.ink, fontWeight: FontWeight.w700))),
+                Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  Text(
+                      formatClockOf(DateTime.fromMillisecondsSinceEpoch(
+                          r.startTs * 1000)),
+                      style: F.cap.copyWith(color: p.ink3)),
+                  Text(
+                      formatClockOf(DateTime.fromMillisecondsSinceEpoch(
+                          r.endTs * 1000)),
+                      style: F.cap.copyWith(color: p.ink3)),
+                ]),
+              ]),
+            ),
+            const SizedBox(height: S.x2),
+          ],
+        const SizedBox(height: S.x1),
+        Row(children: [
+          Expanded(
+              child: _slim(c, LucideIcons.plus, 'Add activity',
+                  () => go(c, const LogWorkout()))),
+          const SizedBox(width: S.x3),
+          Expanded(
+              child: _slim(c, LucideIcons.play, 'Start activity',
+                  () => _start(c))),
+        ]),
+      ]),
+    );
+  }
+
+  Widget _slim(BuildContext c, IconData icon, String label, VoidCallback onTap) {
+    final p = P.of(c);
+    return Pressable(
+      onTap: onTap,
+      semanticLabel: label,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: S.tap),
+        decoration: BoxDecoration(
+            color: p.card2,
+            borderRadius: R.rMd,
+            border: Border.all(color: p.line)),
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(icon, size: 14, color: p.ink),
+          const SizedBox(width: S.x2),
+          Text(label.toUpperCase(),
+              style: F.over.copyWith(
+                  color: p.ink, fontWeight: FontWeight.w700)),
+        ]),
+      ),
+    );
+  }
+}
+
+/// "Tonight's sleep": the recommended bedtime from the sleep plan, and the
+/// alarm. Taps through to the alarm.
+class _TonightCard extends StatelessWidget {
+  final HomeData d;
+  const _TonightCard(this.d);
+
+  @override
+  Widget build(BuildContext c) {
+    final p = P.of(c);
+    final bed = d.bedtime.value;
+    final arm = alarmArmOfContext(c);
+    final alarmAt = arm?.$1;
+    final armed = arm != null && alarmAt != null && arm.$2 != AlarmArmState.none;
+    return Pressable(
+      onTap: () => go(c, const AlarmScreen()),
+      semanticLabel: "Tonight's sleep. Opens the alarm.",
+      child: Surface(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Text("TONIGHT'S SLEEP", style: F.over.copyWith(color: p.ink3)),
+            const Spacer(),
+            Icon(LucideIcons.chevronRight, size: 15, color: p.ink3),
+          ]),
+          const SizedBox(height: S.x3),
+          Row(children: [
+            Expanded(
+              child: _half(
+                  c,
+                  LucideIcons.sunset,
+                  bed == null ? 'Learning' : formatMinuteOfDay(bed.round()),
+                  'Recommended bedtime',
+                  measured: bed != null),
+            ),
+            Container(width: 1, height: 36, color: p.line),
+            const SizedBox(width: S.x3),
+            Expanded(
+              child: _half(
+                  c,
+                  LucideIcons.alarmClock,
+                  armed ? formatClockOf(alarmAt) : 'No alarm',
+                  armed ? 'Alarm on' : 'Tap to set one',
+                  measured: armed,
+                  accent: armed ? C.green : null),
+            ),
+          ]),
+        ]),
+      ),
+    );
+  }
+
+  Widget _half(BuildContext c, IconData icon, String value, String label,
+      {required bool measured, Color? accent}) {
+    final p = P.of(c);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        Icon(icon, size: 15, color: p.ink3),
+        const SizedBox(width: S.x2),
+        Text(value,
+            style: measured
+                ? F.n24.copyWith(color: p.ink, fontWeight: FontWeight.w800)
+                : F.body.copyWith(color: p.ink3, fontWeight: FontWeight.w600)),
+      ]),
+      const SizedBox(height: S.x1),
+      Text(label.toUpperCase(),
+          style: F.over.copyWith(
+              color: accent == null ? p.ink3 : p.on(accent))),
+    ]);
+  }
+}
+
+/// "My journal · Edit": the day's notes, one tap away.
+Widget _journalRow(BuildContext c) {
+  final p = P.of(c);
+  return Pressable(
+    onTap: () => go(c, const JournalCompose()),
+    semanticLabel: 'My journal. Opens today\'s notes.',
+    child: Surface(
+      pad: const EdgeInsets.symmetric(horizontal: S.x4, vertical: S.x3),
+      child: Row(children: [
+        Icon(LucideIcons.notebookPen, size: 16, color: p.on(C.green)),
+        const SizedBox(width: S.x2),
+        Expanded(
+            child: Text('MY JOURNAL',
+                style: F.over.copyWith(
+                    color: p.ink, fontWeight: FontWeight.w700))),
+        Icon(LucideIcons.pencil, size: 13, color: p.ink2),
+        const SizedBox(width: S.x1),
+        Text('EDIT', style: F.over.copyWith(color: p.ink2)),
+      ]),
+    ),
+  );
 }

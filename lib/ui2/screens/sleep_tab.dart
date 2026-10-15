@@ -21,13 +21,17 @@ import 'sleep_detail.dart';
 import 'wellness_screen.dart';
 
 class SleepTab extends StatelessWidget {
-  const SleepTab({super.key});
+  const SleepTab({super.key, this.header = const []});
+
+  /// Above the night — Home's Sleep sub-tab passes the performance score.
+  final List<Widget> header;
 
   @override
   Widget build(BuildContext c) {
     final l = AppLocalizations.of(c);
     return SleepDetail(
       embedded: true,
+      header: header,
       footer: [
         const Section('Sleep consistency', _Consistency()),
         Section(

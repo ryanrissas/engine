@@ -372,11 +372,17 @@ class SleepDetail extends StatefulWidget {
   final bool embedded;
   final List<Widget> footer;
 
+  /// Above the night, when embedded — Home's Sleep sub-tab puts the sleep
+  /// performance score there. With [header] set the tab title is not drawn:
+  /// the hub already has one.
+  final List<Widget> header;
+
   const SleepDetail(
       {super.key,
       this.data,
       this.day,
       this.embedded = false,
+      this.header = const [],
       this.footer = const []});
 
   @override
@@ -403,8 +409,11 @@ class _SleepDetailState extends State<SleepDetail> with RevisionReload {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(S.x4, S.x4, S.x4, S.x16),
         children: [
-          ScreenTitle(title,
-              trailing: const ProfileAvatar(accent: C.domSleep)),
+          if (widget.header.isEmpty)
+            ScreenTitle(title,
+                trailing: const ProfileAvatar(accent: C.domSleep))
+          else
+            ...widget.header,
           if (sub.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(left: S.x1, bottom: S.x2),
