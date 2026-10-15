@@ -9,8 +9,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:openstrap_edge/data/day_label.dart';
+import 'package:openstrap_edge/data/db.dart' show LocalDb;
 import 'package:openstrap_edge/data/local_repository.dart';
 import 'package:openstrap_edge/state/app_state.dart';
 import 'package:openstrap_edge/theme/theme_controller.dart';
@@ -141,43 +143,6 @@ void main() {
         _yesterday);
   });
 
-  testWidgets('back on today the sleep ring opens the held-over night',
-      (t) async {
-    final app = AppState.forTesting();
-    addTearDown(app.dispose);
-    app.repo = _Repo();
-
-    await t.pumpWidget(MultiProvider(
-      providers: [
-        ChangeNotifierProvider<AppState>.value(value: app),
-        ChangeNotifierProvider<ThemeController>.value(
-            value: ThemeController.seed(
-                AppThemeChoice.light, Brightness.light)),
-      ],
-      child: MaterialApp(
-        theme: buildTheme(Brightness.light),
-        home: const Scaffold(body: HomeScreen(hour: 9)),
-      ),
-    ));
-    await _settle(t);
-    await t.tap(find.bySemanticsLabel('Previous day'));
-    await _settle(t);
-    await t.tap(find.bySemanticsLabel('Next day'));
-    await _settle(t);
-
-    // Today, reached through the switcher, is still today: no explicit day,
-    // so Sleep resolves the night the ring is drawn from.
-    // The hero's sleep number opens the Sleep sub-tab, whose night resolves
-    // the same way: no explicit day.
-    t.widget<OverviewHero>(find.byType(OverviewHero)).onOpen!(HomeRingKind.sleep);
-    await _settle(t);
-    // The Sleep sub-tab carries the sleep plan, which reads the local
-    // database; this widget test has none, and that read failing is not what
-    // is under test. (A real DB here would hang Home's loads in fake time.)
-    expect(t.takeException(), anyOf(isNull, isA<StateError>()));
-    expect(t.widget<SleepDetail>(find.byType(SleepDetail)).day, isNull);
-  });
-
   testWidgets('a past day with nothing recorded says so, not "sync the band"',
       (t) async {
     final app = AppState.forTesting();
@@ -221,6 +186,51 @@ void main() {
 
     expect(find.text('Today could not be read'), findsOneWidget);
     expect(find.text('Set an alarm'), findsOneWidget);
+  });
+
+  // LAST in the file, on purpose: the hero's sleep number opens the Sleep
+  // sub-tab, whose sleep plan reads the local database, so this test needs
+  // one — but a database left set for the tests above makes Home's own loads
+  // wait on real I/O that fake time never completes.
+  group('with a database', () {
+    setUpAll(() {
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
+      LocalDb.dbName = 'openstrap_home_day_switcher_test.db';
+    });
+
+    testWidgets('back on today the sleep ring opens the held-over night',
+        (t) async {
+      final app = AppState.forTesting();
+      addTearDown(app.dispose);
+      app.repo = _Repo();
+
+      await t.pumpWidget(MultiProvider(
+        providers: [
+          ChangeNotifierProvider<AppState>.value(value: app),
+          ChangeNotifierProvider<ThemeController>.value(
+              value: ThemeController.seed(
+                  AppThemeChoice.light, Brightness.light)),
+        ],
+        child: MaterialApp(
+          theme: buildTheme(Brightness.light),
+          home: const Scaffold(body: HomeScreen(hour: 9)),
+        ),
+      ));
+      await _settle(t);
+      await t.tap(find.bySemanticsLabel('Previous day'));
+      await _settle(t);
+      await t.tap(find.bySemanticsLabel('Next day'));
+      await _settle(t);
+
+      // Today, reached through the switcher, is still today: no explicit day,
+      // so Sleep resolves the night the ring is drawn from.
+      // The hero's sleep number opens the Sleep sub-tab, whose night resolves
+      // the same way: no explicit day.
+      t.widget<OverviewHero>(find.byType(OverviewHero)).onOpen!(HomeRingKind.sleep);
+      await _settle(t);
+      expect(t.widget<SleepDetail>(find.byType(SleepDetail)).day, isNull);
+    });
   });
 }
 
