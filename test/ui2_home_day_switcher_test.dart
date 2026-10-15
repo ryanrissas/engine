@@ -203,6 +203,9 @@ void main() {
     await t.tap(find.bySemanticsLabel('Previous day'));
     await _settle(t);
 
+    // The card sits under the overview hero, below the test viewport's fold.
+    await t.scrollUntilVisible(find.text('No data for this day'), 300,
+        scrollable: find.byType(Scrollable).first);
     expect(find.text('No data for this day'), findsOneWidget);
     expect(find.text('Sync the band'), findsNothing);
   });
