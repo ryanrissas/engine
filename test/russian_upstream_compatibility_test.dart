@@ -161,7 +161,10 @@ void main() {
           expect(activity.name, name);
           expect(activity.typeKey, key);
           if (locale.languageCode == 'en') {
-            expect(activity.localizedName(l), name);
+            // English shows the stored name, except where Engine deliberately
+            // renames it on screen (display only — the key is unchanged).
+            const englishDisplay = {'Weight training': 'Strength training'};
+            expect(activity.localizedName(l), englishDisplay[name] ?? name);
           }
           if (locale.languageCode == 'ru' && name != 'CrossFit') {
             expect(activity.localizedName(l), matches(RegExp('[А-Яа-яЁё]')));
