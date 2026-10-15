@@ -3515,12 +3515,13 @@ class OverviewHero extends StatelessWidget {
       {required bool end}) {
     final p = P.of(c);
     final value = r.measured
-        ? '${r.value}${r.unit}'
+        ? r.value
         : r.calibrating
             ? '${r.have ?? 0}/${r.need ?? 0}'
             : r.value;
     return _plain(c, value, name,
         measured: r.measured,
+        unit: r.measured ? r.unit : '',
         color: r.measured ? r.ink(p) : null,
         end: end,
         kind: k,
@@ -3532,12 +3533,14 @@ class OverviewHero extends StatelessWidget {
       required bool end,
       required HomeRingKind kind,
       Color? color,
+      String unit = '',
       String sub = ''}) {
     final p = P.of(c);
     final f = onOpen;
+    final ink = color ?? p.ink;
     return Pressable(
       onTap: f == null ? null : () => f(kind),
-      semanticLabel: '$name $value. Opens $name.',
+      semanticLabel: '$name $value$unit. Opens $name.',
       child: Column(
           crossAxisAlignment:
               end ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -3545,12 +3548,24 @@ class OverviewHero extends StatelessWidget {
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: end ? Alignment.centerRight : Alignment.centerLeft,
-              child: Text(value,
-                  style: measured
-                      ? F.n24.copyWith(
-                          color: color ?? p.ink, fontWeight: FontWeight.w800)
-                      : F.body.copyWith(
-                          color: p.ink3, fontWeight: FontWeight.w600)),
+              // The number and its unit as separate text, the unit smaller —
+              // the way the score tabs print it.
+              child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(value,
+                        style: measured
+                            ? F.n24.copyWith(
+                                color: ink, fontWeight: FontWeight.w800)
+                            : F.body.copyWith(
+                                color: p.ink3, fontWeight: FontWeight.w600)),
+                    if (unit.isNotEmpty)
+                      Text(unit,
+                          style: F.body.copyWith(
+                              color: ink, fontWeight: FontWeight.w700)),
+                  ]),
             ),
             Text(name.toUpperCase(),
                 textAlign: end ? TextAlign.end : TextAlign.start,

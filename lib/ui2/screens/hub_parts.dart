@@ -60,7 +60,10 @@ class ScoreHero extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(S.x8),
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
+            // Scales down rather than spilling out of the ring at large text.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
               Text(label.toUpperCase(),
                   style: F.over.copyWith(
                       color: p.ink, fontWeight: FontWeight.w800, letterSpacing: 1.6)),
@@ -96,6 +99,7 @@ class ScoreHero extends StatelessWidget {
                     style: F.cap.copyWith(color: p.ink3)),
               ],
             ]),
+            ),
           ),
         ]),
       ),
@@ -280,11 +284,17 @@ class WeekChart extends StatelessWidget {
         Row(children: [
           Icon(icon, size: 16, color: p.ink2),
           const SizedBox(width: S.x2),
-          Text(title.toUpperCase(),
-              style: F.over.copyWith(color: p.ink, fontWeight: FontWeight.w700)),
-          const Spacer(),
-          if (unit.isNotEmpty)
+          Expanded(
+            child: Text(title.toUpperCase(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: F.over
+                    .copyWith(color: p.ink, fontWeight: FontWeight.w700)),
+          ),
+          if (unit.isNotEmpty) ...[
+            const SizedBox(width: S.x2),
             Text(unit, style: F.cap.copyWith(color: p.ink3)),
+          ],
         ]),
         const SizedBox(height: S.x3),
         if (present.isEmpty || axis == null)

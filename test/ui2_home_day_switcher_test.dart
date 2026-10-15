@@ -9,8 +9,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:openstrap_edge/data/day_label.dart';
+import 'package:openstrap_edge/data/db.dart' show LocalDb;
 import 'package:openstrap_edge/data/local_repository.dart';
 import 'package:openstrap_edge/state/app_state.dart';
 import 'package:openstrap_edge/theme/theme_controller.dart';
@@ -69,6 +71,15 @@ Future<void> _settle(WidgetTester t, {int n = 40}) async {
 }
 
 void main() {
+  // The Sleep sub-tab carries the sleep plan, which reads the local
+  // database; give it one so opening the tab does not throw.
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+    LocalDb.dbName = 'openstrap_home_day_switcher_test.db';
+  });
+  tearDownAll(() => LocalDb.close());
+
   testWidgets('stepping to the previous day loads and shows ITS numbers',
       (t) async {
     final app = AppState.forTesting();
