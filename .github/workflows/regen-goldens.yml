@@ -8,15 +8,13 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   regen:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: 3.41.6
@@ -29,7 +27,13 @@ jobs:
           TZ=UTC GENERATE_GOLDEN=1 flutter test --concurrency=1 test/whoop_freeze_golden_test.dart
           TZ=Asia/Kolkata GENERATE_GOLDEN=1 flutter test --concurrency=1 test/whoop_freeze_golden_test.dart
           TZ=America/New_York GENERATE_GOLDEN=1 flutter test --concurrency=1 test/whoop_freeze_golden_test.dart
-      - uses: actions/upload-artifact@v4
-        with:
-          name: whoop-freeze-goldens
-          path: test/fixtures/whoop_freeze/*.json
+      # Pushed to a side branch, never to main: a human (or the session that
+      # asked for it) reviews the diff and copies it over deliberately.
+      - name: Push the regenerated goldens to goldens-regen
+        run: |
+          git config user.name "goldens-bot"
+          git config user.email "goldens-bot@users.noreply.github.com"
+          git checkout -B goldens-regen
+          git add test/fixtures/whoop_freeze/*.json
+          git commit -m "Regenerated WHOOP freeze goldens from ${GITHUB_SHA::8}" || echo "no change"
+          git push -f origin goldens-regen
