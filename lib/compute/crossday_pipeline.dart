@@ -67,6 +67,14 @@ Map<String, dynamic> buildCrossDayBundle(
   final tempList = <double?>[
     for (final d in days) _numOrNull(d['skin_temp_z']),
   ];
+  // The RAW nightly skin-temp mean, for the two detectors that standardise
+  // internally: `tempIllnessFlag` and `multivariateAnomaly` both say "DO NOT
+  // PASS A Z-SCORE" (analytics temp_health.dart / anomaly.dart). They were fed
+  // [tempList] and standardised it twice, so their thresholds did not mean
+  // what they say. Everything else here keeps the z.
+  final tempRawList = <double?>[
+    for (final d in days) _numOrNull(d['skin_temp_adc']),
+  ];
 
   // A day flagged `unsettled` (today, until it was derived from a complete
   // overnight: the data edge at least an hour past wake) is a truncated
@@ -91,7 +99,7 @@ Map<String, dynamic> buildCrossDayBundle(
       ana.AnomalyFeatures(
         rhr: settled(i, rhrList[i]),
         hrv: settled(i, rmssdList[i]),
-        temp: settled(i, tempList[i]),
+        temp: settled(i, tempRawList[i]),
         resp: settled(i, respList[i]),
       ),
   ];
@@ -121,7 +129,7 @@ Map<String, dynamic> buildCrossDayBundle(
   // is worse than the false alarm.
   final luteal = _lutealFlags(dates, cycleStartDates);
   final tempIllness = ana.tempIllnessFlag(dates, [
-    for (var i = 0; i < n; i++) settled(i, tempList[i]),
+    for (var i = 0; i < n; i++) settled(i, tempRawList[i]),
   ], luteal: luteal);
 
   // ── circadian: mid-sleep, free/work split, jetlag, chronotype, sleep debt ──
@@ -491,12 +499,13 @@ Map<String, dynamic> buildCrossDayBundle(
   final latestAnomaly = at(
     anomaly,
     newestScored((i) =>
-        [rhrList[i], rmssdList[i], tempList[i], respList[i]]
+        [rhrList[i], rmssdList[i], tempRawList[i], respList[i]]
             .where((v) => v != null)
             .length >=
         2),
   );
-  final latestTemp = at(tempIllness, newestScored((i) => tempList[i] != null));
+  final latestTemp =
+      at(tempIllness, newestScored((i) => tempRawList[i] != null));
 
   // per-day flags (for notifications / trends): asleep/illness/anomaly/temp,
   // plus the nightly RESTING HR the "your resting HR trend shifted" CUSUM

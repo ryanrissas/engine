@@ -351,7 +351,7 @@ void main() {
           (bundleFor(stages: List<String>.filled(3600, 'light'))['scalars']
                   as Map)
               .cast<String, dynamic>();
-      expect(stamped['max_hr_used'] as num, closeTo(208 - 0.7 * 35, 0.001));
+      expect(stamped['max_hr_used'] as num, closeTo(192 - 0.007 * 35 * 35, 0.001));
       final unstamped = (bundleFor(
         stages: List<String>.filled(3600, 'light'),
         deviceFamily: null,

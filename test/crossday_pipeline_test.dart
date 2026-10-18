@@ -31,6 +31,8 @@ List<Map<String, dynamic>> _synthDays(
     final readiness = 70.0 + wobble * 2.0; // 0..100
     final resp = 14.0 + wobble * 0.3; // br/min
     final temp = wobble * 0.4; // relative z
+    // The raw nightly mean the temperature detectors read (device counts).
+    final tempRaw = 1000.0 + wobble * 4.0;
     final trimp = 80.0 + (i % 7) * 10.0; // load
 
     // Inject a sustained RHR spike on the final few days.
@@ -48,6 +50,7 @@ List<Map<String, dynamic>> _synthDays(
       'readiness': readiness,
       'resp_rate': resp,
       'skin_temp_z': temp,
+      'skin_temp_adc': tempRaw,
       if (withTrimp) 'trimp': trimp,
       if (withSleep) 'onset_sec': onsetSec,
       if (withSleep) 'wake_sec': wakeSec,
@@ -146,6 +149,7 @@ void main() {
             'readiness': null,
             'resp_rate': null,
             'skin_temp_z': null,
+            'skin_temp_adc': null,
           }
       ];
       final out = buildCrossDayBundle(blank, const {});
@@ -395,6 +399,7 @@ void main() {
         'readiness': null,
         'resp_rate': null,
         'skin_temp_z': null,
+        'skin_temp_adc': null,
       });
       final b = buildCrossDayBundle(days, const {});
       final illness = b['illness'] as Map;

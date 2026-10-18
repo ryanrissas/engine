@@ -92,7 +92,7 @@ void main() {
     LocalDb.dbName = 'openstrap_workout_enrichment_test.db';
     final dir = await databaseFactory.getDatabasesPath();
     await databaseFactory.deleteDatabase(p.join(dir, LocalDb.dbName));
-    // maxHr = estimatedMaxHr(30, 'gen4') = 208 - 0.7*30 = 187 (TS-03a). It was
+    // maxHr = estimatedMaxHr(30, 'gen4') = 192 - 0.007*30² = 185.7 (Gellish, v116; TS-03a). It was
     // 220-30 = 190 here and Tanaka 187 in the analytics anchors for the SAME
     // session; one ceiling now, and it takes the strap as well as the age.
     repo = LocalRepositoryImpl(getProfileMap: () => {'age': 30});
@@ -146,7 +146,7 @@ void main() {
       expect(e['t'], inInclusiveRange(start - 60, end));
     }
 
-    // Zones at maxHr 187: 120 bpm = 64% → Z2, 150 bpm = 80.2% → Z4; 5 min each.
+    // Zones at maxHr 185.7: 120 bpm = 64.6% → Z2, 150 bpm = 80.8% → Z4; 5 min each.
     // 150 sat in Z3 under the old 190 ceiling — the same heartbeat, banded
     // differently by the two conventions the app used to carry at once.
     final bands = (w['zone_bands'] as List).cast<Map>();
@@ -156,9 +156,9 @@ void main() {
     expect((bands[3]['min'] as num).toDouble(), closeTo(5.0, 0.1)); // Z4
     expect(bands[1]['pct'], 50);
     expect(bands[2]['min'], 0);
-    // lo/hi bpm edges follow the 50/60/70/80/90% thresholds of maxHr 187.
-    expect(bands[0]['lo'], 94);
-    expect(bands[4]['hi'], 187);
+    // lo/hi bpm edges follow the 50/60/70/80/90% thresholds of maxHr 185.7.
+    expect(bands[0]['lo'], 93);
+    expect(bands[4]['hi'], 186);
 
     // First 150 bpm sample is 300 s in → 5 min to peak.
     expect(w['time_to_peak_min'], 5);

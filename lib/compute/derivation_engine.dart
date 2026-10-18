@@ -2216,6 +2216,7 @@ const _crossDayVendorScoreKeys = [
   'readiness',
   'resp_rate',
   'skin_temp_z',
+  'skin_temp_adc',
 ];
 
 /// The frozen morning readiness headline that should be persisted/surfaced for
@@ -6822,6 +6823,10 @@ class DerivationEngine {
       'readiness': col('readiness') ?? sc('readiness'),
       'resp_rate': sc('resp_rate'),
       'skin_temp_z': sc('skin_temp_z'),
+      // The RAW nightly mean, for the temperature illness flag and the anomaly
+      // detector — both standardise internally ("DO NOT PASS A Z-SCORE") and
+      // were fed `skin_temp_z`, which standardised it twice.
+      'skin_temp_adc': sc('skin_temp_adc'),
       'trimp': sc('trimp'),
       // Headline 0–21 strain, daily steps, nap minutes — feed Sleep/Strain Coach
       // + VO₂max/Fitness Age in the cross-day rollup.

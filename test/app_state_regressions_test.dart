@@ -231,7 +231,7 @@ void main() {
       app.user = {'age': 30};
       await app.debugReconcileOrphanedLiveWorkout();
 
-      expect(app.activeWorkout?.hrMax, closeTo(208.0 - 0.7 * 30, 1e-9),
+      expect(app.activeWorkout?.hrMax, closeTo(192.0 - 0.007 * 30 * 30, 1e-9),
           reason: 'without the ceiling the idle gate is null and '
               'WorkoutIdleWatch counts any positive reading as active — a '
               'forgotten session sitting at resting HR would never be asked '
