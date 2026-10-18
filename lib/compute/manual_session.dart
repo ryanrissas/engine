@@ -33,6 +33,7 @@ import 'dart:convert';
 import 'package:openstrap_analytics/onehz.dart' as ana;
 
 import 'hr_max.dart' show smoothedMaxHr;
+import 'reserve_strain.dart' show reserveStrain;
 import 'profile.dart';
 
 /// Shortest window we accept. Below a minute the 1 Hz substrate cannot say
@@ -252,40 +253,22 @@ List<double> zoneMinutesFor(
 /// athlete's age (`estimatedMaxHr`), and this scorer is device-agnostic. Null
 /// — no age, or an uncalibrated/unstamped strap — abstains.
 ///
-/// [quietHrr] is THIS user's quiet-waking level for the day the window sits in
-/// (`personalQuietLevelBefore`) — the level that day's own strain was priced
-/// on, so a bout and its day are on one baseline. Null abstains: the 0.20
-/// population reference billed being awake as load for some users and erased
-/// real workouts for others. [quietSettled] false only lowers confidence
-/// inside analytics; the value is the same.
+/// Same 0–21 as the day headline (`reserveStrain`), so "workout strain" and
+/// "day strain" are one method on one scale.
 double? strainFromPerMinuteHr(
   List<double> perMinuteHr, {
   required Profile profile,
   required double? restingHr,
   required double? hrMax,
-  required double? quietHrr,
+  double? quietHrr,
   bool quietSettled = true,
 }) {
-  final sex = profile.sex?.toLowerCase();
-  if (perMinuteHr.isEmpty ||
-      hrMax == null ||
-      restingHr == null ||
-      sex == null ||
-      quietHrr == null) {
-    return null;
-  }
-  // Banister TRIMP above the quiet level over the window's own minutes, with
-  // exercise minutes never offset by quiet ones — the same analytics call the
-  // day headline makes, so "workout strain" and "daily strain" are one method.
-  final score = ana.strainScoreFromSeries(
-    perMinuteHr,
-    restingHr: restingHr,
-    maxHr: hrMax,
-    quietHrr: quietHrr,
-    sex: workoutSex(sex) == 'female' ? ana.Sex.female : ana.Sex.male,
-    quietSettled: quietSettled,
-  );
-  return score.present ? score.value : null;
+  // [profile], [quietHrr] and [quietSettled] are no longer read: the 0–21 is
+  // the heart-rate-reserve integral (reserve_strain.dart), which needs only
+  // the two reserve anchors. Kept so the live tick and both re-score callers
+  // keep compiling — and so a session and its day stay on ONE method.
+  if (perMinuteHr.isEmpty || hrMax == null || restingHr == null) return null;
+  return reserveStrain(perMinuteHr, restingHr: restingHr, maxHr: hrMax);
 }
 
 /// Score a manual window from its 1 Hz HR.
@@ -295,8 +278,8 @@ double? strainFromPerMinuteHr(
 /// [restingHr] is the nightly/user RHR; [profile] supplies age/weight/sex.
 ///
 /// Uses the SAME published methods as the day-level derivation so a manual
-/// session and the day it sits in are on one scale: `ana.strainScoreFromSeries`
-/// against [quietHrr] (the session day's level) for strain, `ana.Calories.estimateBoutCalories`
+/// session and the day it sits in are on one scale: `reserveStrain` (the
+/// heart-rate-reserve 0–21) for strain, `ana.Calories.estimateBoutCalories`
 /// (Keytel 2005) for kcal. A missing anchor makes the dependent metric null.
 ///
 /// [hrMax] is THE ceiling for this window — `estimatedMaxHr(age, family)`,

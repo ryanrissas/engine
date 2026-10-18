@@ -255,8 +255,11 @@ const _specs = <String, MetricSpec>{
     title: 'Strain',
     color: C.purple,
     icon: LucideIcons.zap,
-    method: 'Cardiovascular load over the day, compressed onto a 0–21 scale.',
-    citation: 'Banister TRIMP family · log-compressed',
+    method: 'Every minute weighted by how much of your heart-rate reserve '
+        'it used, summed over the day and mapped onto 0–21, where 21 is 24 '
+        'hours at your max.',
+    citation: 'Heart-rate-reserve integral, structure of US 10,182,726 · '
+        'log-mapped',
     requires: {InputSignal.hr1Hz},
   ),
   'trimp': MetricSpec(
@@ -264,9 +267,10 @@ const _specs = <String, MetricSpec>{
     title: 'Heart effort',
     color: C.purple,
     icon: LucideIcons.dumbbell,
-    method: 'Training impulse: time in each heart-rate zone, weighted by the '
-        'physiological cost of that zone.',
-    citation: 'Banister 1975 · Edwards 1993',
+    method: 'Training impulse above your quiet level: every minute weighted '
+        'by its heart-rate reserve and an exponential cost. Feeds fitness and '
+        'fatigue.',
+    citation: 'Banister 1991',
     requires: {InputSignal.hr1Hz},
   ),
   'stress': MetricSpec(

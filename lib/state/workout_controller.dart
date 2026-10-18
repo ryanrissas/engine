@@ -419,9 +419,10 @@ class WorkoutController {
       // that silently changed zone ceilings halfway through is worse than one
       // scored end-to-end on the band it began on. Null when nothing is
       // linked — unknown provenance, which refuses rather than assuming gen4.
-      hrMax: estimatedMaxHr(
-        (_user()?['age'] as num?),
-        _linkDeviceFamily(),
+      hrMax: trainingMaxHr(
+        age: (_user()?['age'] as num?),
+        deviceFamily: _linkDeviceFamily(),
+        manualMaxHr: manualMaxHrFromProfile(_user()),
       ),
       // TS-04 — zones are banded on the MEASURED pair when both exist. The
       // anchors are read on the same refresh that loads the nightly resting HR
@@ -434,6 +435,7 @@ class WorkoutController {
         observedCeilingBpm: _observedCeilingBpm(),
         restingHrHistory: _rhr28(),
         manualZoneLowerBpm: manualZoneBoundsFromProfile(_user()),
+        manualMaxHr: manualMaxHrFromProfile(_user()),
       ),
       restingHr: _liveRestingHr(),
       // No quiet level yet: the refresh reads it fresh for this session's OWN

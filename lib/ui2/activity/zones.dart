@@ -27,7 +27,8 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
-import '../../compute/hr_max.dart' show validManualZoneBounds;
+import '../../compute/hr_max.dart'
+    show kManualMaxHrMax, kManualMaxHrMin, validManualZoneBounds;
 import '../../data/local_repository.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/metric.dart' show whyFromNote;
@@ -307,6 +308,74 @@ class _ZonesDetailState extends State<ZonesDetail> {
     if (mounted) await _load();
   }
 
+  /// A tested max heart rate (a field or lab test), stored as `max_hr` on the
+  /// profile. It overrides the age estimate for zones, strain and calories —
+  /// WHOOP offers the same override. Blank clears it.
+  Future<void> _editMaxHr(BuildContext c) async {
+    final app = c.read<AppState>();
+    final current = (app.user?['max_hr'] as num?)?.round();
+    final ctrl = TextEditingController(text: current == null ? '' : '$current');
+    final saved = await showModalBottomSheet<bool>(
+      context: c,
+      isScrollControlled: true,
+      sheetAnimationStyle: sheetMotion(c),
+      backgroundColor: P.of(c).card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(R.xxl)),
+      ),
+      builder: (s) => Padding(
+        padding: EdgeInsets.only(
+            left: S.x5,
+            right: S.x5,
+            top: S.x5,
+            bottom: MediaQuery.of(s).viewInsets.bottom + S.x5),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Your max heart rate',
+                style: F.head.copyWith(color: P.of(s).ink)),
+            const SizedBox(height: S.x2),
+            Text(
+              'From a max test or the highest you have seen on a chest strap. '
+              'It replaces the age estimate for your zones, strain and '
+              'calories. Leave it blank to go back to the estimate.',
+              style: F.cap.copyWith(color: P.of(s).ink3, height: 1.4),
+            ),
+            const SizedBox(height: S.x4),
+            OsTextField(
+              controller: ctrl,
+              label: 'Max heart rate',
+              hint: 'bpm',
+              keyboard: TextInputType.number,
+            ),
+            const SizedBox(height: S.x4),
+            BigButton('Save',
+                color: C.red, onTap: () => Navigator.of(s).pop(true)),
+          ],
+        ),
+      ),
+    );
+    final typed = Typed.of(ctrl.text);
+    ctrl.dispose();
+    if (saved != true || !c.mounted) return;
+    if (typed.blank) {
+      await app.updateProfile({'max_hr': null});
+      if (mounted) await _load();
+      return;
+    }
+    final v = typed.value;
+    if (typed.bad || v == null || v < kManualMaxHrMin || v > kManualMaxHrMax) {
+      ScaffoldMessenger.of(c).showSnackBar(SnackBar(
+        content: Text('Enter a max between $kManualMaxHrMin and '
+            '$kManualMaxHrMax bpm. Nothing was saved.'),
+      ));
+      return;
+    }
+    await app.updateProfile({'max_hr': v.round()});
+    if (mounted) await _load();
+  }
+
   @override
   Widget build(BuildContext c) {
     final p = P.of(c);
@@ -328,6 +397,19 @@ class _ZonesDetailState extends State<ZonesDetail> {
               d.source == 'manual'
                   ? (l?.activityZonesEditYourOwnLink ?? 'Edit your own zones')
                   : (l?.activityZonesSetYourOwnLink ?? 'Set your own zones'),
+              style: F.body.copyWith(
+                  color: p.on(C.red), fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+        Pressable(
+          onTap: () => _editMaxHr(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: S.x2),
+            child: Text(
+              d.source == 'manual_max'
+                  ? 'Change your max heart rate'
+                  : 'Know your max heart rate? Enter it',
               style: F.body.copyWith(
                   color: p.on(C.red), fontWeight: FontWeight.w600),
             ),
@@ -504,6 +586,13 @@ class _ZonesDetailState extends State<ZonesDetail> {
       case 'tanaka':
         return l?.activityZonesAnchorTanaka(max ?? 0) ??
             'From $max bpm, estimated from your age, so it can be 20 bpm out. The zones move once the band sees a hard enough session.';
+      case 'manual_max':
+        return d.restingHr != null
+            ? 'From your resting rate (${d.restingHr}) and the max heart rate '
+                'you entered ($max). Change it any time below.'
+            : 'From the max heart rate you entered ($max). Once the band has '
+                '${d.restingMinDays} nights of your resting rate, that joins '
+                'in too.';
       case 'manual':
         return l?.activityZonesAnchorManual ??
             'Set by you, not computed — these five thresholds override '

@@ -324,6 +324,9 @@ String zonesWhy(String? source, num? maxHr, [AppLocalizations? l]) => maxHr == n
               'Zone edges span the gap between your measured resting heart rate '
                   'and the highest we have seen (${maxHr.round()} bpm). Both '
                   'measured on you.',
+        'manual_max' =>
+          'Zone edges are percentages of the max heart rate you entered '
+              '(${maxHr.round()} bpm).',
         'observed' =>
           l?.dayStrainZoneFootnoteObserved(maxHr.round()) ??
               'Zone edges are percentages of the highest heart rate we have seen '

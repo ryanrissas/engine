@@ -9655,7 +9655,7 @@
       }
     }
   },
-  "dayStrainInputsMeasuredCeilingNote": "The zone bar uses your measured maximum. Strain does not, so the strain scores you have already seen stay the same.",
+  "dayStrainInputsMeasuredCeilingNote": "The zone bar and strain both use your measured maximum, because it is higher than the estimate from your age.",
   "@dayStrainInputsMeasuredCeilingNote": {
     "description": "Sentence noting the zone bar uses a different, measured ceiling than the strain score"
   },

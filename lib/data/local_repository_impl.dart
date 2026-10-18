@@ -2663,6 +2663,7 @@ class LocalRepositoryImpl extends LocalRepository {
         observedCeilingBpm: a.observedCeilingBpm,
         restingHrHistory: a.restingHrHistory,
         manualZoneLowerBpm: manualZoneBoundsFromProfile(getProfileMap()),
+        manualMaxHr: manualMaxHrFromProfile(getProfileMap()),
       );
 
   /// The two anchors [trainingZones] needs, read once per call chain.
@@ -2784,10 +2785,14 @@ class LocalRepositoryImpl extends LocalRepository {
   /// session, every import and every raw replay carries no family, and a strap
   /// we have not calibrated a ceiling for is not gen4 with a different badge.
   /// No ceiling, no zones; nothing is substituted.
-  int? _profileMaxHr(String? deviceFamily) => estimatedMaxHr(
-        (getProfileMap()?['age'] as num?),
-        deviceFamily,
-      )?.round();
+  ///
+  /// A max the user entered wins (WHOOP's order); otherwise the age estimate.
+  /// Unrounded, so a session is priced on exactly the ceiling its day is.
+  double? _profileMaxHr(String? deviceFamily) => trainingMaxHr(
+        age: (getProfileMap()?['age'] as num?),
+        deviceFamily: deviceFamily,
+        manualMaxHr: manualMaxHrFromProfile(getProfileMap()),
+      );
 
   /// Which strap measured [startTs, endTs] — the `device_family` the ingest
   /// stamped on the 1 Hz rows themselves, which is the same stamp the day
@@ -4387,6 +4392,7 @@ class LocalRepositoryImpl extends LocalRepository {
       observedCeilingBpm: ceiling?.bpm,
       restingHrHistory: rhrHistory,
       manualZoneLowerBpm: manualZoneBpm,
+      manualMaxHr: manualMaxHrFromProfile(getProfileMap()),
     );
     final measured = zonesAreMeasured(set?.source);
     // WHY there are no edges. This screen printed "Without your age or a strap

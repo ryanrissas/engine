@@ -1,0 +1,35 @@
+name: regenerate WHOOP goldens
+# Manual only. Rebuilds test/fixtures/whoop_freeze/*.json under all three
+# zones the golden test covers and uploads them as an artifact, for a
+# DELIBERATE algorithm change (a kAlgoVersion bump that moves WHOOP output).
+# Review the diff before committing it — the golden exists so output never
+# changes by accident.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.41.6
+          channel: stable
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Regenerate under UTC, +05:30 and -04:00
+        run: |
+          TZ=UTC GENERATE_GOLDEN=1 flutter test --concurrency=1 test/whoop_freeze_golden_test.dart
+          TZ=Asia/Kolkata GENERATE_GOLDEN=1 flutter test --concurrency=1 test/whoop_freeze_golden_test.dart
+          TZ=America/New_York GENERATE_GOLDEN=1 flutter test --concurrency=1 test/whoop_freeze_golden_test.dart
+      - uses: actions/upload-artifact@v4
+        with:
+          name: whoop-freeze-goldens
+          path: test/fixtures/whoop_freeze/*.json

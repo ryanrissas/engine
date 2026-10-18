@@ -67,7 +67,8 @@ import 'inputs/garmin_inputs.dart'
 import 'inputs/oura_inputs.dart' show kOuraFamily, ouraStrapOwnsNight;
 import 'inputs/ultrahuman_inputs.dart' show ultrahumanDayBlock;
 import 'hr_max.dart'
-    show estimatedMaxHr, kHrFloorBpm, smoothedMaxHr, smoothedMinHr;
+    show kHrFloorBpm, smoothedMaxHr, smoothedMinHr, trainingMaxHr;
+import 'reserve_strain.dart' show reserveStrain;
 import 'movement_floor_policy.dart' as mfp;
 import 'sleep_profile_policy.dart';
 import 'derive_prepare.dart';
@@ -1827,7 +1828,23 @@ import 'vendor_sleep.dart';
 // and (with motion) mean motion ≥ the detector's 0.15. It replaces bouts
 // inside it only when ≥ 30 min longer, so a steady bout keeps its edges.
 // Edge-only.
-const int kAlgoVersion = 115;
+// 115 → 116 (strain on WHOOP's published structure): the headline 0–21 is the
+// heart-rate-reserve integral of WHOOP's strain patent (US 10,182,726 B2):
+// per-minute reserve v = (HR − RHR)/(HRmax − RHR), weighted by a strictly
+// increasing w(v) = (e^{10.3v} − 1)/(e^{10.3} − 1), summed, normalised to
+// 24 h at max, mapped 21·ln(1 + 1.585e6·N)/ln(1 + 1.585e6), monotone
+// (compute/reserve_strain.dart). The two constants are fitted to WHOOP's
+// published anchors (1 h walk ≈ 6.5, 1 h run ≈ 12, 45-min run 12–15, average
+// day ≈ 11, 24 h at max = 21); within ~0.5 of each. No sex constant and no
+// quiet-level baseline: strain scores from the first day with a resting HR.
+// Banister TRIMP above the quiet level is kept as `trimp_net`, the
+// training-load number for CTL/ATL. HRmax is now Gellish 192 − 0.007·age²
+// (WHOOP's stated starting formula; Tanaka before), raised to the band's
+// held ceiling when higher, overridden by a tested max the user enters
+// (`max_hr` on the profile; zones band on it, source `manual_max`). Every
+// day with raw re-derives; zones, TRIMP and calories move with the ceiling.
+// Edge-only.
+const int kAlgoVersion = 116;
 /// The sibling SHAs this version was derived against, asserted against
 /// pubspec.yaml in test/db_serve_version_and_reads_test.dart.
 ///
@@ -5580,6 +5597,7 @@ class DerivationEngine {
           recentNocturnal: history.valuesBefore('rhr', day.date),
         ),
         maxHrUsed: (bundle['max_hr_used'] as num?)?.round(),
+        trainingMaxHrBpm: (bundle['max_hr_used'] as num?)?.toDouble(),
         liveStepsReal: liveSteps.total,
         liveStepsFromStrap: liveSteps.strap,
         counterProfile: counterProfile,
@@ -7190,7 +7208,11 @@ class DerivationEngine {
     // `dailyEnergy`'s flex gate is a fraction of HRmax, so an absent ceiling is
     // an absent gate — the whole triple abstains rather than bill a day against
     // some other strap's number. See hr_max.dart.
-    final hrmax = estimatedMaxHr(profile.ageYears, deviceFamily);
+    final hrmax = trainingMaxHr(
+      age: profile.ageYears,
+      deviceFamily: deviceFamily,
+      manualMaxHr: profile.maxHrManual,
+    );
     if (hrmax == null) return null;
     final heightCm = profile.heightCm;
     if (heightCm == null) return null;
@@ -7294,6 +7316,9 @@ class DerivationEngine {
     /// [_BaselineHistoryCache.valuesBefore]). Fewer than three valid values
     /// and strain abstains.
     List<double> quietHrrHistory = const [],
+    /// The pipeline's resolved training max; null re-resolves from the
+    /// profile (manual max, else the age estimate).
+    double? trainingMaxHrBpm,
   }) {
     final wake = _buildWakeDayFeatures(
       daySub,
@@ -7308,6 +7333,7 @@ class DerivationEngine {
       dynFloorG: dynFloorG,
       stepSpans: stepSpans,
       quietHrrHistory: quietHrrHistory,
+      trainingMaxHrBpm: trainingMaxHrBpm,
     );
     // ACTIVE ENERGY WORKOUT-GAP CREDIT. `wake['calories']` above is built
     // ENTIRELY from `daySub.hr` — the day's own continuous 1 Hz trace — and
@@ -7923,6 +7949,7 @@ class DerivationEngine {
     List<List<int>> stepSpans = const [],
     int tonightSleepOnsetSec = 0,
     List<double> quietHrrHistory = const [],
+    double? trainingMaxHrBpm,
   }) {
     final activeMin = _activeMinutes(daySub, sleepOnsetSec, sleepOffsetSec);
     final wear = _wearBlock(
@@ -7959,9 +7986,16 @@ class DerivationEngine {
     // age/weight are read by `wakeDayEnergy` straight off the profile now, so
     // they are no longer unpacked here — TRIMP only needs the sex constant.
     final sex = profile.sex?.toLowerCase();
-    // ONE definition (hr_max.dart): null when age is unknown OR when we cannot
-    // say which strap measured this day.
-    final hrMax = estimatedMaxHr(profile.ageYears, daySub.deviceFamily);
+    // ONE definition (hr_max.dart): the pipeline's resolved training max when
+    // it ran (manual max, else the age estimate raised to the band's held
+    // ceiling); otherwise the same resolution without the ceiling. Null
+    // without an age and without a manual max.
+    final hrMax = trainingMaxHrBpm ??
+        trainingMaxHr(
+          age: profile.ageYears,
+          deviceFamily: daySub.deviceFamily,
+          manualMaxHr: profile.maxHrManual,
+        );
     final rhrForTrimp = restingHr ?? profile.restingHrManual?.toDouble();
     // THIS user's quiet-waking level, from PRIOR days only — the same list the
     // pure pipeline got, through the same analytics call, so both halves price
@@ -7995,18 +8029,17 @@ class DerivationEngine {
         // We know the age; we do not know what measured the HR, so we
         // have no ceiling to band it against.
         : ana.unknownFamilyNote(daySub.deviceFamily);
+    // The headline strain needs only the reserve (resting HR + max HR) —
+    // reserve_strain.dart — so it gates on fewer inputs than the Banister
+    // TRIMP below, which also needs a sex constant and the quiet level.
     String? strainAbsent = perMin.isEmpty
         ? needInputNote('wake_hr')
         : hrMax == null
         ? ceilingAbsent
-            : dayHrValid.isEmpty
+        : dayHrValid.isEmpty
         ? needInputNote('hr_samples')
-                : rhrForTrimp == null
+        : rhrForTrimp == null
         ? needInputNote('resting_hr')
-                    : sex == null
-        ? needInputNote('sex')
-        : !quiet.present
-        ? (quiet.note ?? kUnknownAbsenceNote)
         : null;
     // `wakeDayEnergy`'s own gates, named. It returns a bare null, so the reason
     // has to be reconstructed from the same inputs it reads — in its order.
@@ -8064,13 +8097,16 @@ class DerivationEngine {
           quietHrr: quiet.value!.hrr,
           sex: sexEnum,
         );
-        // The same map `strainScoreFromSeries` applies to the same NetTrimp —
-        // one pass, and the persisted `trimp_net` and `strain` cannot come
-        // from two different accumulations. (The calibrating confidence lives
-        // on the pipeline's envelope; this half writes a bare scalar.)
-        if (net != null) strain = ana.strainFromNetTrimp(net.net);
-        // Every named input was there and the scorer still abstained. We do not
-        // know why; saying so is the honest floor, and it is what the rule
+        // `trimp_net` stays the TRAINING-LOAD number (fitness/fatigue). It is
+        // no longer the headline 0–21 — see below.
+      }
+      // HEADLINE STRAIN — the heart-rate-reserve integral on WHOOP's published
+      // structure (reserve_strain.dart), over the same wake series the
+      // pipeline's early read scored, against the same ceiling.
+      if (dayHrValid.isNotEmpty && rhrForTrimp != null) {
+        strain = reserveStrain(perMin, restingHr: rhrForTrimp, maxHr: hrMax);
+        // Every named input was there and the scorer still abstained. We do
+        // not know why; saying so is the honest floor, and it is what the rule
         // "never a guessed cause" leaves when there is no cause to name.
         strainAbsent ??= strain == null ? kUnknownAbsenceNote : null;
       }
@@ -9468,6 +9504,7 @@ class DerivationEngine {
       sessions: inp.savedSessions,
       tonightSleepOnsetSec: inp.tonightSleepOnsetSec,
       quietHrrHistory: inp.quietHrrHistory,
+      trainingMaxHrBpm: inp.trainingMaxHrBpm,
     );
 
     bundlePatch['daytime_hrv'] = _daytimeHrv(daySub, onset, offset,
@@ -10227,6 +10264,10 @@ class _DayBlocksInput {
   /// TRIMP or readiness; those stay on [rhr].
   final WorkoutRestingRef workoutRhr;
   final int? maxHrUsed;
+  /// The pipeline's resolved training max (`max_hr_used`, unrounded): the
+  /// SAME ceiling the early-read strain used, so the recompute cannot score
+  /// the day on a different one.
+  final double? trainingMaxHrBpm;
   final int liveStepsReal;
   /// Step-counter calibration read on the main isolate; null = uncalibrated.
   final StepCalibrationProfile? counterProfile;
@@ -10304,6 +10345,7 @@ class _DayBlocksInput {
     required this.rhr,
     this.workoutRhr = (bpm: null, ref: WorkoutRhrRef.none),
     required this.maxHrUsed,
+    this.trainingMaxHrBpm,
     required this.liveStepsReal,
     this.counterProfile,
     this.counterWearing = Wearing.wrist,

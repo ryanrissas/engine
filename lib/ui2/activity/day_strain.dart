@@ -383,7 +383,7 @@ class _DayStrainDetailState extends State<DayStrainDetail> {
           // exactly the defect TS-03a removed.
           if (max != null && d.zoneSource != null && d.zoneSource != 'tanaka')
             l?.dayStrainInputsMeasuredCeilingNote ??
-                'The zone bar uses your measured maximum. Strain does not, so the strain scores you have already seen stay the same.',
+                'The zone bar and strain both use your measured maximum, because it is higher than the estimate from your age.',
           l?.dayStrainInputsRhrAnchor ??
               'The other anchor is your resting heart rate from the night before, '
                   'so a night the band missed moves the whole day.',

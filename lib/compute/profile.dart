@@ -8,7 +8,7 @@
 // (never a fabricated default). The engine therefore passes nullable getters and
 // only computes profile-gated metrics when the input is present.
 
-import 'hr_max.dart' show manualZoneBoundsFromProfile;
+import 'hr_max.dart' show manualMaxHrFromProfile, manualZoneBoundsFromProfile;
 
 class Profile {
   final int? ageYears;
@@ -16,6 +16,9 @@ class Profile {
   final double? heightCm;
   final String? sex; // 'm' | 'f' (lowercase; matches the AppState profile map)
   final int? restingHrManual; // optional user-supplied RHR
+  /// Optional user-supplied max heart rate (a field or lab test). Validated
+  /// by `manualMaxHrFromProfile`; overrides the age estimate everywhere.
+  final double? maxHrManual;
   // The zones screen's manual edges. Carried so the day derive (which only
   // sees [toMap]) bands on the same set the zones screen shows.
   final List<int>? hrZoneBounds;
@@ -26,6 +29,7 @@ class Profile {
     this.heightCm,
     this.sex,
     this.restingHrManual,
+    this.maxHrManual,
     this.hrZoneBounds,
   });
 
@@ -37,6 +41,7 @@ class Profile {
       heightCm: (m['height_cm'] as num?)?.toDouble(),
       sex: (m['sex'] as String?)?.toLowerCase(),
       restingHrManual: (m['resting_hr'] as num?)?.round(),
+      maxHrManual: manualMaxHrFromProfile(m),
       hrZoneBounds: manualZoneBoundsFromProfile(m),
     );
   }
@@ -47,6 +52,7 @@ class Profile {
         if (heightCm != null) 'height_cm': heightCm,
         if (sex != null) 'sex': sex,
         if (restingHrManual != null) 'resting_hr': restingHrManual,
+        if (maxHrManual != null) 'max_hr': maxHrManual,
         if (hrZoneBounds != null) 'hr_zone_bounds': hrZoneBounds,
       };
 

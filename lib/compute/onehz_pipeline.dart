@@ -32,9 +32,11 @@ import 'package:openstrap_analytics/onehz.dart';
 // instead of two that can drift.
 import 'inputs/garmin_inputs.dart'
     show isWearableFamily, kHrCadenceSec, kOneHzRunGapSec;
+import 'reserve_strain.dart' show reserveStrainCurve, reserveStrainMetric;
 import 'hr_max.dart'
     show
-        estimatedMaxHr,
+        trainingMaxHr,
+        manualMaxHrFromProfile,
         manualZoneBoundsFromProfile,
         smoothedMaxHr,
         smoothedMinHr,
@@ -887,9 +889,17 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
   final prof = d.profile;
   final age = (prof['age'] as num?)?.toDouble();
   final sex = (prof['sex'] as String?)?.toLowerCase();
-  // ONE definition (hr_max.dart). Null without an age, which takes
-  // TRIMP/strain/calories with it. Zones do not need it (`zoneSet` below).
-  final hrMax = estimatedMaxHr(age, d.deviceFamily);
+  // ONE definition (hr_max.dart): a tested max the user entered, else the
+  // age estimate raised to the band's held ceiling. Null without an age and
+  // without a manual max, which takes TRIMP/strain/calories with it. Zones do
+  // not need it (`zoneSet` below).
+  final manualMax = manualMaxHrFromProfile(prof);
+  final hrMax = trainingMaxHr(
+    age: age,
+    deviceFamily: d.deviceFamily,
+    observedCeilingBpm: d.observedHrCeilingBpm,
+    manualMaxHr: manualMax,
+  );
   // TS-04 — THE zone set (hr_max.dart). Karvonen %HRR between the OBSERVED
   // ceiling and the 28-day median resting HR once both exist; %HRmax off the
   // age estimate until then, which is exactly what this line used to do alone.
@@ -902,6 +912,7 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
     observedCeilingBpm: d.observedHrCeilingBpm,
     restingHrHistory: d.rhrHistory,
     manualZoneLowerBpm: manualZoneBoundsFromProfile(prof),
+    manualMaxHr: manualMax,
   );
   final rhrForTrimp = rhrToday ?? (prof['resting_hr'] as num?)?.toDouble();
   final weightKg = (prof['weight_kg'] as num?)?.toDouble();
@@ -951,6 +962,18 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
       ? needInputNote('sex')
       : !quiet.present
       ? (quiet.note ?? kUnknownAbsenceNote)
+      : null;
+  // The HEADLINE strain needs only the reserve: resting HR and max HR. No sex
+  // constant and no baseline days (reserve_strain.dart), so it gates on less
+  // than the Banister TRIMP above, which still needs both.
+  final headlineStrainAbsentNote = perMin.isEmpty
+      ? needInputNote('wake_hr')
+      : hrMax == null
+      ? ceilingAbsentNote
+      : dayHrValid.isEmpty
+      ? needInputNote('hr_samples')
+      : rhrForTrimp == null
+      ? needInputNote('resting_hr')
       : null;
   final caloriesAbsentNote = perMin.isEmpty
       ? needInputNote('wake_hr')
@@ -1044,24 +1067,22 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
     }
   }
 
-  // HEADLINE STRAIN = 0–21 map of the TRIMP earned ABOVE this user's
-  // quiet-waking level, exercise minutes (≥ 40 % HRR) never offset by quiet
-  // ones; raw TRIMP kept as a detail. Same analytics arithmetic as the curve
-  // below and the engine's recompute, so the three cannot disagree.
-  final sexEnum = workoutSex(sex) == 'female' ? Sex.female : Sex.male;
-  final strainMetric = strainAbsentNote != null || !quiet.present
+  // HEADLINE STRAIN = the 0–21 heart-rate-reserve integral on the structure of
+  // WHOOP's strain patent (reserve_strain.dart): every wake minute weighted by
+  // its reserve, normalised to 24 h at max, log-mapped onto 0–21, monotone.
+  // Raw Banister TRIMP is kept as `trimp`, the training-load number. Same
+  // function as the curve below and the engine's recompute, so the three
+  // cannot disagree.
+  final strainMetric = headlineStrainAbsentNote != null
       ? Metric<double>.absent(
           tier: Tier.estimate,
-          inputs_used: const ['hr_1hz', 'profile', 'quiet_waking_hrr_history'],
-          note: strainAbsentNote ?? kUnknownAbsenceNote,
+          inputs_used: const ['hr_1hz', 'resting_hr', 'max_hr'],
+          note: headlineStrainAbsentNote,
         )
-      : strainScoreFromSeries(
+      : reserveStrainMetric(
           perMin,
           restingHr: rhrForTrimp,
           maxHr: hrMax,
-          quietHrr: quiet.value!.hrr,
-          sex: sexEnum,
-          quietSettled: quiet.value!.settled,
         );
 
   // ── curve series for the UI ────────────────────────────────────────────────
@@ -1099,8 +1120,6 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
     wakeHr,
     restingHr: rhrForTrimp,
     maxHr: hrMax,
-    sex: sex,
-    quietHrr: quiet.value?.hrr,
   );
   final zoneTimeline = zoneSet == null
       ? const <Map<String, num>>[]
@@ -1199,7 +1218,9 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
     'strain': {
       ...strainMetric.toJson(),
       if (!strainMetric.present)
-        'note': strainAbsentNote ?? strainMetric.note ?? kUnknownAbsenceNote,
+        'note': headlineStrainAbsentNote ??
+            strainMetric.note ??
+            kUnknownAbsenceNote,
     },
     'trimp': trimp.toJson(),
   };
@@ -1603,7 +1624,9 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
         'calories_total': caloriesAbsentNote,
       },
       if (strainScalar == null)
-        'strain': strainAbsentNote ?? strainMetric.note ?? kUnknownAbsenceNote,
+        'strain': headlineStrainAbsentNote ??
+            strainMetric.note ??
+            kUnknownAbsenceNote,
       if (!trimp.present)
         'trimp': strainAbsentNote ?? trimp.note ?? kUnknownAbsenceNote,
     },
@@ -1962,20 +1985,16 @@ List<Map<String, num>> _strainCurve(
   List<_WakeMinuteHr> wakeHr, {
   required double? restingHr,
   required double? maxHr,
-  required String? sex,
-  required double? quietHrr,
 }) {
-  if (wakeHr.isEmpty || sex == null) return const [];
-  // The headline's own arithmetic, minute by minute (`strainCurveFromSeries`),
-  // so the last point IS the headline and exercise already banked never falls
-  // back out through a quiet afternoon. Null — no level, or bad anchors —
-  // leaves the curve empty, which the strain screen explains from the note.
-  final curve = strainCurveFromSeries(
+  if (wakeHr.isEmpty) return const [];
+  // The headline's own arithmetic, minute by minute (`reserveStrainCurve`), so
+  // the last point IS the headline and strain only ever builds. Null — bad
+  // anchors — leaves the curve empty, which the strain screen explains from
+  // the note.
+  final curve = reserveStrainCurve(
     [for (final p in wakeHr) p.hr],
     restingHr: restingHr,
     maxHr: maxHr,
-    quietHrr: quietHrr,
-    sex: workoutSex(sex) == 'female' ? Sex.female : Sex.male,
   );
   if (curve == null) return const [];
   return [

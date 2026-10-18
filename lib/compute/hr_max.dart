@@ -39,8 +39,16 @@ import 'package:openstrap_analytics/onehz.dart' as ana;
 // is to drop impossible samples before a spike defines a peak. Folding it into
 // the training ceiling would clip real effort.
 
-/// Estimated HRmax (bpm) for [age] — Tanaka (2001), `208 − 0.7 · age`. Null
-/// only when the age is unknown.
+/// Estimated HRmax (bpm) for [age] — Gellish et al. (2007), the non-linear
+/// `192 − 0.007 · age²`. Null only when the age is unknown.
+///
+/// GELLISH, NOT TANAKA, since algo v116: it is the formula WHOOP states it
+/// starts every member on ("WHOOP uses the Gellish non-linear formula, based
+/// on your age", WHOOP Locker, "Calculating max heart rate"), and strain, zones
+/// and calories are now built to read on WHOOP's scale. At 23 it is 188.3 bpm
+/// where Tanaka gave 191.9 — a lower ceiling, so the same effort is a larger
+/// share of the reserve. [trainingMaxHr] raises it to a measured ceiling and
+/// lets a tested max override it, which is WHOOP's order too.
 ///
 /// THIS IS NOT DEVICE-GATED, AND IT WAS, AND THAT WAS THE BUG. Tanaka is a
 /// population regression on AGE. It reads no sensor, no accelerometer and no
@@ -64,7 +72,44 @@ import 'package:openstrap_analytics/onehz.dart' as ana;
 /// refuses for an unknown family, in analytics' `observed_max_hr.dart`.
 double? estimatedMaxHr(num? age, String? deviceFamily) {
   if (age == null || age <= 0) return null;
-  return 208.0 - 0.7 * age.toDouble();
+  final a = age.toDouble();
+  return 192.0 - 0.007 * a * a;
+}
+
+/// The plausible range for a max heart rate the user types in. Outside it the
+/// entry is ignored (not clamped): a fat-fingered 1900 is not a 230.
+const int kManualMaxHrMin = 120;
+const int kManualMaxHrMax = 230;
+
+/// The user's own max heart rate (a field or lab test), stored as `max_hr` on
+/// the profile. Null when unset or implausible.
+double? manualMaxHrFromProfile(Map<String, dynamic>? profile) {
+  final v = profile?['max_hr'];
+  if (v is! num) return null;
+  if (v < kManualMaxHrMin || v > kManualMaxHrMax) return null;
+  return v.toDouble();
+}
+
+/// THE max heart rate strain, TRIMP and calories are priced on, in WHOOP's
+/// order: a max the user entered wins outright; otherwise the age estimate
+/// ([estimatedMaxHr]), RAISED to the highest heart rate the band has seen held
+/// ([observedCeilingBpm]) when that is higher — "WHOOP automatically detects
+/// when you hit a new max heart rate and updates your profile accordingly."
+/// Never lowered by an observation: not reaching a high heart rate is not
+/// evidence of a low ceiling. Null without an age and without a manual max.
+double? trainingMaxHr({
+  num? age,
+  String? deviceFamily,
+  double? observedCeilingBpm,
+  double? manualMaxHr,
+}) {
+  if (manualMaxHr != null) return manualMaxHr;
+  final est = estimatedMaxHr(age, deviceFamily);
+  final obs = observedCeilingBpm;
+  if (obs != null && obs > 0 && obs <= kHrHardCeilBpm) {
+    return est == null ? obs : math.max(est, obs);
+  }
+  return est;
 }
 
 /// THE zone set every surface bands on — day zones, the day zone timeline and a
@@ -138,9 +183,20 @@ ana.HeartRateZoneSet? trainingZones({
   double? observedCeilingBpm,
   List<double> restingHrHistory = const [],
   List<int>? manualZoneLowerBpm,
+  double? manualMaxHr,
 }) {
   final manual = manualZoneLowerBpm;
   if (manual != null && manual.length == 5) return _manualZones(manual);
+  // A tested max the user entered: reserve (Karvonen) bands on it once there
+  // is a resting-rate history, %HRmax on it until then — WHOOP's zone method.
+  if (manualMaxHr != null) {
+    return ana.HeartRateZones.reserveZones(
+          restingHrHistory: restingHrHistory,
+          maxHr: manualMaxHr,
+          source: 'manual_max',
+        ) ??
+        ana.HeartRateZones.zonesFromMaxHr(manualMaxHr, source: 'manual_max');
+  }
   final est = estimatedMaxHr(age, deviceFamily);
   if (observedCeilingBpm != null &&
       observedCeilingBpm > 0 &&
