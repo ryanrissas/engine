@@ -6620,7 +6620,7 @@ class DerivationEngine {
               : null);
       if (start == null || dur == null || dur <= 0 || dur > 360) continue;
       final day = dayLabelOf(DateTime.fromMillisecondsSinceEpoch(start * 1000));
-      out[day] = (out[day] ?? 0) + dur;
+      out[day] = (out[day] ?? 0.0) + dur;
     }
     return out;
   }

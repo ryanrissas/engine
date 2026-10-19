@@ -1060,7 +1060,7 @@ ana.Metric<hs.HealthspanResult> _healthspan(
         mvpaModMin: _numOrNull(d['mvpa_mod_min'])?.round(),
         mvpaVigMin: _numOrNull(d['mvpa_vig_min'])?.round(),
         wornMin: _numOrNull(d['worn_min']),
-        strengthMin: strengthMinByDate[d['date']] ?? 0,
+        strengthMin: strengthMinByDate[d['date']] ?? 0.0,
       ),
   ];
   final last30 = days.length > 30 ? days.sublist(days.length - 30) : days;
