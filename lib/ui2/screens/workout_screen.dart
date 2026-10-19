@@ -22,6 +22,9 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
+import '../../compute/load_summary.dart';
+import '../../compute/muscular_load.dart' show kMinCalibrationSessions, kMinVmaxSessions;
+import '../../compute/throw_load.dart';
 import '../../data/db.dart';
 import '../../gps/gps_source.dart';
 import '../../gps/route_models.dart';
@@ -283,6 +286,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
             const SizedBox(height: S.x3),
             _tonnageCard(c, p, d),
           ],
+          if (_showLiftLoad(d.liftLoad)) ...[
+            const SizedBox(height: S.x3),
+            _liftLoadCard(c, p, d.liftLoad!),
+          ],
         ]),
         // TS-02 — the door onto the day's own strain trace. `getDayStrain` and
         // `series.strain_curve` were both fully implemented and read by no
@@ -332,6 +339,101 @@ class _WorkoutScreenState extends State<WorkoutScreen> with RevisionReload {
               axis: axis, t: animate(context, 1)),
         ),
       ),
+    );
+  }
+
+  bool _showLiftLoad(LoadSummary? s) =>
+      s != null &&
+      (s.latestLift != null ||
+          s.todayLifts > 0 ||
+          s.throwWhy != 'no_throws_logged');
+
+  /// What heart rate misses: the muscles on a lift, the arm on a throw. Every
+  /// line either carries a number or says what it is waiting for.
+  Widget _liftLoadCard(BuildContext c, P p, LoadSummary s) {
+    final lines = <(String, String?)>[];
+    final lift = s.latestLift;
+    if (lift != null) {
+      lines.add(lift.muscular == null
+          ? (
+              'Muscular load',
+              'Compares each lift to your own once you have '
+                  '$kMinVmaxSessions logged lifts (you have '
+                  '${lift.pastSessions + 1}).'
+            )
+          : (
+              'Muscular load ${lift.muscular!.toStringAsFixed(2)}',
+              'Your last lift, effort-weighted. 1.00 is your biggest usual '
+                  'session — your average plus two spreads, the WHOOP-patent '
+                  'yardstick.'
+            ));
+    }
+    if (s.todayLifts > 0 || s.k != null) {
+      if (s.k == null) {
+        lines.add((
+          'Strain with lifting',
+          'Turns on after $kMinCalibrationSessions cardio sessions you rated '
+              '(you have ${s.calibrationSessions}). It learns how your '
+              'ratings line up with heart-rate strain, then adds what heart '
+              'rate missed on a lift.'
+        ));
+      } else if (s.todayStrainWithLifting != null && s.todayStrain != null) {
+        lines.add((
+          'Strain with lifting ${s.todayStrainWithLifting!.toStringAsFixed(1)}',
+          'Heart rate alone: ${s.todayStrain!.toStringAsFixed(1)}. The rest is '
+              'what your rating says your lift cost beyond your heart rate.'
+        ));
+      } else if (s.todayLifts > 0) {
+        lines.add((
+          'Strain with lifting',
+          'Rate today\'s lift (how hard it felt, 1–10) to add it to strain.'
+        ));
+      }
+    }
+    final r = s.throwRatio;
+    final why = s.throwWhy ?? '';
+    if (r != null) {
+      lines.add((
+        'Arm load ${r.ratio.toStringAsFixed(2)} · ${s.throws7d} throws in 7 days',
+        r.aboveCaution
+            ? 'Last 7 days against your last 4 weeks. At $kThrowAcwrCaution '
+                'and above, a study of baseball pitchers saw more arm '
+                'injuries (Mehta 2019). It describes load; it is not a '
+                'diagnosis.'
+            : r.insideSafeBand
+                ? 'Last 7 days against your last 4 weeks — inside the '
+                    '$kThrowAcwrLow–$kThrowAcwrHigh range an interval-'
+                    'throwing study used.'
+                : 'Last 7 days against your last 4 weeks — below the '
+                    '$kThrowAcwrLow–$kThrowAcwrHigh range an interval-'
+                    'throwing study used.'
+      ));
+    } else if (why.startsWith('need_history')) {
+      lines.add((
+        'Arm load',
+        'Needs $kThrowMinHistoryDays days of logged throws to compare '
+            'this week with your usual.'
+      ));
+    } else if (why.startsWith('unlogged_sessions')) {
+      final n = RegExp(r'n=(\d+)').firstMatch(why)?.group(1) ?? 'Some';
+      lines.add((
+        'Arm load',
+        '$n Baseball session(s) have no throws logged. Log them from the '
+            'session so arm load is not guessed.'
+      ));
+    }
+    return Surface(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        for (var i = 0; i < lines.length; i++) ...[
+          if (i > 0) const SizedBox(height: S.x3),
+          Text(lines[i].$1, style: F.head.copyWith(color: p.ink)),
+          if (lines[i].$2 != null) ...[
+            const SizedBox(height: S.x1),
+            Text(lines[i].$2!,
+                style: F.cap.copyWith(color: p.ink2, height: 1.4)),
+          ],
+        ],
+      ]),
     );
   }
 
@@ -1431,6 +1533,8 @@ List<Map<String, Object?>> _setRows(List<LoggedSet> sets) {
         'reps': s.reps,
         'load_kg': s.loadKg,
         'rpe': s.rpe,
+        // Only a tapped RPE is the user's; see `strength_set.rpe_source`.
+        'rpe_source': s.rpe != null && s.rpeByUser ? 'user' : null,
         'rest_sec': s.restSec,
         'at_ts': s.at.millisecondsSinceEpoch ~/ 1000,
       },
@@ -1499,12 +1603,14 @@ Future<Map<String, SetHistory>> loadSetHistory() async {
     final best = <String, LoggedSet>{};
     for (final row in candidates.previous) {
       final key = row['exercise_key'] as String?;
-      if (key == null || previous.containsKey(key)) continue;
+      if (key == null || isThrowKey(key) || previous.containsKey(key)) {
+        continue;
+      }
       previous[key] = _logFrom([row]).sets.single;
     }
     for (final row in candidates.best) {
       final key = row['exercise_key'] as String?;
-      if (key == null || best.containsKey(key)) continue;
+      if (key == null || isThrowKey(key) || best.containsKey(key)) continue;
       best[key] = _logFrom([row]).sets.single;
     }
     for (final key in {...previous.keys, ...best.keys}) {
@@ -1750,11 +1856,15 @@ Future<ActivityResult> _detailOf(AppState app, _PastWorkout w) async {
 /// when it was null: a bodyweight set is not a zero-kilo set.
 StrengthLog _logFrom(List<Map<String, Object?>> rows) => StrengthLog([
       for (final r in rows)
+        // A Baseball session's throw entries share the table; they are not
+        // sets of a lift (compute/throw_load.dart).
+        if (!isThrowKey((r['exercise_key'] as String?) ?? ''))
         LoggedSet(
           (r['exercise_key'] as String?) ?? '',
           (r['reps'] as num?)?.toInt() ?? 0,
           loadKg: (r['load_kg'] as num?)?.toDouble(),
           rpe: (r['rpe'] as num?)?.toInt(),
+          rpeByUser: r['rpe_source'] == 'user',
           restSec: (r['rest_sec'] as num?)?.toInt(),
           at: DateTime.fromMillisecondsSinceEpoch(
               ((r['at_ts'] as num?)?.toInt() ?? 0) * 1000),
@@ -2019,6 +2129,10 @@ class _WorkoutData {
   /// one — see health_import_state.dart for why the store cannot be asked.
   final DateTime? importedLast;
 
+  /// Muscular load, strain with lifting and throwing load
+  /// (compute/load_summary.dart). Null when nothing could be read.
+  final LoadSummary? liftLoad;
+
   const _WorkoutData({
     this.weightKg,
     this.load,
@@ -2039,6 +2153,7 @@ class _WorkoutData {
     this.morningAfter = const [],
     this.suggestions = const [],
     this.importedLast,
+    this.liftLoad,
   });
 
   const _WorkoutData.empty() : this();
@@ -2257,7 +2372,29 @@ Future<_WorkoutData> _loadWorkoutData(AppState app) async {
     // them.
     final history = await loadSetHistory();
 
+    // Muscular load, strain with lifting and the arm's throwing load, over the
+    // last eight weeks of saved sessions. Best-effort like everything here.
+    LoadSummary? liftLoad;
+    try {
+      final todayStrain =
+          lastSevenDays((await repo.getChart('strain'))['points'], end)[6];
+      final from = DateTime(end.year, end.month, end.day - 56)
+              .millisecondsSinceEpoch ~/
+          1000;
+      final inputs = await LocalDb.loadInputsSince(from);
+      liftLoad = buildLoadSummary(
+        sessions: inputs.sessions,
+        sets: inputs.sets,
+        today: end,
+        bodyKg: weight,
+        todayStrain: todayStrain,
+      );
+    } catch (_) {
+      liftLoad = null;
+    }
+
     return _WorkoutData(
+      liftLoad: liftLoad,
       weightKg: weight,
       load: load,
       loadNote: note,

@@ -4872,9 +4872,16 @@ class LocalDb {
         rest_sec INTEGER,
         at_ts INTEGER,
         note TEXT NOT NULL DEFAULT '',
+        rpe_source TEXT,
         PRIMARY KEY (session_id, seq)
       )
     ''');
+    // Who set `rpe`: 'user' when the user tapped it. NULL on every set saved
+    // before this existed, and on a set whose effort nobody chose — the live
+    // picker used to start at 7, so an old 7 cannot be told from a tap and
+    // muscular load counts it as unrated (compute/muscular_load.dart).
+    // Additive and idempotent: this helper runs on the every-open repair path.
+    await _addColumnIfMissing(db, 'strength_set', 'rpe_source', 'TEXT');
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_strength_set_ex '
       'ON strength_set(exercise_key, at_ts)',
@@ -4938,6 +4945,68 @@ class LocalDb {
       orderBy: 'at_ts DESC',
       limit: limit,
     );
+  }
+
+  /// Append throw entries (compute/throw_load.dart) to a session's
+  /// `strength_set` rows, after whatever is already there — a throw log is
+  /// added to, not re-sent whole, so it must not reuse a live set's `seq`.
+  static Future<void> addThrowEntries(
+    String sessionId,
+    List<Map<String, Object?>> rows,
+  ) async {
+    if (rows.isEmpty) return;
+    final db = await instance;
+    await db.transaction((txn) async {
+      final top = await txn.rawQuery(
+        'SELECT MAX(seq) AS m FROM strength_set WHERE session_id = ?',
+        [sessionId],
+      );
+      var seq = ((top.first['m'] as num?)?.toInt() ?? -1) + 1;
+      for (final r in rows) {
+        await txn.insert('strength_set', {
+          ...r,
+          'session_id': sessionId,
+          'seq': seq++,
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
+      }
+    });
+  }
+
+  /// Remove one logged row (a throw entry the user deletes).
+  static Future<void> deleteStrengthRow(String sessionId, int seq) async {
+    final db = await instance;
+    await db.delete('strength_set',
+        where: 'session_id = ? AND seq = ?', whereArgs: [sessionId, seq]);
+  }
+
+  /// Saved sessions that started at or after [fromSec], oldest first, with
+  /// the fields training-load arithmetic needs — and every typed set of
+  /// those sessions, keyed by session id.
+  static Future<({
+    List<Map<String, Object?>> sessions,
+    Map<String, List<Map<String, Object?>>> sets,
+  })> loadInputsSince(int fromSec) async {
+    final db = await instance;
+    final sessions = await db.query(
+      'sessions',
+      columns: ['id', 'start_ts', 'end_ts', 'type', 'strain', 'rpe',
+          'duration_min'],
+      where: "start_ts >= ? AND status = 'done'",
+      whereArgs: [fromSec],
+      orderBy: 'start_ts ASC',
+    );
+    final sets = <String, List<Map<String, Object?>>>{};
+    if (sessions.isNotEmpty) {
+      final rows = await db.rawQuery(
+        'SELECT s.* FROM strength_set s JOIN sessions x ON x.id = s.session_id '
+        "WHERE x.start_ts >= ? AND x.status = 'done' ORDER BY s.seq ASC",
+        [fromSec],
+      );
+      for (final r in rows) {
+        (sets[r['session_id'] as String] ??= []).add(r);
+      }
+    }
+    return (sessions: sessions, sets: sets);
   }
 
   /// Newest-set and heaviest-set candidates per logged exercise, in two
