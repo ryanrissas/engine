@@ -1861,7 +1861,30 @@ import 'vendor_sleep.dart';
 // WHOOP shows a first calibrating recovery after about four nights; this was
 // blank until 14. The ring shows it from night 5 as an "early read"; the
 // ordinary composite takes over at 14 nights of baseline. Edge-only.
-const int kAlgoVersion = 117;
+// 117 → 118 (sleep, temperature, stages — the "fill every gap" build):
+//   * SLEEP NEED on WHOOP's patent structure (US 12,318,226): baseline +
+//     logistic strain term 1.7/(1+e^((17−s)/3.5)) h + debt − naps
+//     (compute/sleep_need_model.dart). Baseline starts at the 8.4 h measured
+//     need of young adults (Kitamura 2016) and moves to the wearer's own
+//     unconstrained nights; debt is a running ledger (short nights add, long
+//     nights repay 1:1, unrepaid debt fades by 2/3 a night, at most 2 h added
+//     to a night). Last night's performance is scored against last night's
+//     need. Adds the 100/85/70 % goals, 4-day consistency and the restorative
+//     (deep + REM) share. Cross-day only.
+//   * STRAP TEMPERATURE replaces the gen4 1 Hz "skin temp" u16, which was
+//     never a temperature (compute/strap_temp.dart): the band's event-63 field
+//     (0.1 °C), nightly median from onset + 1 h, charging and the hour after it
+//     excluded. On gen4 `skin_temp_adc` is now absent; `strap_temp_c` is the
+//     nightly value, `skin_temp_z`, readiness's temperature driver and the
+//     illness/anomaly checks read it. Re-derived gen4 days lose their ADC
+//     value; pruned days keep it, and the cross-day checks ignore it once any
+//     strap night exists.
+//   * SLEEP STAGES from a per-night physiology-anchored HMM
+//     (compute/night_stager.dart) on every window we stage ourselves: κ ≈ 0.22
+//     vs 0.13 for the rule stager on the same public sleep-lab nights. TST,
+//     WASO, efficiency, deep/REM minutes, cycles and the slow-wave HRV weights
+//     all move with it.
+const int kAlgoVersion = 118;
 /// The sibling SHAs this version was derived against, asserted against
 /// pubspec.yaml in test/db_serve_version_and_reads_test.dart.
 ///
