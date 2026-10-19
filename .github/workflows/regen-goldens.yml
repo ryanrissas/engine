@@ -30,11 +30,11 @@ jobs:
           TZ=UTC GENERATE_GOLDEN=1 flutter test --concurrency=1 test/two_device_fixture_test.dart
       # Pushed to a side branch, never to main: a human (or the session that
       # asked for it) reviews the diff and copies it over deliberately.
-      - name: Push the regenerated goldens to goldens-regen
+      - name: Push the regenerated goldens to goldens-regen-<branch>
         run: |
           git config user.name "goldens-bot"
           git config user.email "goldens-bot@users.noreply.github.com"
-          git checkout -B goldens-regen
+          git checkout -B "goldens-regen-${GITHUB_REF_NAME}"
           git add test/fixtures/whoop_freeze/*.json test/fixtures/two_device_day_expected.json
           git commit -m "Regenerated WHOOP freeze goldens from ${GITHUB_SHA::8}" || echo "no change"
-          git push -f origin goldens-regen
+          git push -f origin "goldens-regen-${GITHUB_REF_NAME}"
