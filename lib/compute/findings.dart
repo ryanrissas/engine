@@ -53,6 +53,10 @@ enum FindingKind {
   irregularRhythm,
   lowReadiness,
   rhrShift,
+
+  /// v118 — two of resting HR, breathing rate and HRV off your usual on two
+  /// nights in a row (compute/illness_watch.dart). Only RED is a finding.
+  illnessWatch,
 }
 
 @immutable
@@ -79,7 +83,8 @@ class Finding {
         FindingKind.illness ||
         FindingKind.anomaly ||
         FindingKind.tempElevated ||
-        FindingKind.irregularRhythm =>
+        FindingKind.irregularRhythm ||
+        FindingKind.illnessWatch =>
           true,
         _ => false,
       };
@@ -91,6 +96,7 @@ class Finding {
         FindingKind.irregularRhythm => 'Irregular heart rhythm — screen',
         FindingKind.lowReadiness => 'Low recovery',
         FindingKind.rhrShift => 'Your resting heart-rate trend shifted',
+        FindingKind.illnessWatch => 'Your body may be fighting something',
       };
 
   String get detail => switch (kind) {
@@ -113,6 +119,10 @@ class Finding {
         FindingKind.rhrShift =>
           'Your resting heart rate has ${risen == false ? 'fallen noticeably below' : 'risen noticeably above'} '
               'its recent usual.',
+        FindingKind.illnessWatch =>
+          'Two nights in a row, at least two of resting heart rate, breathing '
+              'rate and HRV moved away from your usual. A pattern worth '
+              'noticing — not a diagnosis.',
       };
 
   @override
@@ -210,6 +220,9 @@ List<Finding> findingsHistory(
     if (r['illness'] == true) out.add(Finding(FindingKind.illness, date));
     if (r['anomaly'] == true) out.add(Finding(FindingKind.anomaly, date));
     if (r['temp'] == true) out.add(Finding(FindingKind.tempElevated, date));
+    if (r['illness_watch'] == 'red') {
+      out.add(Finding(FindingKind.illnessWatch, date));
+    }
     if (irregularDays.contains(date)) {
       out.add(Finding(FindingKind.irregularRhythm, date));
     }
@@ -239,6 +252,7 @@ List<Finding> crossDayAlertFindings(Map<String, dynamic> cd) {
   Map? entry(String k) => cd[k] is Map ? cd[k] as Map : null;
   String? dateOf(Map? e) => e?['date'] is String ? e!['date'] as String : null;
   final ill = entry('illness'), an = entry('anomaly'), tmp = entry('temp_illness');
+  final watch = entry('illness_watch');
   return [
     if (ill?['state'] == 'red' && dateOf(ill) != null)
       Finding(FindingKind.illness, dateOf(ill)!),
@@ -246,6 +260,8 @@ List<Finding> crossDayAlertFindings(Map<String, dynamic> cd) {
       Finding(FindingKind.anomaly, dateOf(an)!),
     if (tmp?['flag'] == 'elevated' && dateOf(tmp) != null)
       Finding(FindingKind.tempElevated, dateOf(tmp)!),
+    if (watch?['level'] == 'red' && dateOf(watch) != null)
+      Finding(FindingKind.illnessWatch, dateOf(watch)!),
   ];
 }
 

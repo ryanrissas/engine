@@ -195,6 +195,11 @@ class SleepData {
   /// 4-day sleep consistency and last night's restorative share, 0–100.
   final num? consistencyPct, restorativePct;
 
+  /// v118 — breathing-disturbance screen (cyclic heart-rate variation per
+  /// hour, Hayano 2020) and the clean-beat hours it was counted over. A
+  /// heart-rate pattern screen: never an oxygen reading, never a diagnosis.
+  final num? cvhrPerHour, cvhrHours;
+
   /// The user's own recent nights, LAST NIGHT EXCLUDED, oldest→newest. Minutes
   /// for duration and deep, whole percent for efficiency, epoch seconds for
   /// onset. Empty until enough nights exist, which the screen renders as a
@@ -225,6 +230,8 @@ class SleepData {
     this.needSource,
     this.consistencyPct,
     this.restorativePct,
+    this.cvhrPerHour,
+    this.cvhrHours,
     this.tstHistory = const [],
     this.deepHistory = const [],
     this.effHistory = const [],
@@ -318,6 +325,13 @@ class SleepData {
       // A repository without per-device nights: ours only.
     }
     final timeline = await repo.getDayTimeline(day);
+    Map<String, dynamic> lungs = const {};
+    try {
+      lungs = await repo.getDayLungs(day);
+    } on UnimplementedError {
+      // A repository without the lungs read: no breathing screen.
+    }
+    final cvhrV = envValue(lungs['cvhr']);
     final cd = await repo.getInsights();
     final coach = cd['sleep_coach'];
     final needEnv = coach is Map ? coach['need'] : null;
@@ -381,6 +395,8 @@ class SleepData {
       longestSleepMin: longest,
       solMin: sol,
       deviceNights: deviceNights,
+      cvhrPerHour: cvhrV?['cvhr_per_hour'] as num?,
+      cvhrHours: cvhrV?['analyzed_hours'] as num?,
     );
   }
 }
@@ -703,6 +719,10 @@ class _SleepDetailState extends State<SleepDetail> with RevisionReload {
       // ── 6 · THE SIGNALS UNDERNEATH ──
       Section(l?.sleepDetailOvernightSection ?? 'Overnight signals',
           _overnight(c, p, d)),
+
+      // ── 6b · BREATHING (a heart-rate pattern screen) ──
+      if (_breathing(c, p, d) case final b?)
+        Section('Breathing disturbances', b),
 
       // ── 7 · ONE TAKEAWAY ──
       Section(l?.sleepDetailTonightSection ?? 'Tonight', _tonight(c, p, d)),
@@ -1816,6 +1836,46 @@ class _SleepDetailState extends State<SleepDetail> with RevisionReload {
   }
 
   // ── OVERNIGHT SIGNALS ─────────────────────────────────────────────────────
+
+  /// The CVHR screen for this night, or null when the night has none at all.
+  /// Under [ana.minAnalyzedHoursPerNight] clean hours it says so instead of
+  /// printing a rate built on too little.
+  Widget? _breathing(BuildContext c, P p, SleepData d) {
+    final rate = d.cvhrPerHour, hours = d.cvhrHours;
+    if (rate == null || hours == null) return null;
+    if (hours < ana.minAnalyzedHoursPerNight) {
+      return StatusCard(
+        'Not enough clean heartbeats to check',
+        'This needs ${ana.minAnalyzedHoursPerNight.round()} hours of '
+            'unbroken beats; last night had ${hours.toStringAsFixed(1)}.',
+        icon: LucideIcons.wind,
+      );
+    }
+    return Surface(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(rate.toStringAsFixed(1), style: F.n34.copyWith(color: p.ink)),
+              const SizedBox(width: S.x2),
+              Flexible(
+                child: Text('an hour, over ${hours.toStringAsFixed(1)} h',
+                    style: F.cap.copyWith(color: p.ink3)),
+              ),
+            ]),
+        const SizedBox(height: S.x3),
+        Text(
+          'Counts the rise-and-fall heart-rate cycles that pauses in breathing '
+          'cause (Hayano et al. 2020). It is a heart-rate pattern screen — not '
+          'an oxygen reading and not a diagnosis. Single nights vary a lot; if '
+          'most nights run above about 11 an hour, ask a doctor about a sleep '
+          'study.',
+          style: F.body.copyWith(color: p.ink2, height: 1.5),
+        ),
+      ]),
+    );
+  }
 
   Widget _overnight(BuildContext c, P p, SleepData d) {
     final loc = AppLocalizations.of(c);
