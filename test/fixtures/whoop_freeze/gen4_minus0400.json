@@ -189,8 +189,8 @@
      },
      "readiness_composite": {
       "value": {
-       "score": 53.713697,
-       "composite_z": 0.148822,
+       "score": 53.371659,
+       "composite_z": 0.135071,
        "calibration": {
         "status": "calibrating",
         "nights": 0
@@ -205,8 +205,8 @@
       "drivers": [
        {
         "label": "RR",
-        "contribution": 0.130327,
-        "detail": "oriented robust-z (median+MAD)=0.586472"
+        "contribution": 0.116576,
+        "detail": "oriented robust-z (median+MAD)=0.524594"
        },
        {
         "label": "HRV",
@@ -274,10 +274,10 @@
       "n_valid": 14,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 13.51304972588547,
-      "z": -0.202,
-      "delta": -0.127,
-      "ratio": -0.0093,
+      "value": 13.522223733314192,
+      "z": -0.187,
+      "delta": -0.117,
+      "ratio": -0.0086,
       "in_normal_range": true,
       "mdc": 1.737,
       "mdc_multiples": -0.07
@@ -4077,6 +4077,26 @@
        "beat_times"
       ],
       "note": "RSA HF-peak respiratory rate (Lomb-Scargle on native beat times, median of 175 300.0s sub-windows, 175 of them within 2.0 br/min of it — brpm, peak_hz and power all come from the medoid sub-window); PRV-derived; this window could resolve up to 26.548673 br/min"
+     },
+     "count_adv": {
+      "value": {
+       "brpm": 13.533835,
+       "peak_hz": 0.225564,
+       "source": "count_adv"
+      },
+      "confidence": 0.8,
+      "tier": "HIGH",
+      "inputs_used": [
+       "rr_cleaned",
+       "beat_times"
+      ],
+      "note": "count-adv (Schäfer & Kratky 2008) median of 1687 32-s windows"
+     },
+     "fused": {
+      "brpm": 13.522223733314192,
+      "confidence": 0.95,
+      "decision": "fused",
+      "method": "lomb_scargle_rsa+count_adv_karlen_gate_2brpm"
      },
      "cvhr_apnea": {
       "value": {
@@ -26007,12 +26027,12 @@
      "rhr_nocturnal": 48.08833333333333,
      "rmssd": 34.05412764733815,
      "rmssd_whole": 32.12768524038331,
-     "readiness": 53.71369724634518,
-     "readiness_z": 0.14882195828467337,
+     "readiness": 53.37165866050428,
+     "readiness_z": 0.13507132886680034,
      "strain": 11.400417481097689,
      "max_hr_used": 192.0,
      "ln_rmssd": 3.5279512483715925,
-     "resp_rate": 13.51304972588547,
+     "resp_rate": 13.522223733314192,
      "skin_temp_z": null,
      "skin_temp_adc": null,
      "strap_temp_c": null,
@@ -26055,7 +26075,15 @@
      "calories_total": 2297.5125051784576,
      "dyn_p90": 0.016945539023250016,
      "nap_min": 0.0,
-     "hrr_bpm": 18.0
+     "hrr_bpm": 18.0,
+     "stress_day": null,
+     "stress_ref_h": 0.018557919621749387,
+     "stress_ref_h_mad": 0.05038386524822692,
+     "stress_ref_x": 3.4565506452470878,
+     "stress_ref_x_mad": 0.4942511812061587,
+     "stress_s_p05": -0.8815753206202279,
+     "stress_s_p99": 1.1722418935169798,
+     "stress_ref_n": 70.0
     },
     "sleep_source": "auto",
     "calories_total": {
@@ -27485,6 +27513,18 @@
       "hrr_bpm": 18.0
      }
     ],
+    "daytime_stress": {
+     "value": "—",
+     "confidence": 0,
+     "tier": "relative",
+     "inputs_used": [
+      "hr_1hz",
+      "rr_still",
+      "gravity",
+      "resting_hr"
+     ],
+     "note": "need_baseline:have=0,need=3,still_min=0,need_min=600"
+    },
     "hr_ceiling": {
      "value": "—",
      "confidence": 0.0,
@@ -27893,10 +27933,10 @@
    "finalized": 0,
    "rhr": 48.08833333333333,
    "rmssd": 34.05412764733815,
-   "readiness": 53.71369724634518,
+   "readiness": 53.37165866050428,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "f4d771f19b3fa06b147f95191e079b244e7cdda2c2c2c76a420e3c67a9b62850"
+   "payload_sha256": "91cfaaf9eaa232817b55ac6bafed4d162d565bcc720501a60692396f966a8a63"
   },
   {
    "day_id": "2026-07-14",
@@ -28087,8 +28127,8 @@
      },
      "readiness_composite": {
       "value": {
-       "score": 53.713697,
-       "composite_z": 0.148822,
+       "score": 53.371659,
+       "composite_z": 0.135071,
        "calibration": {
         "status": "calibrating",
         "nights": 1
@@ -28103,8 +28143,8 @@
       "drivers": [
        {
         "label": "RR",
-        "contribution": 0.130327,
-        "detail": "oriented robust-z (median+MAD)=0.586472"
+        "contribution": 0.116576,
+        "detail": "oriented robust-z (median+MAD)=0.524594"
        },
        {
         "label": "HRV",
@@ -28167,18 +28207,18 @@
       "mdc_multiples": -0.03
      },
      "resp": {
-      "baseline": 13.633449415257168,
+      "baseline": 13.633892564282293,
       "spread": 0.5,
       "n_valid": 15,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 13.51304972588547,
-      "z": -0.192,
-      "delta": -0.12,
-      "ratio": -0.0088,
+      "value": 13.522223733314192,
+      "z": -0.178,
+      "delta": -0.112,
+      "ratio": -0.0082,
       "in_normal_range": true,
       "mdc": 1.737,
-      "mdc_multiples": -0.07
+      "mdc_multiples": -0.06
      },
      "skin_temp": {
       "baseline": 30395.79120997569,
@@ -31975,6 +32015,26 @@
        "beat_times"
       ],
       "note": "RSA HF-peak respiratory rate (Lomb-Scargle on native beat times, median of 175 300.0s sub-windows, 175 of them within 2.0 br/min of it — brpm, peak_hz and power all come from the medoid sub-window); PRV-derived; this window could resolve up to 26.548673 br/min"
+     },
+     "count_adv": {
+      "value": {
+       "brpm": 13.533835,
+       "peak_hz": 0.225564,
+       "source": "count_adv"
+      },
+      "confidence": 0.8,
+      "tier": "HIGH",
+      "inputs_used": [
+       "rr_cleaned",
+       "beat_times"
+      ],
+      "note": "count-adv (Schäfer & Kratky 2008) median of 1687 32-s windows"
+     },
+     "fused": {
+      "brpm": 13.522223733314192,
+      "confidence": 0.95,
+      "decision": "fused",
+      "method": "lomb_scargle_rsa+count_adv_karlen_gate_2brpm"
      },
      "cvhr_apnea": {
       "value": {
@@ -53545,12 +53605,12 @@
      "rhr_nocturnal": 48.08833333333333,
      "rmssd": 34.05412764733815,
      "rmssd_whole": 32.12768524038331,
-     "readiness": 53.71369724634518,
-     "readiness_z": 0.14882195828467337,
+     "readiness": 53.37165866050428,
+     "readiness_z": 0.13507132886680034,
      "strain": 11.395181698791921,
      "max_hr_used": 192.0,
      "ln_rmssd": 3.5279512483715925,
-     "resp_rate": 13.51304972588547,
+     "resp_rate": 13.522223733314192,
      "skin_temp_z": null,
      "skin_temp_adc": null,
      "strap_temp_c": null,
@@ -53594,6 +53654,14 @@
      "dyn_p90": 0.6766952190329969,
      "nap_min": 45.0,
      "hrr_bpm": 14.0,
+     "stress_day": null,
+     "stress_ref_h": 0.06477541371158392,
+     "stress_ref_h_mad": 0.010690141843971615,
+     "stress_ref_x": 2.78226783590912,
+     "stress_ref_x_mad": 0.04262421376227857,
+     "stress_s_p05": -1.53155124433828,
+     "stress_s_p99": 0.38988549631820174,
+     "stress_ref_n": 25.0,
      "hr_ceiling_bpm": 157.0
     },
     "sleep_source": "auto",
@@ -54989,6 +55057,18 @@
      "present": false
     },
     "workout_suggestions": [],
+    "daytime_stress": {
+     "value": "—",
+     "confidence": 0,
+     "tier": "relative",
+     "inputs_used": [
+      "hr_1hz",
+      "rr_still",
+      "gravity",
+      "resting_hr"
+     ],
+     "note": "need_baseline:have=1,need=3,still_min=70,need_min=600"
+    },
     "hr_ceiling": {
      "value": {
       "bpm": 157.0,
@@ -55404,10 +55484,10 @@
    "finalized": 0,
    "rhr": 48.08833333333333,
    "rmssd": 34.05412764733815,
-   "readiness": 53.71369724634518,
+   "readiness": 53.37165866050428,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "b137727f27837273d46dd81974098a3a1cec57e22e4d9f19b01340f678484799"
+   "payload_sha256": "2fee9440e503bd0540b72991353f403b48237174fd2b3b08c51388fcc94eca3e"
   },
   {
    "day_id": "2026-07-15",
@@ -55598,8 +55678,8 @@
      },
      "readiness_composite": {
       "value": {
-       "score": 80.344176,
-       "composite_z": 1.407946,
+       "score": 80.126115,
+       "composite_z": 1.394195,
        "calibration": {
         "status": "calibrating",
         "nights": 2
@@ -55620,8 +55700,8 @@
        },
        {
         "label": "RR",
-        "contribution": 0.130327,
-        "detail": "oriented robust-z (median+MAD)=0.586472"
+        "contribution": 0.116576,
+        "detail": "oriented robust-z (median+MAD)=0.524594"
        },
        {
         "label": "HRV",
@@ -55684,18 +55764,18 @@
       "mdc_multiples": -0.03
      },
      "resp": {
-      "baseline": 13.627633526684498,
+      "baseline": 13.628498418488897,
       "spread": 0.5,
       "n_valid": 16,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 13.51304972588547,
-      "z": -0.183,
-      "delta": -0.115,
-      "ratio": -0.0084,
+      "value": 13.522223733314192,
+      "z": -0.17,
+      "delta": -0.106,
+      "ratio": -0.0078,
       "in_normal_range": true,
       "mdc": 1.737,
-      "mdc_multiples": -0.07
+      "mdc_multiples": -0.06
      },
      "skin_temp": {
       "baseline": 30395.79120997569,
@@ -59492,6 +59572,26 @@
        "beat_times"
       ],
       "note": "RSA HF-peak respiratory rate (Lomb-Scargle on native beat times, median of 175 300.0s sub-windows, 175 of them within 2.0 br/min of it — brpm, peak_hz and power all come from the medoid sub-window); PRV-derived; this window could resolve up to 26.548673 br/min"
+     },
+     "count_adv": {
+      "value": {
+       "brpm": 13.533835,
+       "peak_hz": 0.225564,
+       "source": "count_adv"
+      },
+      "confidence": 0.8,
+      "tier": "HIGH",
+      "inputs_used": [
+       "rr_cleaned",
+       "beat_times"
+      ],
+      "note": "count-adv (Schäfer & Kratky 2008) median of 1687 32-s windows"
+     },
+     "fused": {
+      "brpm": 13.522223733314192,
+      "confidence": 0.95,
+      "decision": "fused",
+      "method": "lomb_scargle_rsa+count_adv_karlen_gate_2brpm"
      },
      "cvhr_apnea": {
       "value": {
@@ -79474,12 +79574,12 @@
      "rhr_nocturnal": 48.08833333333333,
      "rmssd": 34.05412764733815,
      "rmssd_whole": 32.12768524038331,
-     "readiness": 80.34417575401216,
-     "readiness_z": 1.4079459099228735,
+     "readiness": 80.12611512647176,
+     "readiness_z": 1.3941952805050004,
      "strain": 11.394702575413639,
      "max_hr_used": 192.0,
      "ln_rmssd": 3.5279512483715925,
-     "resp_rate": 13.51304972588547,
+     "resp_rate": 13.522223733314192,
      "skin_temp_z": null,
      "skin_temp_adc": null,
      "strap_temp_c": null,
@@ -79522,7 +79622,15 @@
      "calories_total": 2151.991671845124,
      "dyn_p90": 0.0166173604770428,
      "nap_min": 0.0,
-     "hrr_bpm": 18.0
+     "hrr_bpm": 18.0,
+     "stress_day": null,
+     "stress_ref_h": null,
+     "stress_ref_h_mad": null,
+     "stress_ref_x": null,
+     "stress_ref_x_mad": null,
+     "stress_s_p05": null,
+     "stress_s_p99": null,
+     "stress_ref_n": null
     },
     "sleep_source": "auto",
     "calories_total": {
@@ -80736,6 +80844,18 @@
       "hrr_bpm": 18.0
      }
     ],
+    "daytime_stress": {
+     "value": "—",
+     "confidence": 0,
+     "tier": "relative",
+     "inputs_used": [
+      "hr_1hz",
+      "rr_still",
+      "gravity",
+      "resting_hr"
+     ],
+     "note": "need_baseline:have=2,need=3,still_min=140,need_min=600"
+    },
     "hr_ceiling": {
      "value": "—",
      "confidence": 0.0,
@@ -81144,10 +81264,10 @@
    "finalized": 0,
    "rhr": 48.08833333333333,
    "rmssd": 34.05412764733815,
-   "readiness": 80.34417575401216,
+   "readiness": 80.12611512647176,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "03a35fe66551d0667ba11be966e1cb4389dfa6c1849b1541c47a3eb611db92f9"
+   "payload_sha256": "bf1383ebee783756b6ff48ba425c8f55508a5ceba63a0fcc8afbc444d92798d5"
   }
  ],
  "metric_series": [
@@ -81264,12 +81384,12 @@
   {
    "date": "2026-07-13",
    "key": "readiness",
-   "value": 53.71369724634518
+   "value": 53.37165866050428
   },
   {
    "date": "2026-07-13",
    "key": "readiness_z",
-   "value": 0.14882195828467337
+   "value": 0.13507132886680034
   },
   {
    "date": "2026-07-13",
@@ -81279,7 +81399,7 @@
   {
    "date": "2026-07-13",
    "key": "resp_rate",
-   "value": 13.51304972588547
+   "value": 13.522223733314192
   },
   {
    "date": "2026-07-13",
@@ -81340,6 +81460,46 @@
    "date": "2026-07-13",
    "key": "stress",
    "value": 61.03520288391907
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_day",
+   "value": null
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_h",
+   "value": 0.018557919621749387
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_h_mad",
+   "value": 0.05038386524822692
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_n",
+   "value": 70.0
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_x",
+   "value": 3.4565506452470878
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_x_mad",
+   "value": 0.4942511812061587
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_s_p05",
+   "value": -0.8815753206202279
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_s_p99",
+   "value": 1.1722418935169798
   },
   {
    "date": "2026-07-13",
@@ -81479,12 +81639,12 @@
   {
    "date": "2026-07-14",
    "key": "readiness",
-   "value": 53.71369724634518
+   "value": 53.37165866050428
   },
   {
    "date": "2026-07-14",
    "key": "readiness_z",
-   "value": 0.14882195828467337
+   "value": 0.13507132886680034
   },
   {
    "date": "2026-07-14",
@@ -81494,7 +81654,7 @@
   {
    "date": "2026-07-14",
    "key": "resp_rate",
-   "value": 13.51304972588547
+   "value": 13.522223733314192
   },
   {
    "date": "2026-07-14",
@@ -81555,6 +81715,46 @@
    "date": "2026-07-14",
    "key": "stress",
    "value": 61.03520288391907
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_day",
+   "value": null
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_h",
+   "value": 0.06477541371158392
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_h_mad",
+   "value": 0.010690141843971615
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_n",
+   "value": 25.0
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_x",
+   "value": 2.78226783590912
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_x_mad",
+   "value": 0.04262421376227857
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_s_p05",
+   "value": -1.53155124433828
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_s_p99",
+   "value": 0.38988549631820174
   },
   {
    "date": "2026-07-14",
@@ -81694,12 +81894,12 @@
   {
    "date": "2026-07-15",
    "key": "readiness",
-   "value": 80.34417575401216
+   "value": 80.12611512647176
   },
   {
    "date": "2026-07-15",
    "key": "readiness_z",
-   "value": 1.4079459099228735
+   "value": 1.3941952805050004
   },
   {
    "date": "2026-07-15",
@@ -81709,7 +81909,7 @@
   {
    "date": "2026-07-15",
    "key": "resp_rate",
-   "value": 13.51304972588547
+   "value": 13.522223733314192
   },
   {
    "date": "2026-07-15",
@@ -81770,6 +81970,46 @@
    "date": "2026-07-15",
    "key": "stress",
    "value": 61.03520288391907
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_day",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_h",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_h_mad",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_n",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_x",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_x_mad",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_s_p05",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_s_p99",
+   "value": null
   },
   {
    "date": "2026-07-15",
@@ -85434,8 +85674,8 @@
    "date": "2026-07-13",
    "rhr": 48.08833333333333,
    "rmssd": 34.05412764733815,
-   "readiness": 53.71369724634518,
-   "resp_rate": 13.51304972588547,
+   "readiness": 53.37165866050428,
+   "resp_rate": 13.522223733314192,
    "skin_temp_z": null,
    "skin_temp_adc": null,
    "strap_temp_c": null,
@@ -85640,14 +85880,17 @@
     70.9,
     68.98333333333333,
     52.36666666666667
-   ]
+   ],
+   "worn_min": 1440.0,
+   "mvpa_mod_min": 5,
+   "mvpa_vig_min": 37
   },
   {
    "date": "2026-07-14",
    "rhr": 48.08833333333333,
    "rmssd": 34.05412764733815,
-   "readiness": 53.71369724634518,
-   "resp_rate": 13.51304972588547,
+   "readiness": 53.37165866050428,
+   "resp_rate": 13.522223733314192,
    "skin_temp_z": null,
    "skin_temp_adc": null,
    "strap_temp_c": null,
@@ -85852,14 +86095,17 @@
     70.9,
     68.98333333333333,
     52.36666666666667
-   ]
+   ],
+   "worn_min": 1440.0,
+   "mvpa_mod_min": 5,
+   "mvpa_vig_min": 37
   },
   {
    "date": "2026-07-15",
    "rhr": 48.08833333333333,
    "rmssd": 34.05412764733815,
-   "readiness": 80.34417575401216,
-   "resp_rate": 13.51304972588547,
+   "readiness": 80.12611512647176,
+   "resp_rate": 13.522223733314192,
    "skin_temp_z": null,
    "skin_temp_adc": null,
    "strap_temp_c": null,
@@ -86064,7 +86310,10 @@
     70.9,
     null,
     null
-   ]
+   ],
+   "worn_min": 1320.0,
+   "mvpa_mod_min": 5,
+   "mvpa_vig_min": 37
   }
  ],
  "crossday": {
@@ -86083,6 +86332,7 @@
    "note": "need_baseline:have=2,need=10"
   },
   "temp_illness": null,
+  "illness_watch": null,
   "load": {
    "value": "—",
    "confidence": 0.0,
@@ -86227,7 +86477,7 @@
   },
   "brv": {
    "value": {
-    "mean_brpm": 13.51305,
+    "mean_brpm": 13.522224,
     "sd_brpm": 0.0,
     "cv": 0.0,
     "trend_slope": 0.0,
@@ -86320,6 +86570,21 @@
     "recovery"
    ]
   },
+  "healthspan": {
+   "value": "—",
+   "confidence": 0.0,
+   "tier": "ESTIMATE",
+   "inputs_used": [
+    "rhr",
+    "tst",
+    "hr_minutes",
+    "steps",
+    "strength_sessions",
+    "sri",
+    "vo2max_test"
+   ],
+   "note": "need_baseline:have=3,need=21"
+  },
   "percentiles": {
    "rmssd": {
     "value": "—",
@@ -86356,7 +86621,8 @@
     "unsettled": false,
     "illness": false,
     "anomaly": false,
-    "temp": false
+    "temp": false,
+    "illness_watch": null
    },
    {
     "date": "2026-07-14",
@@ -86364,7 +86630,8 @@
     "unsettled": false,
     "illness": false,
     "anomaly": false,
-    "temp": false
+    "temp": false,
+    "illness_watch": null
    },
    {
     "date": "2026-07-15",
@@ -86372,7 +86639,8 @@
     "unsettled": false,
     "illness": false,
     "anomaly": false,
-    "temp": false
+    "temp": false,
+    "illness_watch": null
    }
   ]
  }
