@@ -9610,7 +9610,9 @@ class DerivationEngine {
     // v118 — gen4's 1 Hz "skin temp" u16 is not a temperature (see
     // compute/strap_temp.dart); no curve is drawn from it.
     seriesPatch['skin_temp_day'] =
-        daySub.deviceFamily == 'gen4' ? const [] : _daySkinTempCurve(daySub);
+        daySub.deviceFamily == 'gen4'
+            ? const <Map<String, num>>[]
+            : _daySkinTempCurve(daySub);
     bundlePatch['restlessness'] = _restlessness(sleepSub);
     // napSub extends a few hours past this day's calendar end so a nap/
     // secondary-sleep block spanning midnight isn't bisected — but a run that
