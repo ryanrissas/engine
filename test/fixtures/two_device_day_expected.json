@@ -73,7 +73,9 @@
         "rr_coverage": 0.98,
         "overcounted_windows": 0,
         "thin_windows": 0,
-        "min_diffs_per_window": 20
+        "min_diffs_per_window": 20,
+        "method": "overlap_5min_step30s_sws_weighted",
+        "consecutive_rmssd_ms": 19.9
       },
       "rmssd_nocturnal": {
         "value": 20.0,
@@ -223,7 +225,7 @@
         "n_valid": 0,
         "nights_since_update": 0,
         "status": "calibrating",
-        "value": 19.899932209964643,
+        "value": 19.8994655594903,
         "z": null,
         "delta": null,
         "ratio": null,
@@ -3883,13 +3885,13 @@
     "scalars": {
       "rhr": 62.998333333333335,
       "rhr_nocturnal": 62.998333333333335,
-      "rmssd": 19.899932209964643,
+      "rmssd": 19.8994655594903,
       "rmssd_whole": 19.99843722189908,
       "readiness": null,
       "readiness_z": null,
       "strain": null,
       "max_hr_used": null,
-      "ln_rmssd": 2.9907163251902045,
+      "ln_rmssd": 2.9906928750627895,
       "resp_rate": 12.265550239234448,
       "skin_temp_z": null,
       "skin_temp_adc": 30005.0,

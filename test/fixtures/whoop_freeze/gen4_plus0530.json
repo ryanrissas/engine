@@ -2,7 +2,7 @@
  "day_result": [
   {
    "day_id": "2026-07-13",
-   "algo_version": 116,
+   "algo_version": 117,
    "payload_json": {
     "date": "2026-07-13",
     "day_confidence": 0.6,
@@ -65,7 +65,7 @@
       "note": "Breathing-rate variability TREND (within-user only); surface a change only beyond the metric MDC"
      },
      "rmssd_sleep_session": {
-      "value": 31.7,
+      "value": 34.1,
       "confidence": 0.5453,
       "tier": "HIGH",
       "inputs_used": [
@@ -77,7 +77,9 @@
       "rr_coverage": 1.0,
       "overcounted_windows": 0,
       "thin_windows": 0,
-      "min_diffs_per_window": 20
+      "min_diffs_per_window": 20,
+      "method": "overlap_5min_step30s_sws_weighted",
+      "consecutive_rmssd_ms": 31.7
      },
      "rmssd_nocturnal": {
       "value": 32.16077953226363,
@@ -169,13 +171,13 @@
      },
      "readiness_lnrmssd": {
       "value": {
-       "ln_rmssd_today": 3.455716,
+       "ln_rmssd_today": 3.527951,
        "rolling7_mean": 3.51852,
        "rolling7_median": 3.526361,
        "cv_pct": 1.688921,
-       "z": -1.056045,
+       "z": 0.023779,
        "swc": 0.033448,
-       "band": "suppressed",
+       "band": "normal",
        "saturation_flag": false
       },
       "confidence": 0.9,
@@ -187,8 +189,8 @@
      },
      "readiness_composite": {
       "value": {
-       "score": 27.033823,
-       "composite_z": -0.992907,
+       "score": 44.101835,
+       "composite_z": -0.23703,
        "calibration": {
         "status": "calibrating",
         "nights": 0
@@ -203,11 +205,6 @@
       ],
       "drivers": [
        {
-        "label": "HRV",
-        "contribution": -0.739232,
-        "detail": "oriented robust-z (median+MAD)=-1.056045"
-       },
-       {
         "label": "temp",
         "contribution": -0.37097,
         "detail": "oriented robust-z (median+MAD)=-3.709699"
@@ -216,6 +213,11 @@
         "label": "RR",
         "contribution": 0.117294,
         "detail": "oriented robust-z (median+MAD)=0.586472"
+       },
+       {
+        "label": "HRV",
+        "contribution": 0.016645,
+        "detail": "oriented robust-z (median+MAD)=0.023779"
        }
       ],
       "note": "GLASS-BOX readiness: disclosed weights autonomic (HRV+RHR, mean of their z) 0.70 > RR 0.20 > temp 0.10, renormalized over present inputs. Drivers are definitional within the formula (correction, not inferred cause). calibrating:have=0,need=14."
@@ -264,13 +266,13 @@
       "n_valid": 14,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 31.68095766979699,
-      "z": -0.465,
-      "delta": -2.912,
-      "ratio": -0.0842,
+      "value": 34.05412764733815,
+      "z": -0.086,
+      "delta": -0.539,
+      "ratio": -0.0156,
       "in_normal_range": true,
       "mdc": 17.366,
-      "mdc_multiples": -0.17
+      "mdc_multiples": -0.03
      },
      "resp": {
       "baseline": 13.639560498784569,
@@ -4251,7 +4253,7 @@
      "si": 159.44,
      "level": "elevated",
      "lf_hf": 0.151,
-     "rmssd": 31.7,
+     "rmssd": 34.1,
      "confidence": 0.7,
      "tier": "ESTIMATE",
      "inputs_used": [
@@ -27148,13 +27150,13 @@
     "scalars": {
      "rhr": 48.08833333333333,
      "rhr_nocturnal": 48.08833333333333,
-     "rmssd": 31.68095766979699,
+     "rmssd": 34.05412764733815,
      "rmssd_whole": 32.12768524038331,
-     "readiness": 27.03382323567632,
-     "readiness_z": -0.992907207334149,
+     "readiness": 44.10183515594999,
+     "readiness_z": -0.23703015525592142,
      "strain": 11.400417481097689,
      "max_hr_used": 192.0,
-     "ln_rmssd": 3.4557157959652387,
+     "ln_rmssd": 3.5279512483715925,
      "resp_rate": 13.51304972588547,
      "skin_temp_z": 3.8090587513754603,
      "skin_temp_adc": 30406.0,
@@ -29034,15 +29036,15 @@
    },
    "finalized": 0,
    "rhr": 48.08833333333333,
-   "rmssd": 31.68095766979699,
-   "readiness": 27.03382323567632,
+   "rmssd": 34.05412764733815,
+   "readiness": 44.10183515594999,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "614942f7b8a1bf13e34d99a46ab3557da04f4ee7bab53181b827e698c70b8941"
+   "payload_sha256": "4f8e14e10044631004108ccafe2668f4769c829842260c50175399b8a2da5dec"
   },
   {
    "day_id": "2026-07-14",
-   "algo_version": 116,
+   "algo_version": 117,
    "payload_json": {
     "date": "2026-07-14",
     "day_confidence": 0.6,
@@ -29105,7 +29107,7 @@
       "note": "Breathing-rate variability TREND (within-user only); surface a change only beyond the metric MDC"
      },
      "rmssd_sleep_session": {
-      "value": 31.7,
+      "value": 34.1,
       "confidence": 0.5453,
       "tier": "HIGH",
       "inputs_used": [
@@ -29117,7 +29119,9 @@
       "rr_coverage": 1.0,
       "overcounted_windows": 0,
       "thin_windows": 0,
-      "min_diffs_per_window": 20
+      "min_diffs_per_window": 20,
+      "method": "overlap_5min_step30s_sws_weighted",
+      "consecutive_rmssd_ms": 31.7
      },
      "rmssd_nocturnal": {
       "value": 32.16077953226363,
@@ -29209,11 +29213,11 @@
      },
      "readiness_lnrmssd": {
       "value": {
-       "ln_rmssd_today": 3.455716,
-       "rolling7_mean": 3.508428,
-       "rolling7_median": 3.48124,
-       "cv_pct": 1.816067,
-       "z": -0.381554,
+       "ln_rmssd_today": 3.527951,
+       "rolling7_mean": 3.518747,
+       "rolling7_median": 3.526361,
+       "cv_pct": 1.689892,
+       "z": 0.023779,
        "swc": 0.033448,
        "band": "normal",
        "saturation_flag": false
@@ -29227,8 +29231,8 @@
      },
      "readiness_composite": {
       "value": {
-       "score": 27.033602,
-       "composite_z": -0.992918,
+       "score": 44.101558,
+       "composite_z": -0.237041,
        "calibration": {
         "status": "calibrating",
         "nights": 1
@@ -29243,11 +29247,6 @@
       ],
       "drivers": [
        {
-        "label": "HRV",
-        "contribution": -0.739232,
-        "detail": "oriented robust-z (median+MAD)=-1.056045"
-       },
-       {
         "label": "temp",
         "contribution": -0.370981,
         "detail": "oriented robust-z (median+MAD)=-3.709811"
@@ -29256,6 +29255,11 @@
         "label": "RR",
         "contribution": 0.117294,
         "detail": "oriented robust-z (median+MAD)=0.586472"
+       },
+       {
+        "label": "HRV",
+        "contribution": 0.016645,
+        "detail": "oriented robust-z (median+MAD)=0.023779"
        }
       ],
       "note": "GLASS-BOX readiness: disclosed weights autonomic (HRV+RHR, mean of their z) 0.70 > RR 0.20 > temp 0.10, renormalized over present inputs. Drivers are definitional within the formula (correction, not inferred cause). calibrating:have=1,need=14."
@@ -29299,18 +29303,18 @@
       "mdc_multiples": -0.42
      },
      "hrv": {
-      "baseline": 34.452722039237024,
+      "baseline": 34.56735765188194,
       "spread": 5.0,
       "n_valid": 15,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 31.68095766979699,
-      "z": -0.442,
-      "delta": -2.772,
-      "ratio": -0.0805,
+      "value": 34.05412764733815,
+      "z": -0.082,
+      "delta": -0.513,
+      "ratio": -0.0148,
       "in_normal_range": true,
       "mdc": 17.366,
-      "mdc_multiples": -0.16
+      "mdc_multiples": -0.03
      },
      "resp": {
       "baseline": 13.633449415257168,
@@ -33291,7 +33295,7 @@
      "si": 159.44,
      "level": "elevated",
      "lf_hf": 0.151,
-     "rmssd": 31.7,
+     "rmssd": 34.1,
      "confidence": 0.7,
      "tier": "ESTIMATE",
      "inputs_used": [
@@ -55828,13 +55832,13 @@
     "scalars": {
      "rhr": 48.08833333333333,
      "rhr_nocturnal": 48.08833333333333,
-     "rmssd": 31.68095766979699,
+     "rmssd": 34.05412764733815,
      "rmssd_whole": 32.12768524038331,
-     "readiness": 27.033601802905416,
-     "readiness_z": -0.9929184330476359,
+     "readiness": 44.10155841853638,
+     "readiness_z": -0.23704138096940847,
      "strain": 11.395181698791921,
      "max_hr_used": 192.0,
-     "ln_rmssd": 3.4557157959652387,
+     "ln_rmssd": 3.5279512483715925,
      "resp_rate": 13.51304972588547,
      "skin_temp_z": 2.5820748428079483,
      "skin_temp_adc": 30406.000332864856,
@@ -57687,15 +57691,15 @@
    },
    "finalized": 0,
    "rhr": 48.08833333333333,
-   "rmssd": 31.68095766979699,
-   "readiness": 27.033601802905416,
+   "rmssd": 34.05412764733815,
+   "readiness": 44.10155841853638,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "d48e5f821878da8ba96ee52b4c8bc3fc8bb7fb75687ef75ffe7a67a316ad7b7f"
+   "payload_sha256": "3393ae842d4562b24f7364691e36bcba0d5d8f30f0dedd0a4f17a9f220e9b1fa"
   },
   {
    "day_id": "2026-07-15",
-   "algo_version": 116,
+   "algo_version": 117,
    "payload_json": {
     "date": "2026-07-15",
     "day_confidence": 0.6,
@@ -57758,7 +57762,7 @@
       "note": "Breathing-rate variability TREND (within-user only); surface a change only beyond the metric MDC"
      },
      "rmssd_sleep_session": {
-      "value": 31.7,
+      "value": 34.1,
       "confidence": 0.5453,
       "tier": "HIGH",
       "inputs_used": [
@@ -57770,7 +57774,9 @@
       "rr_coverage": 1.0,
       "overcounted_windows": 0,
       "thin_windows": 0,
-      "min_diffs_per_window": 20
+      "min_diffs_per_window": 20,
+      "method": "overlap_5min_step30s_sws_weighted",
+      "consecutive_rmssd_ms": 31.7
      },
      "rmssd_nocturnal": {
       "value": 32.16077953226363,
@@ -57862,12 +57868,12 @@
      },
      "readiness_lnrmssd": {
       "value": {
-       "ln_rmssd_today": 3.455716,
-       "rolling7_mean": 3.504781,
-       "rolling7_median": 3.48124,
-       "cv_pct": 1.889192,
-       "z": -0.381554,
-       "swc": 0.033448,
+       "ln_rmssd_today": 3.527951,
+       "rolling7_mean": 3.52542,
+       "rolling7_median": 3.527951,
+       "cv_pct": 1.620447,
+       "z": 0.0,
+       "swc": 0.030824,
        "band": "normal",
        "saturation_flag": false
       },
@@ -57880,8 +57886,8 @@
      },
      "readiness_composite": {
       "value": {
-       "score": 66.115554,
-       "composite_z": 0.668448,
+       "score": 73.929681,
+       "composite_z": 1.042317,
        "calibration": {
         "status": "calibrating",
         "nights": 2
@@ -57902,11 +57908,6 @@
         "detail": "oriented robust-z (median+MAD)=3.273154"
        },
        {
-        "label": "HRV",
-        "contribution": -0.369616,
-        "detail": "oriented robust-z (median+MAD)=-1.056045"
-       },
-       {
         "label": "temp",
         "contribution": -0.224834,
         "detail": "oriented robust-z (median+MAD)=-2.248344"
@@ -57915,6 +57916,11 @@
         "label": "RR",
         "contribution": 0.117294,
         "detail": "oriented robust-z (median+MAD)=0.586472"
+       },
+       {
+        "label": "HRV",
+        "contribution": 0.004253,
+        "detail": "oriented robust-z (median+MAD)=0.012152"
        }
       ],
       "note": "GLASS-BOX readiness: disclosed weights autonomic (HRV+RHR, mean of their z) 0.70 > RR 0.20 > temp 0.10, renormalized over present inputs. Drivers are definitional within the formula (correction, not inferred cause). calibrating:have=2,need=14."
@@ -57958,18 +57964,18 @@
       "mdc_multiples": -0.39
      },
      "hrv": {
-      "baseline": 34.318832385480604,
+      "baseline": 34.542566155042095,
       "spread": 5.0,
       "n_valid": 16,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 31.68095766979699,
-      "z": -0.421,
-      "delta": -2.638,
-      "ratio": -0.0769,
+      "value": 34.05412764733815,
+      "z": -0.078,
+      "delta": -0.488,
+      "ratio": -0.0141,
       "in_normal_range": true,
       "mdc": 17.366,
-      "mdc_multiples": -0.15
+      "mdc_multiples": -0.03
      },
      "resp": {
       "baseline": 13.627633526684498,
@@ -61950,7 +61956,7 @@
      "si": 159.44,
      "level": "elevated",
      "lf_hf": 0.151,
-     "rmssd": 31.7,
+     "rmssd": 34.1,
      "confidence": 0.7,
      "tier": "ESTIMATE",
      "inputs_used": [
@@ -82803,13 +82809,13 @@
     "scalars": {
      "rhr": 48.08833333333333,
      "rhr_nocturnal": 48.08833333333333,
-     "rmssd": 31.68095766979699,
+     "rmssd": 34.05412764733815,
      "rmssd_whole": 32.12768524038331,
-     "readiness": 66.1155535435143,
-     "readiness_z": 0.6684479198992354,
+     "readiness": 73.929680760819,
+     "readiness_z": 1.0423169081000594,
      "strain": 11.394702575413639,
      "max_hr_used": 192.0,
-     "ln_rmssd": 3.4557157959652387,
+     "ln_rmssd": 3.5279512483715925,
      "resp_rate": 13.51304972588547,
      "skin_temp_z": 2.083348400888466,
      "skin_temp_adc": 30406.00018492492,
@@ -84473,11 +84479,11 @@
    },
    "finalized": 0,
    "rhr": 48.08833333333333,
-   "rmssd": 31.68095766979699,
-   "readiness": 66.1155535435143,
+   "rmssd": 34.05412764733815,
+   "readiness": 73.929680760819,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "88431785ae0c418ddf4190d52daa9ae433b1822dec8d5927084162f0907ff6f9"
+   "payload_sha256": "f8d69f92302a6622b1d11204f58cd92f9b7ec62d4010fde998cc79a5e6044313"
   }
  ],
  "metric_series": [
@@ -84564,7 +84570,7 @@
   {
    "date": "2026-07-13",
    "key": "ln_rmssd",
-   "value": 3.4557157959652387
+   "value": 3.5279512483715925
   },
   {
    "date": "2026-07-13",
@@ -84594,12 +84600,12 @@
   {
    "date": "2026-07-13",
    "key": "readiness",
-   "value": 27.03382323567632
+   "value": 44.10183515594999
   },
   {
    "date": "2026-07-13",
    "key": "readiness_z",
-   "value": -0.992907207334149
+   "value": -0.23703015525592142
   },
   {
    "date": "2026-07-13",
@@ -84619,7 +84625,7 @@
   {
    "date": "2026-07-13",
    "key": "rmssd",
-   "value": 31.68095766979699
+   "value": 34.05412764733815
   },
   {
    "date": "2026-07-13",
@@ -84774,7 +84780,7 @@
   {
    "date": "2026-07-14",
    "key": "ln_rmssd",
-   "value": 3.4557157959652387
+   "value": 3.5279512483715925
   },
   {
    "date": "2026-07-14",
@@ -84804,12 +84810,12 @@
   {
    "date": "2026-07-14",
    "key": "readiness",
-   "value": 27.033601802905416
+   "value": 44.10155841853638
   },
   {
    "date": "2026-07-14",
    "key": "readiness_z",
-   "value": -0.9929184330476359
+   "value": -0.23704138096940847
   },
   {
    "date": "2026-07-14",
@@ -84829,7 +84835,7 @@
   {
    "date": "2026-07-14",
    "key": "rmssd",
-   "value": 31.68095766979699
+   "value": 34.05412764733815
   },
   {
    "date": "2026-07-14",
@@ -84984,7 +84990,7 @@
   {
    "date": "2026-07-15",
    "key": "ln_rmssd",
-   "value": 3.4557157959652387
+   "value": 3.5279512483715925
   },
   {
    "date": "2026-07-15",
@@ -85014,12 +85020,12 @@
   {
    "date": "2026-07-15",
    "key": "readiness",
-   "value": 66.1155535435143
+   "value": 73.929680760819
   },
   {
    "date": "2026-07-15",
    "key": "readiness_z",
-   "value": 0.6684479198992354
+   "value": 1.0423169081000594
   },
   {
    "date": "2026-07-15",
@@ -85039,7 +85045,7 @@
   {
    "date": "2026-07-15",
    "key": "rmssd",
-   "value": 31.68095766979699
+   "value": 34.05412764733815
   },
   {
    "date": "2026-07-15",
@@ -85115,7 +85121,7 @@
  "metric_series_version": [
   {
    "date": "2026-07-13",
-   "algo_version": 116,
+   "algo_version": 117,
    "source": "band",
    "device_family": "gen4",
    "coverage_devices": "",
@@ -85123,7 +85129,7 @@
   },
   {
    "date": "2026-07-14",
-   "algo_version": 116,
+   "algo_version": 117,
    "source": "band",
    "device_family": "gen4",
    "coverage_devices": "",
@@ -85131,7 +85137,7 @@
   },
   {
    "date": "2026-07-15",
-   "algo_version": 116,
+   "algo_version": 117,
    "source": "band",
    "device_family": "gen4",
    "coverage_devices": "",
@@ -85141,7 +85147,7 @@
  "wake_day_features": [
   {
    "day_id": "2026-07-13",
-   "algo_version": 116,
+   "algo_version": 117,
    "payload_json": {
     "day_id": "2026-07-13",
     "active_min": 90,
@@ -86349,7 +86355,7 @@
   },
   {
    "day_id": "2026-07-14",
-   "algo_version": 116,
+   "algo_version": 117,
    "payload_json": {
     "day_id": "2026-07-14",
     "active_min": 240,
@@ -87557,7 +87563,7 @@
   },
   {
    "day_id": "2026-07-15",
-   "algo_version": 116,
+   "algo_version": 117,
    "payload_json": {
     "day_id": "2026-07-15",
     "active_min": 40,
@@ -88748,8 +88754,8 @@
   {
    "date": "2026-07-13",
    "rhr": 48.08833333333333,
-   "rmssd": 31.68095766979699,
-   "readiness": 27.03382323567632,
+   "rmssd": 34.05412764733815,
+   "readiness": 44.10183515594999,
    "resp_rate": 13.51304972588547,
    "skin_temp_z": 3.8090587513754603,
    "skin_temp_adc": 30406.0,
@@ -88959,8 +88965,8 @@
   {
    "date": "2026-07-14",
    "rhr": 48.08833333333333,
-   "rmssd": 31.68095766979699,
-   "readiness": 27.033601802905416,
+   "rmssd": 34.05412764733815,
+   "readiness": 44.10155841853638,
    "resp_rate": 13.51304972588547,
    "skin_temp_z": 2.5820748428079483,
    "skin_temp_adc": 30406.000332864856,
@@ -89170,8 +89176,8 @@
   {
    "date": "2026-07-15",
    "rhr": 48.08833333333333,
-   "rmssd": 31.68095766979699,
-   "readiness": 66.1155535435143,
+   "rmssd": 34.05412764733815,
+   "readiness": 73.929680760819,
    "resp_rate": 13.51304972588547,
    "skin_temp_z": 2.083348400888466,
    "skin_temp_adc": 30406.00018492492,
