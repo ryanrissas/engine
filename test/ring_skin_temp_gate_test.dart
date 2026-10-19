@@ -54,14 +54,18 @@ void main() {
     expect(scalars(bundle('ultrahuman', 12, 3530))['skin_temp_adc'], 3530);
   });
 
+  // gen5: a band's real temperature channel. gen4's 1 Hz u16 is not a
+  // temperature and is never read (v118, compute/strap_temp.dart).
   test('a band still needs sixty samples, and is never provisional', () {
-    expect(scalars(bundle('gen4', 36, 805))['skin_temp_adc'], isNull);
-    expect(scalars(bundle('gen4', 59, 805))['skin_temp_adc'], isNull);
-    final b = bundle('gen4', 60, 805);
+    expect(scalars(bundle('gen5', 36, 805))['skin_temp_adc'], isNull);
+    expect(scalars(bundle('gen5', 59, 805))['skin_temp_adc'], isNull);
+    final b = bundle('gen5', 60, 805);
     expect(scalars(b)['skin_temp_adc'], 805);
     final env = (b['wellness'] as Map)['skin_temp'] as Map;
     expect(env.containsKey('provisional'), isFalse);
     expect(env['confidence'], 0.5);
+    // gen4: never, however many samples.
+    expect(scalars(bundle('gen4', 600, 805))['skin_temp_adc'], isNull);
   });
 
   test('a ring night 1 °C warm against its own nights reads as a deviation, '

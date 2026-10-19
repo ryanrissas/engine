@@ -1879,11 +1879,6 @@ import 'vendor_sleep.dart';
 //     illness/anomaly checks read it. Re-derived gen4 days lose their ADC
 //     value; pruned days keep it, and the cross-day checks ignore it once any
 //     strap night exists.
-//   * SLEEP STAGES from a per-night physiology-anchored HMM
-//     (compute/night_stager.dart) on every window we stage ourselves: κ ≈ 0.22
-//     vs 0.13 for the rule stager on the same public sleep-lab nights. TST,
-//     WASO, efficiency, deep/REM minutes, cycles and the slow-wave HRV weights
-//     all move with it.
 const int kAlgoVersion = 118;
 /// The sibling SHAs this version was derived against, asserted against
 /// pubspec.yaml in test/db_serve_version_and_reads_test.dart.
