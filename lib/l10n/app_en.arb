@@ -6319,7 +6319,7 @@
   "@healthRowSleep": {
     "description": "Overview row label and Explore catalogue category title: Sleep"
   },
-  "healthRowStress": "Stress",
+  "healthRowStress": "Sleep stress",
   "@healthRowStress": {
     "description": "Overview row label and sub-label fallback: Stress"
   },

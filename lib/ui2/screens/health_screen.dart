@@ -783,9 +783,9 @@ class _HealthScreenState extends State<HealthScreen> with RevisionReload {
         d.stress,
         LucideIcons.brain,
         C.purple,
-        l?.healthRowStress ?? 'Stress',
+        l?.healthRowStress ?? 'Sleep stress',
         ofNight((stressBlock is Map ? stressBlock['level']?.toString() : null) ??
-            (l?.healthRowStress ?? 'Stress')),
+            (l?.healthRowStress ?? 'Sleep stress')),
         stressScore == null ? '' : '${stressScore.round()}',
         // 0–100, and the scale has to be on the row. Wellness has always shown
         // it for the same number.
