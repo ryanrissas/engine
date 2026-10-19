@@ -1178,7 +1178,11 @@ class _LiveStrengthState extends State<LiveStrength> {
 
   double kg = 40;
   int reps = 8;
-  int rpe = 7;
+  /// Null until the user taps one. The picker used to start at 7, which put a
+  /// 7 on every set nobody rated — indistinguishable from a real 7, and read
+  /// by muscular load as effort. Once tapped it carries to the next set, which
+  /// is a choice the user can see on screen.
+  int? rpe;
   bool bodyweight = false;
 
   final logged = <LoggedSet>[];
@@ -1235,6 +1239,7 @@ class _LiveStrengthState extends State<LiveStrength> {
           (e['reps'] as num?)?.toInt() ?? 0,
           loadKg: (e['kg'] as num?)?.toDouble(),
           rpe: (e['rpe'] as num?)?.toInt(),
+          rpeByUser: e['rpe_user'] == true,
           restSec: (e['rest'] as num?)?.toInt(),
           at: DateTime.fromMillisecondsSinceEpoch(
               (e['at'] as num?)?.toInt() ?? 0),
@@ -1263,6 +1268,7 @@ class _LiveStrengthState extends State<LiveStrength> {
           'reps': s.reps,
           'kg': s.loadKg,
           'rpe': s.rpe,
+          'rpe_user': s.rpeByUser,
           'rest': s.restSec,
           'at': s.at.millisecondsSinceEpoch,
         },
@@ -1315,6 +1321,7 @@ class _LiveStrengthState extends State<LiveStrength> {
       logged.add(LoggedSet(key, reps,
           loadKg: bodyweight ? null : kg,
           rpe: rpe,
+          rpeByUser: rpe != null,
           restSec: prior == null ? null : now.difference(prior).inSeconds,
           at: now));
     });

@@ -30,6 +30,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../compute/muscular_load.dart';
 import '../../data/db.dart';
 import '../../gps/gpx_export.dart';
 import '../../l10n/app_localizations.dart';
@@ -52,6 +53,7 @@ import 'picker.dart';
 // not a layering mistake.
 import 'poster.dart' show PosterStatRow, posterStatIcon, splitStatUnit;
 import 'share.dart';
+import 'throw_log.dart';
 
 /// The defining visual object of an activity. Everything else supports it.
 ///
@@ -122,8 +124,16 @@ class LoggedSet {
   final int? restSec;
   final DateTime at;
 
+  /// True only when the user picked [rpe] themselves. Muscular load counts an
+  /// effort nobody chose as unrated (compute/muscular_load.dart).
+  final bool rpeByUser;
+
   const LoggedSet(this.exerciseKey, this.reps,
-      {this.loadKg, this.rpe, this.restSec, required this.at});
+      {this.loadKg,
+      this.rpe,
+      this.restSec,
+      required this.at,
+      this.rpeByUser = false});
 
   /// Volume for this set, or null when the load was never recorded.
   double? get volume => loadKg == null ? null : loadKg! * reps;
@@ -1185,6 +1195,12 @@ class _ActivitySummaryState extends State<ActivitySummary> {
         const SizedBox(height: S.x3),
         _rpePrompt(p),
       ],
+      // What the lift cost the muscles — heart rate under-reads it.
+      if (arch == Arch.strength && !r.strength.isEmpty)
+        ...muscularLoadSection(p, r.strength, widget.weightKg),
+      // A bullpen is invisible to the band; the player logs the throws.
+      if (a.typeKey == 'baseball' && r.sessionId != null)
+        ThrowSection(r.sessionId!),
       ..._body(c, p),
       // Zones belong to any session that banked a split — a lift and a yoga
       // class have heart-rate zones too.
@@ -2250,4 +2266,58 @@ class _ActivitySummaryState extends State<ActivitySummary> {
         ),
     ];
   }
+}
+
+/// The sets as muscular-load inputs. Throw entries never reach a lift's log.
+List<StrengthSetIn> strengthInputsOf(StrengthLog log) => [
+      for (final s in log.sets)
+        StrengthSetIn(
+          exerciseKey: s.exerciseKey,
+          reps: s.reps,
+          loadKg: s.loadKg,
+          rpe: s.rpe,
+          rpeRated: s.rpe != null && s.rpeByUser,
+        ),
+    ];
+
+/// MUSCULAR LOAD for one strength session: effective volume (the bar plus the
+/// share of body weight the lift moves) and the same weighted by how close
+/// each set went to failure. Every set it could not count says why.
+List<Widget> muscularLoadSection(P p, StrengthLog log, double? weightKg) {
+  final s = sessionLoad(strengthInputsOf(log), bodyKg: weightKg);
+  final notes = <String>[
+    if (s != null && s.setsWithBodyShare > 0)
+      'Includes the share of your body weight each lift moves.',
+    if (weightKg == null)
+      'Add your weight in your profile so bodyweight lifts count.',
+    if (s != null && s.setsUnrated > 0)
+      '${s.setsUnrated} of ${s.setsCounted} sets had no effort picked, so they '
+          'count at half weight. Tap an RPE when you log a set.',
+    if (s != null && s.setsWithoutLoad > 0)
+      '${s.setsWithoutLoad} sets have no known load and are left out.',
+  ];
+  return [
+    Section(
+      'Muscular load',
+      Surface(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (s == null)
+            Text('No set here has a load to count yet.',
+                style: F.body.copyWith(color: p.ink2))
+          else ...[
+            Text('${grouped(s.effortVolumeKg.round())} kg',
+                style: F.n34.copyWith(color: p.ink)),
+            Text(
+                'effort-weighted, from ${grouped(s.volumeKg.round())} kg moved '
+                'over ${s.setsCounted} sets',
+                style: F.cap.copyWith(color: p.ink2)),
+          ],
+          for (final n in notes) ...[
+            const SizedBox(height: S.x2),
+            Text(n, style: F.cap.copyWith(color: p.ink3, height: 1.4)),
+          ],
+        ]),
+      ),
+    ),
+  ];
 }
