@@ -40,10 +40,10 @@ void main() {
     test('no observed ceiling ⇒ the age estimate, and it says so', () {
       final z = trainingZones(age: 30, deviceFamily: 'gen4')!;
       expect(z.source, 'tanaka');
-      expect(z.maxHr, closeTo(187, 0.01)); // 208 − 0.7·30
+      expect(z.maxHr, closeTo(185.7, 0.01)); // Gellish 192 − 0.007·30²
       // %HRmax, unchanged from before TS-03: nobody's zones move until the
       // band has actually measured a ceiling on them.
-      expect(z.zones.first.lower, closeTo(93.5, 0.01));
+      expect(z.zones.first.lower, closeTo(92.85, 0.01));
       expect(zonesAreMeasured(z.source), isFalse);
     });
 
@@ -105,17 +105,17 @@ void main() {
       )!;
       // The estimate, LABELLED as the estimate — not Karvonen off 166.
       expect(z.source, 'tanaka');
-      expect(z.maxHr, closeTo(190.5, 0.01)); // 208 − 0.7·25
+      expect(z.maxHr, closeTo(187.625, 0.01)); // Gellish 192 − 0.007·25²
       expect(zonesAreMeasured(z.source), isFalse);
-      // Z5 is 171.45, so the 166 bpm peak is the top of Z4 and the 148 bpm
+      // Z5 is 168.86, so the 166 bpm peak is the top of Z4 and the 148 bpm
       // average is Z3. Before the fix both were Z5.
-      expect(z.zones.last.lower, closeTo(171.45, 0.01));
+      expect(z.zones.last.lower, closeTo(168.8625, 0.01));
       expect(z.zoneNumber(166), 4);
       expect(z.zoneNumber(148), 3);
     });
 
     test('the ceiling is max(observed, estimate) — no tolerance band', () {
-      // 208 − 0.7·30 = 187. The switch is AT the estimate, and being at the
+      // 192 − 0.007·30² = 185.7. The switch is AT the estimate, and being at the
       // estimate is the whole rule: a threshold BELOW it would move every edge
       // by k bpm on a 0.1 bpm change in a ceiling that creeps up over months.
       set(double bpm) => trainingZones(
@@ -124,11 +124,11 @@ void main() {
             observedCeilingBpm: bpm,
             restingHrHistory: rhr28,
           )!;
-      expect(set(187).source, 'karvonen'); // reaches the line ⇒ it is a ceiling
-      expect(set(186.9).source, 'tanaka'); // …does not ⇒ only a lower bound
+      expect(set(185.7).source, 'karvonen'); // reaches the line ⇒ a ceiling
+      expect(set(185.6).source, 'tanaka'); // …does not ⇒ only a lower bound
       // CONTINUOUS ACROSS THE SWITCH: 0.2 bpm of ceiling either side of the
       // line may move the LABEL, but it must not move the edges.
-      expect(set(186.9).maxHr, closeTo(set(187.1).maxHr, 0.11));
+      expect(set(185.6).maxHr, closeTo(set(185.8).maxHr, 0.11));
       // ABOVE the line is the case the observed ceiling exists for: real
       // information about a top the age line underestimates, and it wins.
       expect(set(196).source, 'karvonen');

@@ -1627,6 +1627,11 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
         'strain': headlineStrainAbsentNote ??
             strainMetric.note ??
             kUnknownAbsenceNote,
+      // The training load (`trimp_net`, written by the second half) still
+      // waits on the quiet level. Named here too, so a row whose second half
+      // never ran is still recognised as owed (`quietBlocked`).
+      if (headlineStrainAbsentNote == null && sex != null && !quiet.present)
+        'trimp_net': quiet.note ?? kUnknownAbsenceNote,
       if (!trimp.present)
         'trimp': strainAbsentNote ?? trimp.note ?? kUnknownAbsenceNote,
     },

@@ -223,9 +223,12 @@ void main() {
     for (final d in days) {
       expect(await _value(d, 'quiet_hrr'), isNotNull, reason: d);
     }
-    // Days 1–3 have fewer than three prior levels: an honest cold start.
+    // Days 1–3 have fewer than three prior levels: an honest cold start for
+    // the TRAINING LOAD. The headline strain needs no level (v116) and is
+    // there from the first day.
     for (final d in days.take(3)) {
-      expect(await _value(d, 'strain'), isNull, reason: d);
+      expect(await _value(d, 'trimp_net'), isNull, reason: d);
+      expect(await _value(d, 'strain'), isNotNull, reason: d);
     }
     // Day 4 on had three or more by the end of the sweep, and was re-scored
     // on them before its raw could be pruned — finalized or not, never blank.
@@ -272,7 +275,7 @@ void main() {
       final finalized = await LocalDb.finalizedDayIds(kAlgoVersion);
       await _expectOwedAfterSweep(days, days.skip(3));
       for (final d in days.skip(3)) {
-        expect(await _value(d, 'strain'), isNull, reason: d);
+        expect(await _value(d, 'trimp_net'), isNull, reason: d);
         expect(finalized, isNot(contains(d)), reason: '$d is not locked');
       }
       // The prune ran and held every owed day's raw — day 4's included,
@@ -281,7 +284,7 @@ void main() {
 
       await DerivationEngine().run(_profile);
       for (final d in days.skip(3)) {
-        expect(await _value(d, 'strain'), isNotNull, reason: d);
+        expect(await _value(d, 'trimp_net'), isNotNull, reason: d);
       }
       expect(await _owed(), everyElement(isIn(days.sublist(1, 3))));
       await DerivationEngine().run(_profile, heavy: true);
@@ -402,8 +405,8 @@ void main() {
     final engine = DerivationEngine();
     const days = ['2026-08-01', '2026-08-02', '2026-08-03', '2026-08-04'];
     final blocked = <String, dynamic>{
-      'scalars': {'strain': null},
-      'absent_notes': {'strain': 'need_baseline:have=2,need=3'},
+      'scalars': {'trimp_net': null},
+      'absent_notes': {'trimp_net': 'need_baseline:have=2,need=3'},
     };
     Future<void> raw(String d) async {
       final db = await LocalDb.instance;
@@ -464,19 +467,19 @@ void main() {
     await db.delete('decoded_onehz');
     expect(await engine.debugQuietRepassOwed(days[3], blocked), isTrue);
 
-    // Never owed: the first day (nothing before it), or a strain that is
-    // present or absent for another reason.
+    // Never owed: the first day (nothing before it), or a training load that
+    // is present or absent for another reason.
     await raw(days[0]);
     expect(await engine.debugQuietRepassOwed('2026-07-31', blocked), isFalse);
     expect(
         await engine.debugQuietRepassOwed(days[3], {
-          'scalars': {'strain': 8.0},
+          'scalars': {'trimp_net': 42.0},
         }),
         isFalse);
     expect(
         await engine.debugQuietRepassOwed(days[3], {
-          'scalars': {'strain': null},
-          'absent_notes': {'strain': 'need_input:resting_hr'},
+          'scalars': {'trimp_net': null},
+          'absent_notes': {'trimp_net': 'need_input:resting_hr'},
         }),
         isFalse);
   });
@@ -510,10 +513,10 @@ void main() {
     await DerivationEngine().run(_profile);
     expect(await _owed(), isEmpty);
     for (final d in days.sublist(1, 5)) {
-      expect(await _value(d, 'strain'), isNull, reason: '$d not re-scored');
+      expect(await _value(d, 'trimp_net'), isNull, reason: '$d not re-scored');
     }
     for (final d in days.skip(5)) {
-      expect(await _value(d, 'strain'), isNotNull, reason: d);
+      expect(await _value(d, 'trimp_net'), isNotNull, reason: d);
     }
   }, timeout: const Timeout(Duration(minutes: 5)));
 
@@ -586,7 +589,8 @@ void main() {
     await DerivationEngine().run(_profile, heavy: true);
     expect(await _owed(), isEmpty);
     for (final d in days) {
-      expect(await _value(d, 'strain'), isNull, reason: d);
+      expect(await _value(d, 'trimp_net'), isNull, reason: d);
+      expect(await _value(d, 'strain'), isNotNull, reason: d);
       expect(await _value(d, 'quiet_hrr'), isNotNull, reason: d);
     }
   }, timeout: const Timeout(Duration(minutes: 5)));

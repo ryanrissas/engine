@@ -105,12 +105,14 @@ SYNTHETIC DAY $_dayId — derived vs truth
     if (resp != null) {
       expect((resp - SyntheticDay.sleepRespRate).abs(), lessThanOrEqualTo(2));
     }
-    // A single day has no prior quiet-waking levels, and strain is priced
-    // against at least three of them: it abstains rather than price being
-    // awake at a population constant.
-    expect(s['strain'], isNull,
-        reason: 'strain abstains on a cold start');
-    expect(((full['absent_notes'] as Map?)?['strain'] as String?) ?? '',
+    // Strain needs no baseline (v116, reserve_strain.dart): a single day
+    // scores. The training load still waits on three quiet-waking levels and
+    // says so with the baseline grammar.
+    expect(s['strain'], isNotNull, reason: 'strain scores on a cold start');
+    expect((s['strain'] as num).toDouble(), inInclusiveRange(0, 21));
+    expect(s['trimp_net'], isNull,
+        reason: 'the training load abstains on a cold start');
+    expect(((full['absent_notes'] as Map?)?['trimp_net'] as String?) ?? '',
         startsWith('need_baseline:'));
   });
 

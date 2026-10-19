@@ -4695,11 +4695,13 @@ class DerivationEngine {
   Future<bool> debugQuietLevelUnreachable(String date) =>
       _quietLevelUnreachable(date);
 
-  /// Strain abstained for want of a quiet-waking level and nothing else.
+  /// The training load (`trimp_net`) abstained for want of a quiet-waking
+  /// level and nothing else. Since v116 the headline strain needs no level
+  /// (reserve_strain.dart), so the re-score this gates is the training load's.
   @visibleForTesting
   static bool quietBlocked(Map<String, dynamic> bundle) {
-    if ((bundle['scalars'] as Map?)?['strain'] != null) return false;
-    final note = (bundle['absent_notes'] as Map?)?['strain'];
+    if ((bundle['scalars'] as Map?)?['trimp_net'] != null) return false;
+    final note = (bundle['absent_notes'] as Map?)?['trimp_net'];
     return note is String && note.startsWith('need_baseline:');
   }
 
@@ -8046,6 +8048,14 @@ class DerivationEngine {
         : rhrForTrimp == null
         ? needInputNote('resting_hr')
         : null;
+    // The Banister training load's gates: the reserve's, then the two inputs
+    // only it needs — in that order, so a missing resting HR is named first.
+    final trimpAbsent = strainAbsent ??
+        (sex == null
+            ? needInputNote('sex')
+            : !quiet.present
+            ? (quiet.note ?? kUnknownAbsenceNote)
+            : null);
     // `wakeDayEnergy`'s own gates, named. It returns a bare null, so the reason
     // has to be reconstructed from the same inputs it reads — in its order.
     final caloriesAbsent = perMin.isEmpty
@@ -8205,6 +8215,10 @@ class DerivationEngine {
       // seam attaches to the value it hands a screen — see the note there.
       'absent_notes': <String, String>{
         if (strain == null) 'strain': strainAbsent ?? kUnknownAbsenceNote,
+        // The training load still needs a sex constant and the quiet level;
+        // `quietBlocked` keys on this note to hold the day's raw until a
+        // level lands and it can be scored.
+        if (net == null) 'trimp_net': trimpAbsent ?? kUnknownAbsenceNote,
         if (hrMax == null && ceilingAbsent != null)
           'max_hr_used': ceilingAbsent,
         if (calories == null) 'calories': caloriesAbsent ?? kUnknownAbsenceNote,
