@@ -137,6 +137,16 @@ class HealthData {
   }
 
   Metric get stress => metricOf(today['stress']);
+
+  /// The waking-day stress monitor, 0–3 (v118). Its envelope's value is a
+  /// map; the headline is the day's mean score.
+  Metric get stressDay {
+    final b = today['daytime_stress'];
+    if (b is! Map) return Metric.empty;
+    final v = b['value'];
+    final score = v is Map ? v['score'] as num? : null;
+    return Metric.parse({...b.cast<String, dynamic>(), 'value': score ?? '—'});
+  }
   Metric get resp => metricOf(today['resp']);
 
   static Future<HealthData> load(LocalRepository repo) async {
@@ -151,6 +161,7 @@ class HealthData {
       'hrv',
       'sleep',
       'stress',
+      'stress_day',
       'resp_rate',
     ]) {
       charts[k] = pointsOf(await repo.getChart(k));
@@ -787,6 +798,24 @@ class _HealthScreenState extends State<HealthScreen> with RevisionReload {
             ? (l?.healthWhyReadFromNight ??
                 'Read from the night, and no night was scored.')
             : '');
+
+    // v118 — the waking-day stress monitor. Today's, never the night's, so
+    // no overnight gap is attached to its absence.
+    final stressDay = d.stressDay;
+    row(
+        stressDay,
+        LucideIcons.activity,
+        C.purple,
+        'Stress monitor',
+        'Today · while still',
+        stressDay.value == null ? '' : stressDay.value!.toStringAsFixed(1),
+        '/3',
+        d.spark('stress_day', 24),
+        'stress_day',
+        overnight: false,
+        rising: Rising.bad,
+        whyAbsent: 'Needs a few days of still daytime minutes to learn your '
+            'baseline, and an hour of them today.');
 
     final respMetric = d.resp;
     row(respMetric, LucideIcons.wind, C.teal, l?.healthRowRespRate ?? 'Respiratory rate',

@@ -285,6 +285,22 @@ const _specs = <String, MetricSpec>{
     citation: 'Baevsky 2008',
     requires: {InputSignal.rrIntervals},
   ),
+  'stress_day': MetricSpec(
+    chartKey: 'stress_day',
+    title: 'Stress monitor',
+    unit: '/3',
+    color: C.purple,
+    icon: LucideIcons.activity,
+    higherBetter: false,
+    method: 'Every still waking minute: heart rate above your sleeping resting '
+        'rate, and heart-rate variability below your own still-daytime level, '
+        'handed over from heart rate to variability as heart rate rises. '
+        'Workouts and their recovery are left out. Scored 0–3 against your own '
+        'last 14 days, where 3 is your peak. Activation, not a diagnosis.',
+    citation: 'Structure of WHOOP US20240188865A1 · Castaldo 2015 (HRV under '
+        'acute mental stress) · Swain 1997 (%HRR ≈ %VO₂R)',
+    requires: {InputSignal.hr1Hz, InputSignal.rrIntervals},
+  ),
   'dip': MetricSpec(
     chartKey: 'dip',
     title: 'Overnight HR dip',
