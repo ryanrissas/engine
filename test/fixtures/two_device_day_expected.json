@@ -240,7 +240,7 @@
         "n_valid": 0,
         "nights_since_update": 0,
         "status": "calibrating",
-        "value": 12.265550239234448,
+        "value": 12.256434750108589,
         "z": null,
         "delta": null,
         "ratio": null,
@@ -1335,6 +1335,26 @@
           "beat_times"
         ],
         "note": "RSA HF-peak respiratory rate (Lomb-Scargle on native beat times, median of 93 300.0s sub-windows, 93 of them within 2.0 br/min of it — brpm, peak_hz and power all come from the medoid sub-window); PRV-derived; this window could resolve up to 30.0 br/min"
+      },
+      "count_adv": {
+        "value": {
+          "brpm": 12.244898,
+          "peak_hz": 0.204082,
+          "source": "count_adv"
+        },
+        "confidence": 0.8,
+        "tier": "HIGH",
+        "inputs_used": [
+          "rr_cleaned",
+          "beat_times"
+        ],
+        "note": "count-adv (Schäfer & Kratky 2008) median of 880 32-s windows"
+      },
+      "fused": {
+        "brpm": 12.256434750108589,
+        "confidence": 0.95,
+        "decision": "fused",
+        "method": "lomb_scargle_rsa+count_adv_karlen_gate_2brpm"
       },
       "cvhr_apnea": {
         "value": {
@@ -3892,7 +3912,7 @@
       "strain": null,
       "max_hr_used": null,
       "ln_rmssd": 2.9906928750627895,
-      "resp_rate": 12.265550239234448,
+      "resp_rate": 12.256434750108589,
       "skin_temp_z": null,
       "skin_temp_adc": 30005.0,
       "skin_temp_coverage_frac": 1.0,
