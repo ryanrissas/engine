@@ -23,6 +23,13 @@ class Profile {
   // sees [toMap]) bands on the same set the zones screen shows.
   final List<int>? hrZoneBounds;
 
+  /// A VO2max TEST the user entered (mL/kg/min), its local date and how it
+  /// was measured ('lab' | 'cooper'). Healthspan's fitness term reads it and
+  /// nothing else: no VO2max is ever estimated from resting heart rate.
+  final double? vo2maxTest;
+  final String? vo2maxTestDate;
+  final String? vo2maxTestMethod;
+
   const Profile({
     this.ageYears,
     this.weightKg,
@@ -31,6 +38,9 @@ class Profile {
     this.restingHrManual,
     this.maxHrManual,
     this.hrZoneBounds,
+    this.vo2maxTest,
+    this.vo2maxTestDate,
+    this.vo2maxTestMethod,
   });
 
   static Profile fromMap(Map<String, dynamic>? m) {
@@ -43,6 +53,13 @@ class Profile {
       restingHrManual: (m['resting_hr'] as num?)?.round(),
       maxHrManual: manualMaxHrFromProfile(m),
       hrZoneBounds: manualZoneBoundsFromProfile(m),
+      vo2maxTest: vo2maxTestFromProfile(m),
+      vo2maxTestDate: vo2maxTestFromProfile(m) == null
+          ? null
+          : m['vo2max_test_date'] as String?,
+      vo2maxTestMethod: vo2maxTestFromProfile(m) == null
+          ? null
+          : m['vo2max_test_method'] as String?,
     );
   }
 
@@ -54,6 +71,9 @@ class Profile {
         if (restingHrManual != null) 'resting_hr': restingHrManual,
         if (maxHrManual != null) 'max_hr': maxHrManual,
         if (hrZoneBounds != null) 'hr_zone_bounds': hrZoneBounds,
+        if (vo2maxTest != null) 'vo2max_test': vo2maxTest,
+        if (vo2maxTestDate != null) 'vo2max_test_date': vo2maxTestDate,
+        if (vo2maxTestMethod != null) 'vo2max_test_method': vo2maxTestMethod,
       };
 
   // NO `hrMaxTanaka` HERE. It was `208 − 0.7·age` inlined on the profile, which
@@ -83,6 +103,20 @@ class Profile {
   /// kcal number that was simply somebody else's.
   bool get hasCalorieAnchors =>
       ageYears != null && weightKg != null && sex != null;
+}
+
+/// Plausible bounds for an entered VO2max (mL/kg/min).
+const double kVo2maxTestMin = 15;
+const double kVo2maxTestMax = 95;
+
+/// The user's entered VO2max test, validated, or null. Needs a date: an
+/// undated number cannot be aged out.
+double? vo2maxTestFromProfile(Map<String, dynamic> m) {
+  final v = (m['vo2max_test'] as num?)?.toDouble();
+  final d = m['vo2max_test_date'];
+  if (v == null || d is! String || DateTime.tryParse(d) == null) return null;
+  if (v < kVo2maxTestMin || v > kVo2maxTestMax) return null;
+  return v;
 }
 
 /// Body mass index (kg/m²) off a weight and a height, or null without both.

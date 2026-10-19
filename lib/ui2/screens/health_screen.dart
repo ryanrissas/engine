@@ -27,6 +27,7 @@ import '../ui2.dart';
 import 'advanced.dart';
 import 'ecg.dart' show EcgEntryCard, pairedIsMaverickOf;
 import 'findings_log.dart';
+import 'healthspan_screen.dart' show HealthspanCard;
 import 'home_screen.dart';
 import 'investigate.dart';
 import 'metric_detail.dart';
@@ -921,6 +922,10 @@ class _HealthScreenState extends State<HealthScreen> with RevisionReload {
               d.findings.isEmpty ? null : () => go(c, FindingsLog(d.findings)),
         ),
       ],
+
+      // Engine Age (v118): published hazard ratios over the habits the band
+      // measures, in years. The card shows the age or why there is none.
+      Section('Healthspan', HealthspanCard(d.insights)),
 
       // Naps moved to the Sleep tab, beside the night (the Naps door there).
 
