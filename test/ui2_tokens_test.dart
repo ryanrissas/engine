@@ -193,6 +193,10 @@ void main() {
 /// this list fails the test above, so the choice has to be made rather than
 /// drifted into.
 const _notComponents = {
+  // A Baseball session's throw log: reads and writes that session's
+  // strength_set rows and opens the entry sheet. Its arithmetic is
+  // throw_load_test.dart; its rows are db_throw_log_test.dart.
+  'ThrowSection',
   // shell and routing
   'AppShell', 'Domain', 'GalleryScreen',
   // WHOOP MG ECG routes: the Heart Screener entry reads the database and
