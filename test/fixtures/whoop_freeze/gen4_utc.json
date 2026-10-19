@@ -2,7 +2,7 @@
  "day_result": [
   {
    "day_id": "2026-07-13",
-   "algo_version": 117,
+   "algo_version": 118,
    "payload_json": {
     "date": "2026-07-13",
     "day_confidence": 0.6,
@@ -65,7 +65,7 @@
       "note": "Breathing-rate variability TREND (within-user only); surface a change only beyond the metric MDC"
      },
      "rmssd_sleep_session": {
-      "value": 34.1,
+      "value": 34.0,
       "confidence": 0.5453,
       "tier": "HIGH",
       "inputs_used": [
@@ -82,14 +82,14 @@
       "consecutive_rmssd_ms": 31.7
      },
      "rmssd_nocturnal": {
-      "value": 32.16077953226363,
-      "confidence": 0.53611,
+      "value": 33.67730182250159,
+      "confidence": 0.542575,
       "tier": "HIGH",
       "inputs_used": [
        "rr_cleaned",
        "beat_times"
       ],
-      "note": "robust nocturnal RMSSD = MEDIAN of 72 consecutive 5-min-window RMSSDs (REM/arousal-robust). PRV not ECG-HRV; RMSSD is quantization-sensitive at 1 Hz."
+      "note": "robust nocturnal RMSSD = MEDIAN of 60 consecutive 5-min-window RMSSDs (REM/arousal-robust). PRV not ECG-HRV; RMSSD is quantization-sensitive at 1 Hz."
      },
      "hrv_freq": {
       "value": {
@@ -171,11 +171,11 @@
      },
      "readiness_lnrmssd": {
       "value": {
-       "ln_rmssd_today": 3.527951,
+       "ln_rmssd_today": 3.526441,
        "rolling7_mean": 3.51852,
        "rolling7_median": 3.526361,
        "cv_pct": 1.688921,
-       "z": 0.023779,
+       "z": 0.001204,
        "swc": 0.033448,
        "band": "normal",
        "saturation_flag": false
@@ -189,35 +189,29 @@
      },
      "readiness_composite": {
       "value": {
-       "score": 44.101497,
-       "composite_z": -0.237044,
+       "score": 53.276879,
+       "composite_z": 0.131263,
        "calibration": {
         "status": "calibrating",
         "nights": 0
        }
       },
-      "confidence": 0.75,
+      "confidence": 0.6,
       "tier": "ESTIMATE",
       "inputs_used": [
        "HRV",
-       "RR",
-       "temp"
+       "RR"
       ],
       "drivers": [
        {
-        "label": "temp",
-        "contribution": -0.370984,
-        "detail": "oriented robust-z (median+MAD)=-3.709836"
-       },
-       {
         "label": "RR",
-        "contribution": 0.117294,
+        "contribution": 0.130327,
         "detail": "oriented robust-z (median+MAD)=0.586472"
        },
        {
         "label": "HRV",
-        "contribution": 0.016645,
-        "detail": "oriented robust-z (median+MAD)=0.023779"
+        "contribution": 0.000936,
+        "detail": "oriented robust-z (median+MAD)=0.001204"
        }
       ],
       "note": "GLASS-BOX readiness: disclosed weights autonomic (HRV+RHR, mean of their z) 0.70 > RR 0.20 > temp 0.10, renormalized over present inputs. Drivers are definitional within the formula (correction, not inferred cause). calibrating:have=0,need=14."
@@ -266,10 +260,10 @@
       "n_valid": 14,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 34.05412764733815,
-      "z": -0.086,
-      "delta": -0.539,
-      "ratio": -0.0156,
+      "value": 34.00273815428614,
+      "z": -0.094,
+      "delta": -0.591,
+      "ratio": -0.0171,
       "in_normal_range": true,
       "mdc": 17.366,
       "mdc_multiples": -0.03
@@ -294,13 +288,28 @@
       "n_valid": 14,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 30406.000406834824,
-      "z": 0.326,
-      "delta": 10.209,
-      "ratio": 0.0003,
-      "in_normal_range": true,
+      "value": null,
+      "z": null,
+      "delta": null,
+      "ratio": null,
+      "in_normal_range": null,
       "mdc": 86.828,
-      "mdc_multiples": 0.12
+      "mdc_multiples": null
+     },
+     "strap_temp": {
+      "baseline": null,
+      "spread": null,
+      "n_valid": 0,
+      "nights_since_update": 0,
+      "status": "calibrating",
+      "value": null,
+      "z": null,
+      "delta": null,
+      "ratio": null,
+      "in_normal_range": null,
+      "note": "no_baseline:have=0,need=1",
+      "mdc": null,
+      "mdc_multiples": null
      }
     },
     "sleep": {
@@ -322,20 +331,20 @@
      },
      "accounting": {
       "value": {
-       "tst_sec": 24805,
-       "waso_sec": 2232,
+       "tst_sec": 25057,
+       "waso_sec": 1980,
        "in_bed_sec": 27037,
        "unobserved_sec": 0,
        "observed_in_bed_sec": 27037,
-       "efficiency_pct": 91.744646,
-       "nrem_sec": 21385,
-       "light_sec": 19945,
-       "deep_sec": 1440,
-       "rem_sec": 3420,
-       "wake_sec": 2232,
+       "efficiency_pct": 92.676702,
+       "nrem_sec": 18007,
+       "light_sec": 12457,
+       "deep_sec": 5550,
+       "rem_sec": 7050,
+       "wake_sec": 1980,
        "deep_low_confidence": true,
-       "awakenings": 3,
-       "longest_sleep_sec": 9898,
+       "awakenings": 2,
+       "longest_sleep_sec": 4770,
        "sol_sec": null
       },
       "confidence": 0.6,
@@ -348,9 +357,9 @@
      "band_offset_trim_sec": null,
      "stager": {
       "value": {
-       "wake_pct": 8.255353774457225,
-       "nrem_pct": 86.21245716589398,
-       "rem_pct": 13.787542834106027,
+       "wake_pct": 7.323297703147539,
+       "nrem_pct": 71.864149738596,
+       "rem_pct": 28.135850261404,
        "epoch_sec": 1,
        "epochs": 27037
       },
@@ -4237,14 +4246,13 @@
     },
     "wellness": {
      "skin_temp": {
-      "value": 3.8092,
-      "confidence": 0.5,
+      "value": "—",
+      "confidence": 0,
       "tier": "RELATIVE",
       "inputs_used": [
-       "skin_temp_raw",
-       "skin_temp_c"
+       "strap_temp_c"
       ],
-      "note": "relative deviation (z) vs your baseline; raw sensor units, never an absolute °C"
+      "note": "strap temperature vs your normal (the band's own internal sensor, not a skin probe); relative only"
      }
     },
     "stress": {
@@ -4253,7 +4261,7 @@
      "si": 159.44,
      "level": "elevated",
      "lf_hf": 0.151,
-     "rmssd": 34.1,
+     "rmssd": 34.0,
      "confidence": 0.7,
      "tier": "ESTIMATE",
      "inputs_used": [
@@ -20090,166 +20098,161 @@
      "hypnogram": [
       {
        "start": 1783898092,
-       "end": 1783898872,
+       "end": 1783899112,
        "stage": "light"
       },
       {
-       "start": 1783898872,
-       "end": 1783899592,
-       "stage": "rem"
+       "start": 1783899112,
+       "end": 1783901602,
+       "stage": "deep"
       },
       {
-       "start": 1783899592,
-       "end": 1783901422,
-       "stage": "light"
-      },
-      {
-       "start": 1783901422,
-       "end": 1783901842,
-       "stage": "rem"
-      },
-      {
-       "start": 1783901842,
+       "start": 1783901602,
        "end": 1783902292,
        "stage": "light"
       },
       {
        "start": 1783902292,
-       "end": 1783902892,
+       "end": 1783902802,
+       "stage": "rem"
+      },
+      {
+       "start": 1783902802,
+       "end": 1783902952,
        "stage": "wake"
       },
       {
-       "start": 1783902892,
-       "end": 1783904032,
+       "start": 1783902952,
+       "end": 1783903192,
        "stage": "light"
       },
       {
-       "start": 1783904032,
-       "end": 1783904332,
-       "stage": "rem"
+       "start": 1783903192,
+       "end": 1783903222,
+       "stage": "wake"
       },
       {
-       "start": 1783904332,
-       "end": 1783906642,
+       "start": 1783903222,
+       "end": 1783904152,
        "stage": "light"
       },
       {
-       "start": 1783906642,
-       "end": 1783906942,
-       "stage": "rem"
+       "start": 1783904152,
+       "end": 1783906132,
+       "stage": "deep"
       },
       {
-       "start": 1783906942,
+       "start": 1783906132,
+       "end": 1783906792,
+       "stage": "light"
+      },
+      {
+       "start": 1783906792,
+       "end": 1783906912,
+       "stage": "wake"
+      },
+      {
+       "start": 1783906912,
        "end": 1783907902,
-       "stage": "light"
+       "stage": "rem"
       },
       {
        "start": 1783907902,
-       "end": 1783908472,
-       "stage": "rem"
-      },
-      {
-       "start": 1783908472,
-       "end": 1783908742,
+       "end": 1783908022,
        "stage": "wake"
       },
       {
-       "start": 1783908742,
-       "end": 1783911742,
+       "start": 1783908022,
+       "end": 1783908352,
        "stage": "light"
       },
       {
-       "start": 1783911742,
-       "end": 1783911982,
-       "stage": "deep"
-      },
-      {
-       "start": 1783911982,
-       "end": 1783912612,
-       "stage": "light"
-      },
-      {
-       "start": 1783912612,
-       "end": 1783912792,
-       "stage": "deep"
-      },
-      {
-       "start": 1783912792,
-       "end": 1783914622,
-       "stage": "light"
-      },
-      {
-       "start": 1783914622,
-       "end": 1783915252,
-       "stage": "rem"
-      },
-      {
-       "start": 1783915252,
-       "end": 1783916482,
-       "stage": "light"
-      },
-      {
-       "start": 1783916482,
-       "end": 1783916752,
-       "stage": "deep"
-      },
-      {
-       "start": 1783916752,
-       "end": 1783918640,
-       "stage": "light"
-      },
-      {
-       "start": 1783918640,
-       "end": 1783919582,
+       "start": 1783908352,
+       "end": 1783908832,
        "stage": "wake"
       },
       {
-       "start": 1783919582,
-       "end": 1783920122,
+       "start": 1783908832,
+       "end": 1783909552,
        "stage": "light"
       },
       {
-       "start": 1783920122,
-       "end": 1783920602,
+       "start": 1783909552,
+       "end": 1783910632,
+       "stage": "deep"
+      },
+      {
+       "start": 1783910632,
+       "end": 1783911622,
+       "stage": "light"
+      },
+      {
+       "start": 1783911622,
+       "end": 1783913032,
        "stage": "rem"
       },
       {
-       "start": 1783920602,
-       "end": 1783921022,
+       "start": 1783913032,
+       "end": 1783913182,
        "stage": "wake"
       },
       {
-       "start": 1783921022,
-       "end": 1783921112,
+       "start": 1783913182,
+       "end": 1783913992,
        "stage": "light"
       },
       {
-       "start": 1783921112,
-       "end": 1783921292,
-       "stage": "deep"
+       "start": 1783913992,
+       "end": 1783914022,
+       "stage": "wake"
       },
       {
-       "start": 1783921292,
-       "end": 1783921442,
+       "start": 1783914022,
+       "end": 1783916212,
        "stage": "light"
       },
       {
-       "start": 1783921442,
-       "end": 1783921712,
-       "stage": "deep"
+       "start": 1783916212,
+       "end": 1783918162,
+       "stage": "rem"
       },
       {
-       "start": 1783921712,
-       "end": 1783922072,
+       "start": 1783918162,
+       "end": 1783918792,
        "stage": "light"
       },
       {
-       "start": 1783922072,
-       "end": 1783922372,
-       "stage": "deep"
+       "start": 1783918792,
+       "end": 1783919422,
+       "stage": "wake"
       },
       {
-       "start": 1783922372,
+       "start": 1783919422,
+       "end": 1783920472,
+       "stage": "light"
+      },
+      {
+       "start": 1783920472,
+       "end": 1783920712,
+       "stage": "wake"
+      },
+      {
+       "start": 1783920712,
+       "end": 1783922902,
+       "stage": "rem"
+      },
+      {
+       "start": 1783922902,
+       "end": 1783924792,
+       "stage": "light"
+      },
+      {
+       "start": 1783924792,
+       "end": 1783924822,
+       "stage": "wake"
+      },
+      {
+       "start": 1783924822,
        "end": 1783925129,
        "stage": "light"
       }
@@ -25982,1160 +25985,7 @@
        "v": 13.4
       }
      ],
-     "skin_temp_day": [
-      {
-       "t": 1783900800,
-       "v": 253.0
-      },
-      {
-       "t": 1783901100,
-       "v": 253.0
-      },
-      {
-       "t": 1783901400,
-       "v": 253.0
-      },
-      {
-       "t": 1783901700,
-       "v": 253.0
-      },
-      {
-       "t": 1783902000,
-       "v": 253.0
-      },
-      {
-       "t": 1783902300,
-       "v": 253.0
-      },
-      {
-       "t": 1783902600,
-       "v": 253.0
-      },
-      {
-       "t": 1783902900,
-       "v": 253.0
-      },
-      {
-       "t": 1783903200,
-       "v": 253.0
-      },
-      {
-       "t": 1783903500,
-       "v": 253.0
-      },
-      {
-       "t": 1783903800,
-       "v": 253.0
-      },
-      {
-       "t": 1783904100,
-       "v": 253.0
-      },
-      {
-       "t": 1783904400,
-       "v": 253.0
-      },
-      {
-       "t": 1783904700,
-       "v": 253.0
-      },
-      {
-       "t": 1783905000,
-       "v": 253.0
-      },
-      {
-       "t": 1783905300,
-       "v": 253.0
-      },
-      {
-       "t": 1783905600,
-       "v": 253.0
-      },
-      {
-       "t": 1783905900,
-       "v": 253.0
-      },
-      {
-       "t": 1783906200,
-       "v": 253.0
-      },
-      {
-       "t": 1783906500,
-       "v": 253.0
-      },
-      {
-       "t": 1783906800,
-       "v": 253.0
-      },
-      {
-       "t": 1783907100,
-       "v": 253.0
-      },
-      {
-       "t": 1783907400,
-       "v": 253.0
-      },
-      {
-       "t": 1783907700,
-       "v": 253.0
-      },
-      {
-       "t": 1783908000,
-       "v": 253.0
-      },
-      {
-       "t": 1783908300,
-       "v": 253.0
-      },
-      {
-       "t": 1783908600,
-       "v": 253.0
-      },
-      {
-       "t": 1783908900,
-       "v": 253.0
-      },
-      {
-       "t": 1783909200,
-       "v": 253.0
-      },
-      {
-       "t": 1783909500,
-       "v": 253.0
-      },
-      {
-       "t": 1783909800,
-       "v": 253.0
-      },
-      {
-       "t": 1783910100,
-       "v": 253.0
-      },
-      {
-       "t": 1783910400,
-       "v": 253.0
-      },
-      {
-       "t": 1783910700,
-       "v": 253.0
-      },
-      {
-       "t": 1783911000,
-       "v": 253.0
-      },
-      {
-       "t": 1783911300,
-       "v": 253.0
-      },
-      {
-       "t": 1783911600,
-       "v": 253.0
-      },
-      {
-       "t": 1783911900,
-       "v": 253.0
-      },
-      {
-       "t": 1783912200,
-       "v": 253.0
-      },
-      {
-       "t": 1783912500,
-       "v": 253.0
-      },
-      {
-       "t": 1783912800,
-       "v": 253.0
-      },
-      {
-       "t": 1783913100,
-       "v": 253.0
-      },
-      {
-       "t": 1783913400,
-       "v": 253.0
-      },
-      {
-       "t": 1783913700,
-       "v": 253.0
-      },
-      {
-       "t": 1783914000,
-       "v": 253.0
-      },
-      {
-       "t": 1783914300,
-       "v": 253.0
-      },
-      {
-       "t": 1783914600,
-       "v": 253.0
-      },
-      {
-       "t": 1783914900,
-       "v": 253.0
-      },
-      {
-       "t": 1783915200,
-       "v": 253.0
-      },
-      {
-       "t": 1783915500,
-       "v": 253.0
-      },
-      {
-       "t": 1783915800,
-       "v": 253.0
-      },
-      {
-       "t": 1783916100,
-       "v": 253.0
-      },
-      {
-       "t": 1783916400,
-       "v": 253.0
-      },
-      {
-       "t": 1783916700,
-       "v": 253.0
-      },
-      {
-       "t": 1783917000,
-       "v": 253.0
-      },
-      {
-       "t": 1783917300,
-       "v": 253.0
-      },
-      {
-       "t": 1783917600,
-       "v": 253.0
-      },
-      {
-       "t": 1783917900,
-       "v": 253.0
-      },
-      {
-       "t": 1783918200,
-       "v": 253.0
-      },
-      {
-       "t": 1783918500,
-       "v": 253.0
-      },
-      {
-       "t": 1783918800,
-       "v": 253.0
-      },
-      {
-       "t": 1783919100,
-       "v": 253.0
-      },
-      {
-       "t": 1783919400,
-       "v": 253.0
-      },
-      {
-       "t": 1783919700,
-       "v": 253.0
-      },
-      {
-       "t": 1783920000,
-       "v": 253.0
-      },
-      {
-       "t": 1783920300,
-       "v": 253.0
-      },
-      {
-       "t": 1783920600,
-       "v": 253.0
-      },
-      {
-       "t": 1783920900,
-       "v": 253.0
-      },
-      {
-       "t": 1783921200,
-       "v": 253.0
-      },
-      {
-       "t": 1783921500,
-       "v": 253.0
-      },
-      {
-       "t": 1783921800,
-       "v": 253.0
-      },
-      {
-       "t": 1783922100,
-       "v": 253.0
-      },
-      {
-       "t": 1783922400,
-       "v": 253.0
-      },
-      {
-       "t": 1783922700,
-       "v": 253.0
-      },
-      {
-       "t": 1783923000,
-       "v": 253.0
-      },
-      {
-       "t": 1783923300,
-       "v": 253.0
-      },
-      {
-       "t": 1783923600,
-       "v": 253.0
-      },
-      {
-       "t": 1783923900,
-       "v": 253.0
-      },
-      {
-       "t": 1783924200,
-       "v": 253.0
-      },
-      {
-       "t": 1783924500,
-       "v": 253.0
-      },
-      {
-       "t": 1783924800,
-       "v": 253.0
-      },
-      {
-       "t": 1783925100,
-       "v": 253.0
-      },
-      {
-       "t": 1783925400,
-       "v": -0.0
-      },
-      {
-       "t": 1783925700,
-       "v": -0.0
-      },
-      {
-       "t": 1783926000,
-       "v": -0.0
-      },
-      {
-       "t": 1783926300,
-       "v": 0.0
-      },
-      {
-       "t": 1783926600,
-       "v": 0.0
-      },
-      {
-       "t": 1783926900,
-       "v": -0.0
-      },
-      {
-       "t": 1783927200,
-       "v": -0.0
-      },
-      {
-       "t": 1783927500,
-       "v": -0.0
-      },
-      {
-       "t": 1783927800,
-       "v": -0.0
-      },
-      {
-       "t": 1783928100,
-       "v": -0.0
-      },
-      {
-       "t": 1783928400,
-       "v": 0.0
-      },
-      {
-       "t": 1783928700,
-       "v": 0.0
-      },
-      {
-       "t": 1783929000,
-       "v": -0.0
-      },
-      {
-       "t": 1783929300,
-       "v": -0.0
-      },
-      {
-       "t": 1783929600,
-       "v": -0.0
-      },
-      {
-       "t": 1783929900,
-       "v": -0.0
-      },
-      {
-       "t": 1783930200,
-       "v": -0.0
-      },
-      {
-       "t": 1783930500,
-       "v": 0.0
-      },
-      {
-       "t": 1783930800,
-       "v": 0.0
-      },
-      {
-       "t": 1783931100,
-       "v": -0.0
-      },
-      {
-       "t": 1783931400,
-       "v": -0.0
-      },
-      {
-       "t": 1783931700,
-       "v": -0.0
-      },
-      {
-       "t": 1783932000,
-       "v": -0.0
-      },
-      {
-       "t": 1783932300,
-       "v": -0.0
-      },
-      {
-       "t": 1783932600,
-       "v": 0.0
-      },
-      {
-       "t": 1783932900,
-       "v": 0.0
-      },
-      {
-       "t": 1783933200,
-       "v": -0.0
-      },
-      {
-       "t": 1783933500,
-       "v": -0.0
-      },
-      {
-       "t": 1783933800,
-       "v": -0.0
-      },
-      {
-       "t": 1783934100,
-       "v": -0.0
-      },
-      {
-       "t": 1783934400,
-       "v": -0.0
-      },
-      {
-       "t": 1783934700,
-       "v": 0.0
-      },
-      {
-       "t": 1783935000,
-       "v": 0.0
-      },
-      {
-       "t": 1783935300,
-       "v": -0.0
-      },
-      {
-       "t": 1783935600,
-       "v": -0.0
-      },
-      {
-       "t": 1783935900,
-       "v": -0.0
-      },
-      {
-       "t": 1783936200,
-       "v": -0.0
-      },
-      {
-       "t": 1783936500,
-       "v": -0.0
-      },
-      {
-       "t": 1783936800,
-       "v": 0.0
-      },
-      {
-       "t": 1783937100,
-       "v": 0.0
-      },
-      {
-       "t": 1783937400,
-       "v": -0.0
-      },
-      {
-       "t": 1783937700,
-       "v": -0.0
-      },
-      {
-       "t": 1783938000,
-       "v": -0.0
-      },
-      {
-       "t": 1783938300,
-       "v": -0.0
-      },
-      {
-       "t": 1783938600,
-       "v": -0.0
-      },
-      {
-       "t": 1783938900,
-       "v": 0.0
-      },
-      {
-       "t": 1783939200,
-       "v": 0.0
-      },
-      {
-       "t": 1783939500,
-       "v": -0.0
-      },
-      {
-       "t": 1783939800,
-       "v": -0.0
-      },
-      {
-       "t": 1783940100,
-       "v": -0.0
-      },
-      {
-       "t": 1783940400,
-       "v": -0.0
-      },
-      {
-       "t": 1783940700,
-       "v": -0.0
-      },
-      {
-       "t": 1783941000,
-       "v": 0.0
-      },
-      {
-       "t": 1783941300,
-       "v": 0.0
-      },
-      {
-       "t": 1783941600,
-       "v": -0.0
-      },
-      {
-       "t": 1783941900,
-       "v": -0.0
-      },
-      {
-       "t": 1783942200,
-       "v": -0.0
-      },
-      {
-       "t": 1783942500,
-       "v": -0.0
-      },
-      {
-       "t": 1783942800,
-       "v": -0.0
-      },
-      {
-       "t": 1783943100,
-       "v": 0.0
-      },
-      {
-       "t": 1783943400,
-       "v": 0.0
-      },
-      {
-       "t": 1783943700,
-       "v": -0.0
-      },
-      {
-       "t": 1783944000,
-       "v": -0.0
-      },
-      {
-       "t": 1783944300,
-       "v": -0.0
-      },
-      {
-       "t": 1783944600,
-       "v": -0.0
-      },
-      {
-       "t": 1783944900,
-       "v": -0.0
-      },
-      {
-       "t": 1783945200,
-       "v": 0.0
-      },
-      {
-       "t": 1783945500,
-       "v": 0.0
-      },
-      {
-       "t": 1783945800,
-       "v": -0.0
-      },
-      {
-       "t": 1783946100,
-       "v": -0.0
-      },
-      {
-       "t": 1783946400,
-       "v": -0.0
-      },
-      {
-       "t": 1783946700,
-       "v": -0.0
-      },
-      {
-       "t": 1783947000,
-       "v": -0.0
-      },
-      {
-       "t": 1783947300,
-       "v": 0.0
-      },
-      {
-       "t": 1783947600,
-       "v": 0.0
-      },
-      {
-       "t": 1783947900,
-       "v": -0.0
-      },
-      {
-       "t": 1783948200,
-       "v": -0.0
-      },
-      {
-       "t": 1783948500,
-       "v": -0.0
-      },
-      {
-       "t": 1783948800,
-       "v": -0.0
-      },
-      {
-       "t": 1783949100,
-       "v": -0.0
-      },
-      {
-       "t": 1783949400,
-       "v": 0.0
-      },
-      {
-       "t": 1783949700,
-       "v": 0.0
-      },
-      {
-       "t": 1783950000,
-       "v": -0.0
-      },
-      {
-       "t": 1783950300,
-       "v": -0.0
-      },
-      {
-       "t": 1783950600,
-       "v": -0.0
-      },
-      {
-       "t": 1783950900,
-       "v": -0.0
-      },
-      {
-       "t": 1783951200,
-       "v": -0.0
-      },
-      {
-       "t": 1783951500,
-       "v": 0.0
-      },
-      {
-       "t": 1783951800,
-       "v": 0.0
-      },
-      {
-       "t": 1783952100,
-       "v": -0.0
-      },
-      {
-       "t": 1783952400,
-       "v": -0.0
-      },
-      {
-       "t": 1783952700,
-       "v": -0.0
-      },
-      {
-       "t": 1783953000,
-       "v": -0.0
-      },
-      {
-       "t": 1783953300,
-       "v": -0.0
-      },
-      {
-       "t": 1783953600,
-       "v": 0.0
-      },
-      {
-       "t": 1783953900,
-       "v": 0.0
-      },
-      {
-       "t": 1783954200,
-       "v": -0.0
-      },
-      {
-       "t": 1783954500,
-       "v": -0.0
-      },
-      {
-       "t": 1783954800,
-       "v": -0.0
-      },
-      {
-       "t": 1783955100,
-       "v": -0.0
-      },
-      {
-       "t": 1783955400,
-       "v": -0.0
-      },
-      {
-       "t": 1783955700,
-       "v": 0.0
-      },
-      {
-       "t": 1783956000,
-       "v": 0.0
-      },
-      {
-       "t": 1783956300,
-       "v": -0.0
-      },
-      {
-       "t": 1783956600,
-       "v": -0.0
-      },
-      {
-       "t": 1783956900,
-       "v": -0.0
-      },
-      {
-       "t": 1783957200,
-       "v": -0.0
-      },
-      {
-       "t": 1783957500,
-       "v": -0.0
-      },
-      {
-       "t": 1783957800,
-       "v": 0.0
-      },
-      {
-       "t": 1783958100,
-       "v": 0.0
-      },
-      {
-       "t": 1783958400,
-       "v": -0.0
-      },
-      {
-       "t": 1783958700,
-       "v": -0.0
-      },
-      {
-       "t": 1783959000,
-       "v": -0.0
-      },
-      {
-       "t": 1783959300,
-       "v": -0.0
-      },
-      {
-       "t": 1783959600,
-       "v": -0.0
-      },
-      {
-       "t": 1783959900,
-       "v": 0.0
-      },
-      {
-       "t": 1783960200,
-       "v": 0.0
-      },
-      {
-       "t": 1783960500,
-       "v": -0.0
-      },
-      {
-       "t": 1783960800,
-       "v": -0.0
-      },
-      {
-       "t": 1783961100,
-       "v": -0.0
-      },
-      {
-       "t": 1783961400,
-       "v": -0.0
-      },
-      {
-       "t": 1783961700,
-       "v": -0.0
-      },
-      {
-       "t": 1783962000,
-       "v": 0.0
-      },
-      {
-       "t": 1783962300,
-       "v": 0.0
-      },
-      {
-       "t": 1783962600,
-       "v": -0.0
-      },
-      {
-       "t": 1783962900,
-       "v": -0.0
-      },
-      {
-       "t": 1783963200,
-       "v": -0.0
-      },
-      {
-       "t": 1783963500,
-       "v": -0.0
-      },
-      {
-       "t": 1783963800,
-       "v": -0.0
-      },
-      {
-       "t": 1783964100,
-       "v": 0.0
-      },
-      {
-       "t": 1783964400,
-       "v": 0.0
-      },
-      {
-       "t": 1783964700,
-       "v": -0.0
-      },
-      {
-       "t": 1783965000,
-       "v": -0.0
-      },
-      {
-       "t": 1783965300,
-       "v": -0.0
-      },
-      {
-       "t": 1783965600,
-       "v": -0.0
-      },
-      {
-       "t": 1783965900,
-       "v": -0.0
-      },
-      {
-       "t": 1783966200,
-       "v": 0.0
-      },
-      {
-       "t": 1783966500,
-       "v": 0.0
-      },
-      {
-       "t": 1783966800,
-       "v": -0.0
-      },
-      {
-       "t": 1783967100,
-       "v": -0.0
-      },
-      {
-       "t": 1783967400,
-       "v": -0.0
-      },
-      {
-       "t": 1783967700,
-       "v": -0.0
-      },
-      {
-       "t": 1783968000,
-       "v": -0.0
-      },
-      {
-       "t": 1783968300,
-       "v": 0.0
-      },
-      {
-       "t": 1783968600,
-       "v": 0.0
-      },
-      {
-       "t": 1783968900,
-       "v": -0.0
-      },
-      {
-       "t": 1783969200,
-       "v": -0.0
-      },
-      {
-       "t": 1783969500,
-       "v": -0.0
-      },
-      {
-       "t": 1783969800,
-       "v": -0.0
-      },
-      {
-       "t": 1783970100,
-       "v": -0.0
-      },
-      {
-       "t": 1783970400,
-       "v": 0.0
-      },
-      {
-       "t": 1783970700,
-       "v": 0.0
-      },
-      {
-       "t": 1783971000,
-       "v": -0.0
-      },
-      {
-       "t": 1783971300,
-       "v": -0.0
-      },
-      {
-       "t": 1783971600,
-       "v": -0.0
-      },
-      {
-       "t": 1783971900,
-       "v": -0.0
-      },
-      {
-       "t": 1783972200,
-       "v": -0.0
-      },
-      {
-       "t": 1783972500,
-       "v": 0.0
-      },
-      {
-       "t": 1783972800,
-       "v": 0.0
-      },
-      {
-       "t": 1783973100,
-       "v": -0.0
-      },
-      {
-       "t": 1783973400,
-       "v": -0.0
-      },
-      {
-       "t": 1783973700,
-       "v": -0.0
-      },
-      {
-       "t": 1783974000,
-       "v": -0.0
-      },
-      {
-       "t": 1783974300,
-       "v": -0.0
-      },
-      {
-       "t": 1783974600,
-       "v": 0.0
-      },
-      {
-       "t": 1783974900,
-       "v": 0.0
-      },
-      {
-       "t": 1783975200,
-       "v": -0.0
-      },
-      {
-       "t": 1783975500,
-       "v": -0.0
-      },
-      {
-       "t": 1783975800,
-       "v": -0.0
-      },
-      {
-       "t": 1783976100,
-       "v": -0.0
-      },
-      {
-       "t": 1783976400,
-       "v": -0.0
-      },
-      {
-       "t": 1783976700,
-       "v": 0.0
-      },
-      {
-       "t": 1783977000,
-       "v": 0.0
-      },
-      {
-       "t": 1783977300,
-       "v": -0.0
-      },
-      {
-       "t": 1783977600,
-       "v": -0.0
-      },
-      {
-       "t": 1783977900,
-       "v": -0.0
-      },
-      {
-       "t": 1783978200,
-       "v": -0.0
-      },
-      {
-       "t": 1783978500,
-       "v": -0.0
-      },
-      {
-       "t": 1783978800,
-       "v": 0.0
-      },
-      {
-       "t": 1783979100,
-       "v": 0.0
-      },
-      {
-       "t": 1783979400,
-       "v": -0.0
-      },
-      {
-       "t": 1783979700,
-       "v": -0.0
-      },
-      {
-       "t": 1783980000,
-       "v": -0.0
-      },
-      {
-       "t": 1783980300,
-       "v": -0.0
-      },
-      {
-       "t": 1783980600,
-       "v": -0.0
-      },
-      {
-       "t": 1783980900,
-       "v": 0.0
-      },
-      {
-       "t": 1783981200,
-       "v": 0.0
-      },
-      {
-       "t": 1783981500,
-       "v": -0.0
-      },
-      {
-       "t": 1783981800,
-       "v": -0.0
-      },
-      {
-       "t": 1783982100,
-       "v": -0.0
-      },
-      {
-       "t": 1783982400,
-       "v": -0.0
-      },
-      {
-       "t": 1783982700,
-       "v": -0.0
-      },
-      {
-       "t": 1783983000,
-       "v": 0.0
-      },
-      {
-       "t": 1783983300,
-       "v": 0.0
-      },
-      {
-       "t": 1783983600,
-       "v": -0.0
-      },
-      {
-       "t": 1783983900,
-       "v": -0.0
-      },
-      {
-       "t": 1783984200,
-       "v": 253.0
-      },
-      {
-       "t": 1783984500,
-       "v": 253.0
-      },
-      {
-       "t": 1783984800,
-       "v": 253.0
-      },
-      {
-       "t": 1783985100,
-       "v": 253.0
-      },
-      {
-       "t": 1783985400,
-       "v": 253.0
-      },
-      {
-       "t": 1783985700,
-       "v": 253.0
-      },
-      {
-       "t": 1783986000,
-       "v": 253.0
-      },
-      {
-       "t": 1783986300,
-       "v": 253.0
-      },
-      {
-       "t": 1783986600,
-       "v": 253.0
-      },
-      {
-       "t": 1783986900,
-       "v": 253.0
-      }
-     ]
+     "skin_temp_day": []
     },
     "coverage": {
      "hr_samples": 86400,
@@ -27150,16 +26000,17 @@
     "scalars": {
      "rhr": 48.08833333333333,
      "rhr_nocturnal": 48.08833333333333,
-     "rmssd": 34.05412764733815,
+     "rmssd": 34.00273815428614,
      "rmssd_whole": 32.12768524038331,
-     "readiness": 44.101496921383124,
-     "readiness_z": -0.23704387557240558,
+     "readiness": 53.2768793939363,
+     "readiness_z": 0.1312633244996829,
      "strain": 11.400417481097689,
      "max_hr_used": 192.0,
-     "ln_rmssd": 3.5279512483715925,
+     "ln_rmssd": 3.5264410553230694,
      "resp_rate": 13.51304972588547,
-     "skin_temp_z": 3.8092033860986256,
-     "skin_temp_adc": 30406.000406834824,
+     "skin_temp_z": null,
+     "skin_temp_adc": null,
+     "strap_temp_c": null,
      "skin_temp_coverage_frac": 1.0,
      "skin_temp_settled_frac": 1.0,
      "sdnn": 77.77577302925846,
@@ -27176,20 +26027,20 @@
      "sleeping_hr_nadir": 47.0,
      "sleeping_hr_nadir_ts": 1783900189.0,
      "waking_hr": 73.60755598517802,
-     "rem_min": 57.0,
-     "deep_min": 24.0,
-     "light_min": 332.0,
-     "tst_min": 413.0,
+     "rem_min": 118.0,
+     "deep_min": 93.0,
+     "light_min": 208.0,
+     "tst_min": 418.0,
      "lf_hf": 0.151,
      "hrv_cv": 6.9,
      "irregular_rhythm_flag": 0.0,
      "brv_cv": 0.0008,
      "brv_slope": 0.0004,
-     "efficiency": 91.7,
+     "efficiency": 92.7,
      "worn_min": 1440.0,
      "unobserved_min": 0.0,
-     "awakenings": 3.0,
-     "longest_sleep_min": 165.0,
+     "awakenings": 2.0,
+     "longest_sleep_min": 80.0,
      "sol_min": null,
      "midsleep_sec": -3589.0,
      "sleep_onset_sec": -17108.0,
@@ -28608,12 +27459,12 @@
        "is_main": true,
        "onset_ts": 1783898092,
        "wake_ts": 1783925130,
-       "duration_min": 413,
+       "duration_min": 418,
        "in_bed_min": 450,
-       "efficiency": 0.917
+       "efficiency": 0.927
       }
      ],
-     "total_asleep_min": 413
+     "total_asleep_min": 418
     },
     "sleep_charging": {
      "present": false
@@ -29036,15 +27887,15 @@
    },
    "finalized": 0,
    "rhr": 48.08833333333333,
-   "rmssd": 34.05412764733815,
-   "readiness": 44.101496921383124,
+   "rmssd": 34.00273815428614,
+   "readiness": 53.2768793939363,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "3d1da9e5c7350be3fdd09abb5e11379a00bb6260fc3bfa48dcf557f6a276ed9c"
+   "payload_sha256": "a13f596dc4000c279af6564cb21a7a90fd52fd19b8d7f72e75fde6533ee6a54e"
   },
   {
    "day_id": "2026-07-14",
-   "algo_version": 117,
+   "algo_version": 118,
    "payload_json": {
     "date": "2026-07-14",
     "day_confidence": 0.6,
@@ -29107,7 +27958,7 @@
       "note": "Breathing-rate variability TREND (within-user only); surface a change only beyond the metric MDC"
      },
      "rmssd_sleep_session": {
-      "value": 34.1,
+      "value": 34.0,
       "confidence": 0.5453,
       "tier": "HIGH",
       "inputs_used": [
@@ -29124,14 +27975,14 @@
       "consecutive_rmssd_ms": 31.7
      },
      "rmssd_nocturnal": {
-      "value": 32.16077953226363,
-      "confidence": 0.53611,
+      "value": 33.67730182250159,
+      "confidence": 0.542575,
       "tier": "HIGH",
       "inputs_used": [
        "rr_cleaned",
        "beat_times"
       ],
-      "note": "robust nocturnal RMSSD = MEDIAN of 72 consecutive 5-min-window RMSSDs (REM/arousal-robust). PRV not ECG-HRV; RMSSD is quantization-sensitive at 1 Hz."
+      "note": "robust nocturnal RMSSD = MEDIAN of 60 consecutive 5-min-window RMSSDs (REM/arousal-robust). PRV not ECG-HRV; RMSSD is quantization-sensitive at 1 Hz."
      },
      "hrv_freq": {
       "value": {
@@ -29213,11 +28064,11 @@
      },
      "readiness_lnrmssd": {
       "value": {
-       "ln_rmssd_today": 3.527951,
-       "rolling7_mean": 3.518747,
+       "ln_rmssd_today": 3.526441,
+       "rolling7_mean": 3.518531,
        "rolling7_median": 3.526361,
-       "cv_pct": 1.689892,
-       "z": 0.023779,
+       "cv_pct": 1.688966,
+       "z": 0.001204,
        "swc": 0.033448,
        "band": "normal",
        "saturation_flag": false
@@ -29231,35 +28082,29 @@
      },
      "readiness_composite": {
       "value": {
-       "score": 44.10162,
-       "composite_z": -0.237039,
+       "score": 53.276879,
+       "composite_z": 0.131263,
        "calibration": {
         "status": "calibrating",
         "nights": 1
        }
       },
-      "confidence": 0.75,
+      "confidence": 0.6,
       "tier": "ESTIMATE",
       "inputs_used": [
        "HRV",
-       "RR",
-       "temp"
+       "RR"
       ],
       "drivers": [
        {
-        "label": "temp",
-        "contribution": -0.370979,
-        "detail": "oriented robust-z (median+MAD)=-3.709786"
-       },
-       {
         "label": "RR",
-        "contribution": 0.117294,
+        "contribution": 0.130327,
         "detail": "oriented robust-z (median+MAD)=0.586472"
        },
        {
         "label": "HRV",
-        "contribution": 0.016645,
-        "detail": "oriented robust-z (median+MAD)=0.023779"
+        "contribution": 0.000936,
+        "detail": "oriented robust-z (median+MAD)=0.001204"
        }
       ],
       "note": "GLASS-BOX readiness: disclosed weights autonomic (HRV+RHR, mean of their z) 0.70 > RR 0.20 > temp 0.10, renormalized over present inputs. Drivers are definitional within the formula (correction, not inferred cause). calibrating:have=1,need=14."
@@ -29303,15 +28148,15 @@
       "mdc_multiples": -0.42
      },
      "hrv": {
-      "baseline": 34.56735765188194,
+      "baseline": 34.564875290283204,
       "spread": 5.0,
       "n_valid": 15,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 34.05412764733815,
-      "z": -0.082,
-      "delta": -0.513,
-      "ratio": -0.0148,
+      "value": 34.00273815428614,
+      "z": -0.09,
+      "delta": -0.562,
+      "ratio": -0.0163,
       "in_normal_range": true,
       "mdc": 17.366,
       "mdc_multiples": -0.03
@@ -29331,18 +28176,33 @@
       "mdc_multiples": -0.07
      },
      "skin_temp": {
-      "baseline": 30396.284363667855,
+      "baseline": 30395.79120997569,
       "spread": 25.0,
-      "n_valid": 15,
+      "n_valid": 14,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 30406.00025889489,
-      "z": 0.31,
-      "delta": 9.716,
-      "ratio": 0.0003,
-      "in_normal_range": true,
+      "value": null,
+      "z": null,
+      "delta": null,
+      "ratio": null,
+      "in_normal_range": null,
       "mdc": 86.828,
-      "mdc_multiples": 0.11
+      "mdc_multiples": null
+     },
+     "strap_temp": {
+      "baseline": null,
+      "spread": null,
+      "n_valid": 0,
+      "nights_since_update": 0,
+      "status": "calibrating",
+      "value": null,
+      "z": null,
+      "delta": null,
+      "ratio": null,
+      "in_normal_range": null,
+      "note": "no_baseline:have=0,need=1",
+      "mdc": null,
+      "mdc_multiples": null
      }
     },
     "sleep": {
@@ -29364,20 +28224,20 @@
      },
      "accounting": {
       "value": {
-       "tst_sec": 24805,
-       "waso_sec": 2232,
+       "tst_sec": 25057,
+       "waso_sec": 1980,
        "in_bed_sec": 27037,
        "unobserved_sec": 0,
        "observed_in_bed_sec": 27037,
-       "efficiency_pct": 91.744646,
-       "nrem_sec": 21385,
-       "light_sec": 19855,
-       "deep_sec": 1530,
-       "rem_sec": 3420,
-       "wake_sec": 2232,
+       "efficiency_pct": 92.676702,
+       "nrem_sec": 18007,
+       "light_sec": 12457,
+       "deep_sec": 5550,
+       "rem_sec": 7050,
+       "wake_sec": 1980,
        "deep_low_confidence": true,
-       "awakenings": 3,
-       "longest_sleep_sec": 9898,
+       "awakenings": 2,
+       "longest_sleep_sec": 4770,
        "sol_sec": null
       },
       "confidence": 0.6,
@@ -29390,9 +28250,9 @@
      "band_offset_trim_sec": null,
      "stager": {
       "value": {
-       "wake_pct": 8.255353774457225,
-       "nrem_pct": 86.21245716589398,
-       "rem_pct": 13.787542834106027,
+       "wake_pct": 7.323297703147539,
+       "nrem_pct": 71.864149738596,
+       "rem_pct": 28.135850261404,
        "epoch_sec": 1,
        "epochs": 27037
       },
@@ -33279,14 +32139,13 @@
     },
     "wellness": {
      "skin_temp": {
-      "value": 2.582,
-      "confidence": 0.5,
+      "value": "—",
+      "confidence": 0,
       "tier": "RELATIVE",
       "inputs_used": [
-       "skin_temp_raw",
-       "skin_temp_c"
+       "strap_temp_c"
       ],
-      "note": "relative deviation (z) vs your baseline; raw sensor units, never an absolute °C"
+      "note": "strap temperature vs your normal (the band's own internal sensor, not a skin probe); relative only"
      }
     },
     "stress": {
@@ -33295,7 +32154,7 @@
      "si": 159.44,
      "level": "elevated",
      "lf_hf": 0.151,
-     "rmssd": 34.1,
+     "rmssd": 34.0,
      "confidence": 0.7,
      "tier": "ESTIMATE",
      "inputs_used": [
@@ -48772,166 +47631,161 @@
      "hypnogram": [
       {
        "start": 1783984492,
-       "end": 1783985272,
+       "end": 1783985512,
        "stage": "light"
       },
       {
-       "start": 1783985272,
-       "end": 1783985992,
-       "stage": "rem"
+       "start": 1783985512,
+       "end": 1783988002,
+       "stage": "deep"
       },
       {
-       "start": 1783985992,
-       "end": 1783987822,
-       "stage": "light"
-      },
-      {
-       "start": 1783987822,
-       "end": 1783988242,
-       "stage": "rem"
-      },
-      {
-       "start": 1783988242,
+       "start": 1783988002,
        "end": 1783988692,
        "stage": "light"
       },
       {
        "start": 1783988692,
-       "end": 1783989292,
+       "end": 1783989202,
+       "stage": "rem"
+      },
+      {
+       "start": 1783989202,
+       "end": 1783989352,
        "stage": "wake"
       },
       {
-       "start": 1783989292,
-       "end": 1783990432,
+       "start": 1783989352,
+       "end": 1783989592,
        "stage": "light"
       },
       {
-       "start": 1783990432,
-       "end": 1783990732,
-       "stage": "rem"
+       "start": 1783989592,
+       "end": 1783989622,
+       "stage": "wake"
       },
       {
-       "start": 1783990732,
-       "end": 1783993042,
+       "start": 1783989622,
+       "end": 1783990552,
        "stage": "light"
       },
       {
-       "start": 1783993042,
-       "end": 1783993342,
-       "stage": "rem"
+       "start": 1783990552,
+       "end": 1783992532,
+       "stage": "deep"
       },
       {
-       "start": 1783993342,
+       "start": 1783992532,
+       "end": 1783993192,
+       "stage": "light"
+      },
+      {
+       "start": 1783993192,
+       "end": 1783993312,
+       "stage": "wake"
+      },
+      {
+       "start": 1783993312,
        "end": 1783994302,
-       "stage": "light"
+       "stage": "rem"
       },
       {
        "start": 1783994302,
-       "end": 1783994872,
-       "stage": "rem"
-      },
-      {
-       "start": 1783994872,
-       "end": 1783995142,
+       "end": 1783994422,
        "stage": "wake"
       },
       {
-       "start": 1783995142,
-       "end": 1783998142,
+       "start": 1783994422,
+       "end": 1783994752,
        "stage": "light"
       },
       {
-       "start": 1783998142,
-       "end": 1783998382,
-       "stage": "deep"
-      },
-      {
-       "start": 1783998382,
-       "end": 1783999012,
-       "stage": "light"
-      },
-      {
-       "start": 1783999012,
-       "end": 1783999192,
-       "stage": "deep"
-      },
-      {
-       "start": 1783999192,
-       "end": 1784001022,
-       "stage": "light"
-      },
-      {
-       "start": 1784001022,
-       "end": 1784001652,
-       "stage": "rem"
-      },
-      {
-       "start": 1784001652,
-       "end": 1784002882,
-       "stage": "light"
-      },
-      {
-       "start": 1784002882,
-       "end": 1784003152,
-       "stage": "deep"
-      },
-      {
-       "start": 1784003152,
-       "end": 1784005040,
-       "stage": "light"
-      },
-      {
-       "start": 1784005040,
-       "end": 1784005982,
+       "start": 1783994752,
+       "end": 1783995232,
        "stage": "wake"
       },
       {
-       "start": 1784005982,
-       "end": 1784006522,
+       "start": 1783995232,
+       "end": 1783995952,
        "stage": "light"
       },
       {
-       "start": 1784006522,
-       "end": 1784007002,
+       "start": 1783995952,
+       "end": 1783997032,
+       "stage": "deep"
+      },
+      {
+       "start": 1783997032,
+       "end": 1783998022,
+       "stage": "light"
+      },
+      {
+       "start": 1783998022,
+       "end": 1783999432,
        "stage": "rem"
       },
       {
-       "start": 1784007002,
-       "end": 1784007422,
+       "start": 1783999432,
+       "end": 1783999582,
        "stage": "wake"
       },
       {
-       "start": 1784007422,
-       "end": 1784007512,
+       "start": 1783999582,
+       "end": 1784000392,
        "stage": "light"
       },
       {
-       "start": 1784007512,
-       "end": 1784007692,
-       "stage": "deep"
+       "start": 1784000392,
+       "end": 1784000422,
+       "stage": "wake"
       },
       {
-       "start": 1784007692,
-       "end": 1784007842,
+       "start": 1784000422,
+       "end": 1784002612,
        "stage": "light"
       },
       {
-       "start": 1784007842,
-       "end": 1784008202,
-       "stage": "deep"
+       "start": 1784002612,
+       "end": 1784004562,
+       "stage": "rem"
       },
       {
-       "start": 1784008202,
-       "end": 1784008472,
+       "start": 1784004562,
+       "end": 1784005192,
        "stage": "light"
       },
       {
-       "start": 1784008472,
-       "end": 1784008772,
-       "stage": "deep"
+       "start": 1784005192,
+       "end": 1784005822,
+       "stage": "wake"
       },
       {
-       "start": 1784008772,
+       "start": 1784005822,
+       "end": 1784006872,
+       "stage": "light"
+      },
+      {
+       "start": 1784006872,
+       "end": 1784007112,
+       "stage": "wake"
+      },
+      {
+       "start": 1784007112,
+       "end": 1784009302,
+       "stage": "rem"
+      },
+      {
+       "start": 1784009302,
+       "end": 1784011192,
+       "stage": "light"
+      },
+      {
+       "start": 1784011192,
+       "end": 1784011222,
+       "stage": "wake"
+      },
+      {
+       "start": 1784011222,
        "end": 1784011529,
        "stage": "light"
       }
@@ -54664,1160 +53518,7 @@
        "v": 13.4
       }
      ],
-     "skin_temp_day": [
-      {
-       "t": 1783987200,
-       "v": 253.0
-      },
-      {
-       "t": 1783987500,
-       "v": 253.0
-      },
-      {
-       "t": 1783987800,
-       "v": 253.0
-      },
-      {
-       "t": 1783988100,
-       "v": 253.0
-      },
-      {
-       "t": 1783988400,
-       "v": 253.0
-      },
-      {
-       "t": 1783988700,
-       "v": 253.0
-      },
-      {
-       "t": 1783989000,
-       "v": 253.0
-      },
-      {
-       "t": 1783989300,
-       "v": 253.0
-      },
-      {
-       "t": 1783989600,
-       "v": 253.0
-      },
-      {
-       "t": 1783989900,
-       "v": 253.0
-      },
-      {
-       "t": 1783990200,
-       "v": 253.0
-      },
-      {
-       "t": 1783990500,
-       "v": 253.0
-      },
-      {
-       "t": 1783990800,
-       "v": 253.0
-      },
-      {
-       "t": 1783991100,
-       "v": 253.0
-      },
-      {
-       "t": 1783991400,
-       "v": 253.0
-      },
-      {
-       "t": 1783991700,
-       "v": 253.0
-      },
-      {
-       "t": 1783992000,
-       "v": 253.0
-      },
-      {
-       "t": 1783992300,
-       "v": 253.0
-      },
-      {
-       "t": 1783992600,
-       "v": 253.0
-      },
-      {
-       "t": 1783992900,
-       "v": 253.0
-      },
-      {
-       "t": 1783993200,
-       "v": 253.0
-      },
-      {
-       "t": 1783993500,
-       "v": 253.0
-      },
-      {
-       "t": 1783993800,
-       "v": 253.0
-      },
-      {
-       "t": 1783994100,
-       "v": 253.0
-      },
-      {
-       "t": 1783994400,
-       "v": 253.0
-      },
-      {
-       "t": 1783994700,
-       "v": 253.0
-      },
-      {
-       "t": 1783995000,
-       "v": 253.0
-      },
-      {
-       "t": 1783995300,
-       "v": 253.0
-      },
-      {
-       "t": 1783995600,
-       "v": 253.0
-      },
-      {
-       "t": 1783995900,
-       "v": 253.0
-      },
-      {
-       "t": 1783996200,
-       "v": 253.0
-      },
-      {
-       "t": 1783996500,
-       "v": 253.0
-      },
-      {
-       "t": 1783996800,
-       "v": 253.0
-      },
-      {
-       "t": 1783997100,
-       "v": 253.0
-      },
-      {
-       "t": 1783997400,
-       "v": 253.0
-      },
-      {
-       "t": 1783997700,
-       "v": 253.0
-      },
-      {
-       "t": 1783998000,
-       "v": 253.0
-      },
-      {
-       "t": 1783998300,
-       "v": 253.0
-      },
-      {
-       "t": 1783998600,
-       "v": 253.0
-      },
-      {
-       "t": 1783998900,
-       "v": 253.0
-      },
-      {
-       "t": 1783999200,
-       "v": 253.0
-      },
-      {
-       "t": 1783999500,
-       "v": 253.0
-      },
-      {
-       "t": 1783999800,
-       "v": 253.0
-      },
-      {
-       "t": 1784000100,
-       "v": 253.0
-      },
-      {
-       "t": 1784000400,
-       "v": 253.0
-      },
-      {
-       "t": 1784000700,
-       "v": 253.0
-      },
-      {
-       "t": 1784001000,
-       "v": 253.0
-      },
-      {
-       "t": 1784001300,
-       "v": 253.0
-      },
-      {
-       "t": 1784001600,
-       "v": 253.0
-      },
-      {
-       "t": 1784001900,
-       "v": 253.0
-      },
-      {
-       "t": 1784002200,
-       "v": 253.0
-      },
-      {
-       "t": 1784002500,
-       "v": 253.0
-      },
-      {
-       "t": 1784002800,
-       "v": 253.0
-      },
-      {
-       "t": 1784003100,
-       "v": 253.0
-      },
-      {
-       "t": 1784003400,
-       "v": 253.0
-      },
-      {
-       "t": 1784003700,
-       "v": 253.0
-      },
-      {
-       "t": 1784004000,
-       "v": 253.0
-      },
-      {
-       "t": 1784004300,
-       "v": 253.0
-      },
-      {
-       "t": 1784004600,
-       "v": 253.0
-      },
-      {
-       "t": 1784004900,
-       "v": 253.0
-      },
-      {
-       "t": 1784005200,
-       "v": 253.0
-      },
-      {
-       "t": 1784005500,
-       "v": 253.0
-      },
-      {
-       "t": 1784005800,
-       "v": 253.0
-      },
-      {
-       "t": 1784006100,
-       "v": 253.0
-      },
-      {
-       "t": 1784006400,
-       "v": 253.0
-      },
-      {
-       "t": 1784006700,
-       "v": 253.0
-      },
-      {
-       "t": 1784007000,
-       "v": 253.0
-      },
-      {
-       "t": 1784007300,
-       "v": 253.0
-      },
-      {
-       "t": 1784007600,
-       "v": 253.0
-      },
-      {
-       "t": 1784007900,
-       "v": 253.0
-      },
-      {
-       "t": 1784008200,
-       "v": 253.0
-      },
-      {
-       "t": 1784008500,
-       "v": 253.0
-      },
-      {
-       "t": 1784008800,
-       "v": 253.0
-      },
-      {
-       "t": 1784009100,
-       "v": 253.0
-      },
-      {
-       "t": 1784009400,
-       "v": 253.0
-      },
-      {
-       "t": 1784009700,
-       "v": 253.0
-      },
-      {
-       "t": 1784010000,
-       "v": 253.0
-      },
-      {
-       "t": 1784010300,
-       "v": 253.0
-      },
-      {
-       "t": 1784010600,
-       "v": 253.0
-      },
-      {
-       "t": 1784010900,
-       "v": 253.0
-      },
-      {
-       "t": 1784011200,
-       "v": 253.0
-      },
-      {
-       "t": 1784011500,
-       "v": 253.0
-      },
-      {
-       "t": 1784011800,
-       "v": -0.0
-      },
-      {
-       "t": 1784012100,
-       "v": -0.0
-      },
-      {
-       "t": 1784012400,
-       "v": 0.0
-      },
-      {
-       "t": 1784012700,
-       "v": 0.0
-      },
-      {
-       "t": 1784013000,
-       "v": -0.0
-      },
-      {
-       "t": 1784013300,
-       "v": -0.0
-      },
-      {
-       "t": 1784013600,
-       "v": -0.0
-      },
-      {
-       "t": 1784013900,
-       "v": -0.0
-      },
-      {
-       "t": 1784014200,
-       "v": -0.0
-      },
-      {
-       "t": 1784014500,
-       "v": 0.0
-      },
-      {
-       "t": 1784014800,
-       "v": 0.0
-      },
-      {
-       "t": 1784015100,
-       "v": -0.0
-      },
-      {
-       "t": 1784015400,
-       "v": -0.0
-      },
-      {
-       "t": 1784015700,
-       "v": -0.0
-      },
-      {
-       "t": 1784016000,
-       "v": -0.0
-      },
-      {
-       "t": 1784016300,
-       "v": -0.0
-      },
-      {
-       "t": 1784016600,
-       "v": 0.0
-      },
-      {
-       "t": 1784016900,
-       "v": 0.0
-      },
-      {
-       "t": 1784017200,
-       "v": -0.0
-      },
-      {
-       "t": 1784017500,
-       "v": -0.0
-      },
-      {
-       "t": 1784017800,
-       "v": -0.0
-      },
-      {
-       "t": 1784018100,
-       "v": -0.0
-      },
-      {
-       "t": 1784018400,
-       "v": -0.0
-      },
-      {
-       "t": 1784018700,
-       "v": 0.0
-      },
-      {
-       "t": 1784019000,
-       "v": 0.0
-      },
-      {
-       "t": 1784019300,
-       "v": -0.0
-      },
-      {
-       "t": 1784019600,
-       "v": -0.0
-      },
-      {
-       "t": 1784019900,
-       "v": -0.0
-      },
-      {
-       "t": 1784020200,
-       "v": -0.0
-      },
-      {
-       "t": 1784020500,
-       "v": -0.0
-      },
-      {
-       "t": 1784020800,
-       "v": 0.0
-      },
-      {
-       "t": 1784021100,
-       "v": 0.0
-      },
-      {
-       "t": 1784021400,
-       "v": -0.0
-      },
-      {
-       "t": 1784021700,
-       "v": -0.0
-      },
-      {
-       "t": 1784022000,
-       "v": -0.0
-      },
-      {
-       "t": 1784022300,
-       "v": -0.0
-      },
-      {
-       "t": 1784022600,
-       "v": -0.0
-      },
-      {
-       "t": 1784022900,
-       "v": 0.0
-      },
-      {
-       "t": 1784023200,
-       "v": 0.0
-      },
-      {
-       "t": 1784023500,
-       "v": -0.0
-      },
-      {
-       "t": 1784023800,
-       "v": -0.0
-      },
-      {
-       "t": 1784024100,
-       "v": -0.0
-      },
-      {
-       "t": 1784024400,
-       "v": -0.0
-      },
-      {
-       "t": 1784024700,
-       "v": -0.0
-      },
-      {
-       "t": 1784025000,
-       "v": 0.0
-      },
-      {
-       "t": 1784025300,
-       "v": 0.0
-      },
-      {
-       "t": 1784025600,
-       "v": -0.0
-      },
-      {
-       "t": 1784025900,
-       "v": -0.0
-      },
-      {
-       "t": 1784026200,
-       "v": -0.0
-      },
-      {
-       "t": 1784026500,
-       "v": -0.0
-      },
-      {
-       "t": 1784026800,
-       "v": -0.0
-      },
-      {
-       "t": 1784027100,
-       "v": 0.0
-      },
-      {
-       "t": 1784027400,
-       "v": 0.0
-      },
-      {
-       "t": 1784027700,
-       "v": -0.0
-      },
-      {
-       "t": 1784028000,
-       "v": -0.0
-      },
-      {
-       "t": 1784028300,
-       "v": -0.0
-      },
-      {
-       "t": 1784028600,
-       "v": -0.0
-      },
-      {
-       "t": 1784028900,
-       "v": -0.0
-      },
-      {
-       "t": 1784029200,
-       "v": 0.0
-      },
-      {
-       "t": 1784029500,
-       "v": 0.0
-      },
-      {
-       "t": 1784029800,
-       "v": -0.0
-      },
-      {
-       "t": 1784030100,
-       "v": -0.0
-      },
-      {
-       "t": 1784030400,
-       "v": -0.0
-      },
-      {
-       "t": 1784030700,
-       "v": -0.0
-      },
-      {
-       "t": 1784031000,
-       "v": -0.0
-      },
-      {
-       "t": 1784031300,
-       "v": 0.0
-      },
-      {
-       "t": 1784031600,
-       "v": 0.0
-      },
-      {
-       "t": 1784031900,
-       "v": -0.0
-      },
-      {
-       "t": 1784032200,
-       "v": -0.0
-      },
-      {
-       "t": 1784032500,
-       "v": -0.0
-      },
-      {
-       "t": 1784032800,
-       "v": -0.0
-      },
-      {
-       "t": 1784033100,
-       "v": -0.0
-      },
-      {
-       "t": 1784033400,
-       "v": 0.0
-      },
-      {
-       "t": 1784033700,
-       "v": 0.0
-      },
-      {
-       "t": 1784034000,
-       "v": -0.0
-      },
-      {
-       "t": 1784034300,
-       "v": -0.0
-      },
-      {
-       "t": 1784034600,
-       "v": -0.0
-      },
-      {
-       "t": 1784034900,
-       "v": -0.0
-      },
-      {
-       "t": 1784035200,
-       "v": -0.0
-      },
-      {
-       "t": 1784035500,
-       "v": 0.0
-      },
-      {
-       "t": 1784035800,
-       "v": 0.0
-      },
-      {
-       "t": 1784036100,
-       "v": -0.0
-      },
-      {
-       "t": 1784036400,
-       "v": -0.0
-      },
-      {
-       "t": 1784036700,
-       "v": -0.0
-      },
-      {
-       "t": 1784037000,
-       "v": -0.0
-      },
-      {
-       "t": 1784037300,
-       "v": -0.0
-      },
-      {
-       "t": 1784037600,
-       "v": 0.0
-      },
-      {
-       "t": 1784037900,
-       "v": 0.0
-      },
-      {
-       "t": 1784038200,
-       "v": -0.0
-      },
-      {
-       "t": 1784038500,
-       "v": -0.0
-      },
-      {
-       "t": 1784038800,
-       "v": -0.0
-      },
-      {
-       "t": 1784039100,
-       "v": -0.0
-      },
-      {
-       "t": 1784039400,
-       "v": -0.0
-      },
-      {
-       "t": 1784039700,
-       "v": 0.0
-      },
-      {
-       "t": 1784040000,
-       "v": 0.0
-      },
-      {
-       "t": 1784040300,
-       "v": -0.0
-      },
-      {
-       "t": 1784040600,
-       "v": -0.0
-      },
-      {
-       "t": 1784040900,
-       "v": -0.0
-      },
-      {
-       "t": 1784041200,
-       "v": -0.0
-      },
-      {
-       "t": 1784041500,
-       "v": -0.0
-      },
-      {
-       "t": 1784041800,
-       "v": 0.0
-      },
-      {
-       "t": 1784042100,
-       "v": 0.0
-      },
-      {
-       "t": 1784042400,
-       "v": -0.0
-      },
-      {
-       "t": 1784042700,
-       "v": -0.0
-      },
-      {
-       "t": 1784043000,
-       "v": -0.0
-      },
-      {
-       "t": 1784043300,
-       "v": -0.0
-      },
-      {
-       "t": 1784043600,
-       "v": -0.0
-      },
-      {
-       "t": 1784043900,
-       "v": 0.0
-      },
-      {
-       "t": 1784044200,
-       "v": 0.0
-      },
-      {
-       "t": 1784044500,
-       "v": -0.0
-      },
-      {
-       "t": 1784044800,
-       "v": -0.0
-      },
-      {
-       "t": 1784045100,
-       "v": -0.0
-      },
-      {
-       "t": 1784045400,
-       "v": -0.0
-      },
-      {
-       "t": 1784045700,
-       "v": -0.0
-      },
-      {
-       "t": 1784046000,
-       "v": 0.0
-      },
-      {
-       "t": 1784046300,
-       "v": 0.0
-      },
-      {
-       "t": 1784046600,
-       "v": -0.0
-      },
-      {
-       "t": 1784046900,
-       "v": -0.0
-      },
-      {
-       "t": 1784047200,
-       "v": -0.0
-      },
-      {
-       "t": 1784047500,
-       "v": -0.0
-      },
-      {
-       "t": 1784047800,
-       "v": -0.0
-      },
-      {
-       "t": 1784048100,
-       "v": 0.0
-      },
-      {
-       "t": 1784048400,
-       "v": 0.0
-      },
-      {
-       "t": 1784048700,
-       "v": -0.0
-      },
-      {
-       "t": 1784049000,
-       "v": -0.0
-      },
-      {
-       "t": 1784049300,
-       "v": -0.0
-      },
-      {
-       "t": 1784049600,
-       "v": -0.0
-      },
-      {
-       "t": 1784049900,
-       "v": -0.0
-      },
-      {
-       "t": 1784050200,
-       "v": 0.0
-      },
-      {
-       "t": 1784050500,
-       "v": 0.0
-      },
-      {
-       "t": 1784050800,
-       "v": -0.0
-      },
-      {
-       "t": 1784051100,
-       "v": -0.0
-      },
-      {
-       "t": 1784051400,
-       "v": -0.0
-      },
-      {
-       "t": 1784051700,
-       "v": -0.0
-      },
-      {
-       "t": 1784052000,
-       "v": -0.0
-      },
-      {
-       "t": 1784052300,
-       "v": 0.0
-      },
-      {
-       "t": 1784052600,
-       "v": 0.0
-      },
-      {
-       "t": 1784052900,
-       "v": -0.0
-      },
-      {
-       "t": 1784053200,
-       "v": -0.0
-      },
-      {
-       "t": 1784053500,
-       "v": -0.0
-      },
-      {
-       "t": 1784053800,
-       "v": -0.0
-      },
-      {
-       "t": 1784054100,
-       "v": -0.0
-      },
-      {
-       "t": 1784054400,
-       "v": 0.0
-      },
-      {
-       "t": 1784054700,
-       "v": 0.0
-      },
-      {
-       "t": 1784055000,
-       "v": -0.0
-      },
-      {
-       "t": 1784055300,
-       "v": -0.0
-      },
-      {
-       "t": 1784055600,
-       "v": -0.0
-      },
-      {
-       "t": 1784055900,
-       "v": -0.0
-      },
-      {
-       "t": 1784056200,
-       "v": -0.0
-      },
-      {
-       "t": 1784056500,
-       "v": 0.0
-      },
-      {
-       "t": 1784056800,
-       "v": 0.0
-      },
-      {
-       "t": 1784057100,
-       "v": -0.0
-      },
-      {
-       "t": 1784057400,
-       "v": -0.0
-      },
-      {
-       "t": 1784057700,
-       "v": -0.0
-      },
-      {
-       "t": 1784058000,
-       "v": -0.0
-      },
-      {
-       "t": 1784058300,
-       "v": -0.0
-      },
-      {
-       "t": 1784058600,
-       "v": 0.0
-      },
-      {
-       "t": 1784058900,
-       "v": 0.0
-      },
-      {
-       "t": 1784059200,
-       "v": -0.0
-      },
-      {
-       "t": 1784059500,
-       "v": -0.0
-      },
-      {
-       "t": 1784059800,
-       "v": -0.0
-      },
-      {
-       "t": 1784060100,
-       "v": -0.0
-      },
-      {
-       "t": 1784060400,
-       "v": -0.0
-      },
-      {
-       "t": 1784060700,
-       "v": 0.0
-      },
-      {
-       "t": 1784061000,
-       "v": 0.0
-      },
-      {
-       "t": 1784061300,
-       "v": -0.0
-      },
-      {
-       "t": 1784061600,
-       "v": -0.0
-      },
-      {
-       "t": 1784061900,
-       "v": -0.0
-      },
-      {
-       "t": 1784062200,
-       "v": -0.0
-      },
-      {
-       "t": 1784062500,
-       "v": -0.0
-      },
-      {
-       "t": 1784062800,
-       "v": 0.0
-      },
-      {
-       "t": 1784063100,
-       "v": 0.0
-      },
-      {
-       "t": 1784063400,
-       "v": -0.0
-      },
-      {
-       "t": 1784063700,
-       "v": -0.0
-      },
-      {
-       "t": 1784064000,
-       "v": -0.0
-      },
-      {
-       "t": 1784064300,
-       "v": -0.0
-      },
-      {
-       "t": 1784064600,
-       "v": -0.0
-      },
-      {
-       "t": 1784064900,
-       "v": 0.0
-      },
-      {
-       "t": 1784065200,
-       "v": 0.0
-      },
-      {
-       "t": 1784065500,
-       "v": -0.0
-      },
-      {
-       "t": 1784065800,
-       "v": -0.0
-      },
-      {
-       "t": 1784066100,
-       "v": -0.0
-      },
-      {
-       "t": 1784066400,
-       "v": -0.0
-      },
-      {
-       "t": 1784066700,
-       "v": -0.0
-      },
-      {
-       "t": 1784067000,
-       "v": 0.0
-      },
-      {
-       "t": 1784067300,
-       "v": 0.0
-      },
-      {
-       "t": 1784067600,
-       "v": -0.0
-      },
-      {
-       "t": 1784067900,
-       "v": -0.0
-      },
-      {
-       "t": 1784068200,
-       "v": -0.0
-      },
-      {
-       "t": 1784068500,
-       "v": -0.0
-      },
-      {
-       "t": 1784068800,
-       "v": -0.0
-      },
-      {
-       "t": 1784069100,
-       "v": 0.0
-      },
-      {
-       "t": 1784069400,
-       "v": 0.0
-      },
-      {
-       "t": 1784069700,
-       "v": -0.0
-      },
-      {
-       "t": 1784070000,
-       "v": -0.0
-      },
-      {
-       "t": 1784070300,
-       "v": -0.0
-      },
-      {
-       "t": 1784070600,
-       "v": 253.0
-      },
-      {
-       "t": 1784070900,
-       "v": 253.0
-      },
-      {
-       "t": 1784071200,
-       "v": 253.0
-      },
-      {
-       "t": 1784071500,
-       "v": 253.0
-      },
-      {
-       "t": 1784071800,
-       "v": 253.0
-      },
-      {
-       "t": 1784072100,
-       "v": 253.0
-      },
-      {
-       "t": 1784072400,
-       "v": 253.0
-      },
-      {
-       "t": 1784072700,
-       "v": 253.0
-      },
-      {
-       "t": 1784073000,
-       "v": 253.0
-      },
-      {
-       "t": 1784073300,
-       "v": 253.0
-      }
-     ]
+     "skin_temp_day": []
     },
     "coverage": {
      "hr_samples": 86400,
@@ -55832,16 +53533,17 @@
     "scalars": {
      "rhr": 48.08833333333333,
      "rhr_nocturnal": 48.08833333333333,
-     "rmssd": 34.05412764733815,
+     "rmssd": 34.00273815428614,
      "rmssd_whole": 32.12768524038331,
-     "readiness": 44.10161991570773,
-     "readiness_z": -0.23703888636641135,
+     "readiness": 53.2768793939363,
+     "readiness_z": 0.1312633244996829,
      "strain": 11.395181698791921,
      "max_hr_used": 192.0,
-     "ln_rmssd": 3.5279512483715925,
+     "ln_rmssd": 3.5264410553230694,
      "resp_rate": 13.51304972588547,
-     "skin_temp_z": 2.581998719140345,
-     "skin_temp_adc": 30406.00025889489,
+     "skin_temp_z": null,
+     "skin_temp_adc": null,
+     "strap_temp_c": null,
      "skin_temp_coverage_frac": 1.0,
      "skin_temp_settled_frac": 1.0,
      "sdnn": 77.77577302925846,
@@ -55858,20 +53560,20 @@
      "sleeping_hr_nadir": 47.0,
      "sleeping_hr_nadir_ts": 1783986589.0,
      "waking_hr": 73.89752703749873,
-     "rem_min": 57.0,
-     "deep_min": 26.0,
-     "light_min": 331.0,
-     "tst_min": 413.0,
+     "rem_min": 118.0,
+     "deep_min": 93.0,
+     "light_min": 208.0,
+     "tst_min": 418.0,
      "lf_hf": 0.151,
      "hrv_cv": 6.9,
      "irregular_rhythm_flag": 0.0,
      "brv_cv": 0.0008,
      "brv_slope": 0.0004,
-     "efficiency": 91.7,
+     "efficiency": 92.7,
      "worn_min": 1440.0,
      "unobserved_min": 0.0,
-     "awakenings": 3.0,
-     "longest_sleep_min": 165.0,
+     "awakenings": 2.0,
+     "longest_sleep_min": 80.0,
      "sol_min": null,
      "midsleep_sec": -3589.0,
      "sleep_onset_sec": -17108.0,
@@ -57256,9 +54958,9 @@
        "is_main": true,
        "onset_ts": 1783984492,
        "wake_ts": 1784011530,
-       "duration_min": 413,
+       "duration_min": 418,
        "in_bed_min": 450,
-       "efficiency": 0.917
+       "efficiency": 0.927
       },
       {
        "is_main": false,
@@ -57271,7 +54973,7 @@
        "source": "confirmed"
       }
      ],
-     "total_asleep_min": 458
+     "total_asleep_min": 463
     },
     "sleep_charging": {
      "present": false
@@ -57691,15 +55393,15 @@
    },
    "finalized": 0,
    "rhr": 48.08833333333333,
-   "rmssd": 34.05412764733815,
-   "readiness": 44.10161991570773,
+   "rmssd": 34.00273815428614,
+   "readiness": 53.2768793939363,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "545705a12b9a201e0b03842aafd0cff790224e8e639ba4c7f5a42b7f5d7c383b"
+   "payload_sha256": "7ede7e8983f5c5ad4c7df34220f17aa67bc3bb8e06cf34bfce85ccc7f5cdd4e7"
   },
   {
    "day_id": "2026-07-15",
-   "algo_version": 117,
+   "algo_version": 118,
    "payload_json": {
     "date": "2026-07-15",
     "day_confidence": 0.6,
@@ -57762,7 +55464,7 @@
       "note": "Breathing-rate variability TREND (within-user only); surface a change only beyond the metric MDC"
      },
      "rmssd_sleep_session": {
-      "value": 34.1,
+      "value": 34.0,
       "confidence": 0.5453,
       "tier": "HIGH",
       "inputs_used": [
@@ -57779,14 +55481,14 @@
       "consecutive_rmssd_ms": 31.7
      },
      "rmssd_nocturnal": {
-      "value": 32.16077953226363,
-      "confidence": 0.53611,
+      "value": 33.67730182250159,
+      "confidence": 0.542575,
       "tier": "HIGH",
       "inputs_used": [
        "rr_cleaned",
        "beat_times"
       ],
-      "note": "robust nocturnal RMSSD = MEDIAN of 72 consecutive 5-min-window RMSSDs (REM/arousal-robust). PRV not ECG-HRV; RMSSD is quantization-sensitive at 1 Hz."
+      "note": "robust nocturnal RMSSD = MEDIAN of 60 consecutive 5-min-window RMSSDs (REM/arousal-robust). PRV not ECG-HRV; RMSSD is quantization-sensitive at 1 Hz."
      },
      "hrv_freq": {
       "value": {
@@ -57868,12 +55570,12 @@
      },
      "readiness_lnrmssd": {
       "value": {
-       "ln_rmssd_today": 3.527951,
-       "rolling7_mean": 3.52542,
-       "rolling7_median": 3.527951,
-       "cv_pct": 1.620447,
+       "ln_rmssd_today": 3.526441,
+       "rolling7_mean": 3.524989,
+       "rolling7_median": 3.526441,
+       "cv_pct": 1.620147,
        "z": 0.0,
-       "swc": 0.030824,
+       "swc": 0.031944,
        "band": "normal",
        "saturation_flag": false
       },
@@ -57886,41 +55588,35 @@
      },
      "readiness_composite": {
       "value": {
-       "score": 73.929713,
-       "composite_z": 1.042319,
+       "score": 80.273227,
+       "composite_z": 1.403459,
        "calibration": {
         "status": "calibrating",
         "nights": 2
        }
       },
-      "confidence": 0.9,
+      "confidence": 0.75,
       "tier": "ESTIMATE",
       "inputs_used": [
        "HRV",
        "RHR",
-       "RR",
-       "temp"
+       "RR"
       ],
       "drivers": [
        {
         "label": "RHR",
-        "contribution": 1.145604,
+        "contribution": 1.272893,
         "detail": "oriented robust-z (median+MAD)=3.273154"
        },
        {
-        "label": "temp",
-        "contribution": -0.224833,
-        "detail": "oriented robust-z (median+MAD)=-2.248327"
-       },
-       {
         "label": "RR",
-        "contribution": 0.117294,
+        "contribution": 0.130327,
         "detail": "oriented robust-z (median+MAD)=0.586472"
        },
        {
         "label": "HRV",
-        "contribution": 0.004253,
-        "detail": "oriented robust-z (median+MAD)=0.012152"
+        "contribution": 0.000239,
+        "detail": "oriented robust-z (median+MAD)=0.000615"
        }
       ],
       "note": "GLASS-BOX readiness: disclosed weights autonomic (HRV+RHR, mean of their z) 0.70 > RR 0.20 > temp 0.10, renormalized over present inputs. Drivers are definitional within the formula (correction, not inferred cause). calibrating:have=2,need=14."
@@ -57964,15 +55660,15 @@
       "mdc_multiples": -0.39
      },
      "hrv": {
-      "baseline": 34.542566155042095,
+      "baseline": 34.53772134194182,
       "spread": 5.0,
       "n_valid": 16,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 34.05412764733815,
-      "z": -0.078,
-      "delta": -0.488,
-      "ratio": -0.0141,
+      "value": 34.00273815428614,
+      "z": -0.085,
+      "delta": -0.535,
+      "ratio": -0.0155,
       "in_normal_range": true,
       "mdc": 17.366,
       "mdc_multiples": -0.03
@@ -57992,18 +55688,33 @@
       "mdc_multiples": -0.07
      },
      "skin_temp": {
-      "baseline": 30396.75368850016,
+      "baseline": 30395.79120997569,
       "spread": 25.0,
-      "n_valid": 16,
+      "n_valid": 14,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 30406.000110954952,
-      "z": 0.295,
-      "delta": 9.246,
-      "ratio": 0.0003,
-      "in_normal_range": true,
+      "value": null,
+      "z": null,
+      "delta": null,
+      "ratio": null,
+      "in_normal_range": null,
       "mdc": 86.828,
-      "mdc_multiples": 0.11
+      "mdc_multiples": null
+     },
+     "strap_temp": {
+      "baseline": null,
+      "spread": null,
+      "n_valid": 0,
+      "nights_since_update": 0,
+      "status": "calibrating",
+      "value": null,
+      "z": null,
+      "delta": null,
+      "ratio": null,
+      "in_normal_range": null,
+      "note": "no_baseline:have=0,need=1",
+      "mdc": null,
+      "mdc_multiples": null
      }
     },
     "sleep": {
@@ -58025,20 +55736,20 @@
      },
      "accounting": {
       "value": {
-       "tst_sec": 24805,
-       "waso_sec": 2232,
+       "tst_sec": 25057,
+       "waso_sec": 1980,
        "in_bed_sec": 27037,
        "unobserved_sec": 0,
        "observed_in_bed_sec": 27037,
-       "efficiency_pct": 91.744646,
-       "nrem_sec": 21385,
-       "light_sec": 19945,
-       "deep_sec": 1440,
-       "rem_sec": 3420,
-       "wake_sec": 2232,
+       "efficiency_pct": 92.676702,
+       "nrem_sec": 18007,
+       "light_sec": 12457,
+       "deep_sec": 5550,
+       "rem_sec": 7050,
+       "wake_sec": 1980,
        "deep_low_confidence": true,
-       "awakenings": 3,
-       "longest_sleep_sec": 9898,
+       "awakenings": 2,
+       "longest_sleep_sec": 4770,
        "sol_sec": null
       },
       "confidence": 0.6,
@@ -58051,9 +55762,9 @@
      "band_offset_trim_sec": null,
      "stager": {
       "value": {
-       "wake_pct": 8.255353774457225,
-       "nrem_pct": 86.21245716589398,
-       "rem_pct": 13.787542834106027,
+       "wake_pct": 7.323297703147539,
+       "nrem_pct": 71.864149738596,
+       "rem_pct": 28.135850261404,
        "epoch_sec": 1,
        "epochs": 27037
       },
@@ -61940,14 +59651,13 @@
     },
     "wellness": {
      "skin_temp": {
-      "value": 2.0833,
-      "confidence": 0.5,
+      "value": "—",
+      "confidence": 0,
       "tier": "RELATIVE",
       "inputs_used": [
-       "skin_temp_raw",
-       "skin_temp_c"
+       "strap_temp_c"
       ],
-      "note": "relative deviation (z) vs your baseline; raw sensor units, never an absolute °C"
+      "note": "strap temperature vs your normal (the band's own internal sensor, not a skin probe); relative only"
      }
     },
     "stress": {
@@ -61956,7 +59666,7 @@
      "si": 159.44,
      "level": "elevated",
      "lf_hf": 0.151,
-     "rmssd": 34.1,
+     "rmssd": 34.0,
      "confidence": 0.7,
      "tier": "ESTIMATE",
      "inputs_used": [
@@ -76353,166 +74063,161 @@
      "hypnogram": [
       {
        "start": 1784070892,
-       "end": 1784071672,
+       "end": 1784071912,
        "stage": "light"
       },
       {
-       "start": 1784071672,
-       "end": 1784072392,
-       "stage": "rem"
+       "start": 1784071912,
+       "end": 1784074402,
+       "stage": "deep"
       },
       {
-       "start": 1784072392,
-       "end": 1784074222,
-       "stage": "light"
-      },
-      {
-       "start": 1784074222,
-       "end": 1784074642,
-       "stage": "rem"
-      },
-      {
-       "start": 1784074642,
+       "start": 1784074402,
        "end": 1784075092,
        "stage": "light"
       },
       {
        "start": 1784075092,
-       "end": 1784075692,
+       "end": 1784075602,
+       "stage": "rem"
+      },
+      {
+       "start": 1784075602,
+       "end": 1784075752,
        "stage": "wake"
       },
       {
-       "start": 1784075692,
-       "end": 1784076832,
+       "start": 1784075752,
+       "end": 1784075992,
        "stage": "light"
       },
       {
-       "start": 1784076832,
-       "end": 1784077132,
-       "stage": "rem"
+       "start": 1784075992,
+       "end": 1784076022,
+       "stage": "wake"
       },
       {
-       "start": 1784077132,
-       "end": 1784079442,
+       "start": 1784076022,
+       "end": 1784076952,
        "stage": "light"
       },
       {
-       "start": 1784079442,
-       "end": 1784079742,
-       "stage": "rem"
+       "start": 1784076952,
+       "end": 1784078932,
+       "stage": "deep"
       },
       {
-       "start": 1784079742,
+       "start": 1784078932,
+       "end": 1784079592,
+       "stage": "light"
+      },
+      {
+       "start": 1784079592,
+       "end": 1784079712,
+       "stage": "wake"
+      },
+      {
+       "start": 1784079712,
        "end": 1784080702,
-       "stage": "light"
+       "stage": "rem"
       },
       {
        "start": 1784080702,
-       "end": 1784081272,
-       "stage": "rem"
-      },
-      {
-       "start": 1784081272,
-       "end": 1784081542,
+       "end": 1784080822,
        "stage": "wake"
       },
       {
-       "start": 1784081542,
-       "end": 1784084542,
+       "start": 1784080822,
+       "end": 1784081152,
        "stage": "light"
       },
       {
-       "start": 1784084542,
-       "end": 1784084782,
-       "stage": "deep"
-      },
-      {
-       "start": 1784084782,
-       "end": 1784085412,
-       "stage": "light"
-      },
-      {
-       "start": 1784085412,
-       "end": 1784085592,
-       "stage": "deep"
-      },
-      {
-       "start": 1784085592,
-       "end": 1784087422,
-       "stage": "light"
-      },
-      {
-       "start": 1784087422,
-       "end": 1784088052,
-       "stage": "rem"
-      },
-      {
-       "start": 1784088052,
-       "end": 1784089282,
-       "stage": "light"
-      },
-      {
-       "start": 1784089282,
-       "end": 1784089552,
-       "stage": "deep"
-      },
-      {
-       "start": 1784089552,
-       "end": 1784091440,
-       "stage": "light"
-      },
-      {
-       "start": 1784091440,
-       "end": 1784092382,
+       "start": 1784081152,
+       "end": 1784081632,
        "stage": "wake"
       },
       {
-       "start": 1784092382,
-       "end": 1784092922,
+       "start": 1784081632,
+       "end": 1784082352,
        "stage": "light"
       },
       {
-       "start": 1784092922,
-       "end": 1784093402,
+       "start": 1784082352,
+       "end": 1784083432,
+       "stage": "deep"
+      },
+      {
+       "start": 1784083432,
+       "end": 1784084422,
+       "stage": "light"
+      },
+      {
+       "start": 1784084422,
+       "end": 1784085832,
        "stage": "rem"
       },
       {
-       "start": 1784093402,
-       "end": 1784093822,
+       "start": 1784085832,
+       "end": 1784085982,
        "stage": "wake"
       },
       {
-       "start": 1784093822,
-       "end": 1784093912,
+       "start": 1784085982,
+       "end": 1784086792,
        "stage": "light"
       },
       {
-       "start": 1784093912,
-       "end": 1784094092,
-       "stage": "deep"
+       "start": 1784086792,
+       "end": 1784086822,
+       "stage": "wake"
       },
       {
-       "start": 1784094092,
-       "end": 1784094242,
+       "start": 1784086822,
+       "end": 1784089012,
        "stage": "light"
       },
       {
-       "start": 1784094242,
-       "end": 1784094512,
-       "stage": "deep"
+       "start": 1784089012,
+       "end": 1784090962,
+       "stage": "rem"
       },
       {
-       "start": 1784094512,
-       "end": 1784094872,
+       "start": 1784090962,
+       "end": 1784091592,
        "stage": "light"
       },
       {
-       "start": 1784094872,
-       "end": 1784095172,
-       "stage": "deep"
+       "start": 1784091592,
+       "end": 1784092222,
+       "stage": "wake"
       },
       {
-       "start": 1784095172,
+       "start": 1784092222,
+       "end": 1784093272,
+       "stage": "light"
+      },
+      {
+       "start": 1784093272,
+       "end": 1784093512,
+       "stage": "wake"
+      },
+      {
+       "start": 1784093512,
+       "end": 1784095702,
+       "stage": "rem"
+      },
+      {
+       "start": 1784095702,
+       "end": 1784097592,
+       "stage": "light"
+      },
+      {
+       "start": 1784097592,
+       "end": 1784097622,
+       "stage": "wake"
+      },
+      {
+       "start": 1784097622,
        "end": 1784097929,
        "stage": "light"
       }
@@ -81737,1064 +79442,7 @@
        "v": 13.4
       }
      ],
-     "skin_temp_day": [
-      {
-       "t": 1784073600,
-       "v": 253.0
-      },
-      {
-       "t": 1784073900,
-       "v": 253.0
-      },
-      {
-       "t": 1784074200,
-       "v": 253.0
-      },
-      {
-       "t": 1784074500,
-       "v": 253.0
-      },
-      {
-       "t": 1784074800,
-       "v": 253.0
-      },
-      {
-       "t": 1784075100,
-       "v": 253.0
-      },
-      {
-       "t": 1784075400,
-       "v": 253.0
-      },
-      {
-       "t": 1784075700,
-       "v": 253.0
-      },
-      {
-       "t": 1784076000,
-       "v": 253.0
-      },
-      {
-       "t": 1784076300,
-       "v": 253.0
-      },
-      {
-       "t": 1784076600,
-       "v": 253.0
-      },
-      {
-       "t": 1784076900,
-       "v": 253.0
-      },
-      {
-       "t": 1784077200,
-       "v": 253.0
-      },
-      {
-       "t": 1784077500,
-       "v": 253.0
-      },
-      {
-       "t": 1784077800,
-       "v": 253.0
-      },
-      {
-       "t": 1784078100,
-       "v": 253.0
-      },
-      {
-       "t": 1784078400,
-       "v": 253.0
-      },
-      {
-       "t": 1784078700,
-       "v": 253.0
-      },
-      {
-       "t": 1784079000,
-       "v": 253.0
-      },
-      {
-       "t": 1784079300,
-       "v": 253.0
-      },
-      {
-       "t": 1784079600,
-       "v": 253.0
-      },
-      {
-       "t": 1784079900,
-       "v": 253.0
-      },
-      {
-       "t": 1784080200,
-       "v": 253.0
-      },
-      {
-       "t": 1784080500,
-       "v": 253.0
-      },
-      {
-       "t": 1784080800,
-       "v": 253.0
-      },
-      {
-       "t": 1784081100,
-       "v": 253.0
-      },
-      {
-       "t": 1784081400,
-       "v": 253.0
-      },
-      {
-       "t": 1784081700,
-       "v": 253.0
-      },
-      {
-       "t": 1784082000,
-       "v": 253.0
-      },
-      {
-       "t": 1784082300,
-       "v": 253.0
-      },
-      {
-       "t": 1784082600,
-       "v": 253.0
-      },
-      {
-       "t": 1784082900,
-       "v": 253.0
-      },
-      {
-       "t": 1784083200,
-       "v": 253.0
-      },
-      {
-       "t": 1784083500,
-       "v": 253.0
-      },
-      {
-       "t": 1784083800,
-       "v": 253.0
-      },
-      {
-       "t": 1784084100,
-       "v": 253.0
-      },
-      {
-       "t": 1784084400,
-       "v": 253.0
-      },
-      {
-       "t": 1784084700,
-       "v": 253.0
-      },
-      {
-       "t": 1784085000,
-       "v": 253.0
-      },
-      {
-       "t": 1784085300,
-       "v": 253.0
-      },
-      {
-       "t": 1784085600,
-       "v": 253.0
-      },
-      {
-       "t": 1784085900,
-       "v": 253.0
-      },
-      {
-       "t": 1784086200,
-       "v": 253.0
-      },
-      {
-       "t": 1784086500,
-       "v": 253.0
-      },
-      {
-       "t": 1784086800,
-       "v": 253.0
-      },
-      {
-       "t": 1784087100,
-       "v": 253.0
-      },
-      {
-       "t": 1784087400,
-       "v": 253.0
-      },
-      {
-       "t": 1784087700,
-       "v": 253.0
-      },
-      {
-       "t": 1784088000,
-       "v": 253.0
-      },
-      {
-       "t": 1784088300,
-       "v": 253.0
-      },
-      {
-       "t": 1784088600,
-       "v": 253.0
-      },
-      {
-       "t": 1784088900,
-       "v": 253.0
-      },
-      {
-       "t": 1784089200,
-       "v": 253.0
-      },
-      {
-       "t": 1784089500,
-       "v": 253.0
-      },
-      {
-       "t": 1784089800,
-       "v": 253.0
-      },
-      {
-       "t": 1784090100,
-       "v": 253.0
-      },
-      {
-       "t": 1784090400,
-       "v": 253.0
-      },
-      {
-       "t": 1784090700,
-       "v": 253.0
-      },
-      {
-       "t": 1784091000,
-       "v": 253.0
-      },
-      {
-       "t": 1784091300,
-       "v": 253.0
-      },
-      {
-       "t": 1784091600,
-       "v": 253.0
-      },
-      {
-       "t": 1784091900,
-       "v": 253.0
-      },
-      {
-       "t": 1784092200,
-       "v": 253.0
-      },
-      {
-       "t": 1784092500,
-       "v": 253.0
-      },
-      {
-       "t": 1784092800,
-       "v": 253.0
-      },
-      {
-       "t": 1784093100,
-       "v": 253.0
-      },
-      {
-       "t": 1784093400,
-       "v": 253.0
-      },
-      {
-       "t": 1784093700,
-       "v": 253.0
-      },
-      {
-       "t": 1784094000,
-       "v": 253.0
-      },
-      {
-       "t": 1784094300,
-       "v": 253.0
-      },
-      {
-       "t": 1784094600,
-       "v": 253.0
-      },
-      {
-       "t": 1784094900,
-       "v": 253.0
-      },
-      {
-       "t": 1784095200,
-       "v": 253.0
-      },
-      {
-       "t": 1784095500,
-       "v": 253.0
-      },
-      {
-       "t": 1784095800,
-       "v": 253.0
-      },
-      {
-       "t": 1784096100,
-       "v": 253.0
-      },
-      {
-       "t": 1784096400,
-       "v": 253.0
-      },
-      {
-       "t": 1784096700,
-       "v": 253.0
-      },
-      {
-       "t": 1784097000,
-       "v": 253.0
-      },
-      {
-       "t": 1784097300,
-       "v": 253.0
-      },
-      {
-       "t": 1784097600,
-       "v": 253.0
-      },
-      {
-       "t": 1784097900,
-       "v": 253.0
-      },
-      {
-       "t": 1784098200,
-       "v": -0.0
-      },
-      {
-       "t": 1784098500,
-       "v": 0.0
-      },
-      {
-       "t": 1784098800,
-       "v": 0.0
-      },
-      {
-       "t": 1784099100,
-       "v": -0.0
-      },
-      {
-       "t": 1784099400,
-       "v": -0.0
-      },
-      {
-       "t": 1784099700,
-       "v": -0.0
-      },
-      {
-       "t": 1784100000,
-       "v": -0.0
-      },
-      {
-       "t": 1784100300,
-       "v": -0.0
-      },
-      {
-       "t": 1784100600,
-       "v": 0.0
-      },
-      {
-       "t": 1784100900,
-       "v": 0.0
-      },
-      {
-       "t": 1784101200,
-       "v": -0.0
-      },
-      {
-       "t": 1784101500,
-       "v": -0.0
-      },
-      {
-       "t": 1784101800,
-       "v": -0.0
-      },
-      {
-       "t": 1784102100,
-       "v": -0.0
-      },
-      {
-       "t": 1784102400,
-       "v": -0.0
-      },
-      {
-       "t": 1784102700,
-       "v": 0.0
-      },
-      {
-       "t": 1784103000,
-       "v": 0.0
-      },
-      {
-       "t": 1784103300,
-       "v": -0.0
-      },
-      {
-       "t": 1784103600,
-       "v": -0.0
-      },
-      {
-       "t": 1784103900,
-       "v": -0.0
-      },
-      {
-       "t": 1784104200,
-       "v": -0.0
-      },
-      {
-       "t": 1784104500,
-       "v": -0.0
-      },
-      {
-       "t": 1784104800,
-       "v": 0.0
-      },
-      {
-       "t": 1784105100,
-       "v": 0.0
-      },
-      {
-       "t": 1784105400,
-       "v": -0.0
-      },
-      {
-       "t": 1784105700,
-       "v": -0.0
-      },
-      {
-       "t": 1784106000,
-       "v": -0.0
-      },
-      {
-       "t": 1784106300,
-       "v": -0.0
-      },
-      {
-       "t": 1784106600,
-       "v": -0.0
-      },
-      {
-       "t": 1784106900,
-       "v": 0.0
-      },
-      {
-       "t": 1784107200,
-       "v": 0.0
-      },
-      {
-       "t": 1784107500,
-       "v": -0.0
-      },
-      {
-       "t": 1784107800,
-       "v": -0.0
-      },
-      {
-       "t": 1784108100,
-       "v": -0.0
-      },
-      {
-       "t": 1784108400,
-       "v": -0.0
-      },
-      {
-       "t": 1784108700,
-       "v": -0.0
-      },
-      {
-       "t": 1784109000,
-       "v": 0.0
-      },
-      {
-       "t": 1784109300,
-       "v": 0.0
-      },
-      {
-       "t": 1784109600,
-       "v": -0.0
-      },
-      {
-       "t": 1784109900,
-       "v": -0.0
-      },
-      {
-       "t": 1784110200,
-       "v": -0.0
-      },
-      {
-       "t": 1784110500,
-       "v": -0.0
-      },
-      {
-       "t": 1784110800,
-       "v": -0.0
-      },
-      {
-       "t": 1784111100,
-       "v": 0.0
-      },
-      {
-       "t": 1784111400,
-       "v": 0.0
-      },
-      {
-       "t": 1784111700,
-       "v": -0.0
-      },
-      {
-       "t": 1784112000,
-       "v": -0.0
-      },
-      {
-       "t": 1784112300,
-       "v": -0.0
-      },
-      {
-       "t": 1784112600,
-       "v": -0.0
-      },
-      {
-       "t": 1784112900,
-       "v": -0.0
-      },
-      {
-       "t": 1784113200,
-       "v": 0.0
-      },
-      {
-       "t": 1784113500,
-       "v": 0.0
-      },
-      {
-       "t": 1784113800,
-       "v": -0.0
-      },
-      {
-       "t": 1784114100,
-       "v": -0.0
-      },
-      {
-       "t": 1784114400,
-       "v": -0.0
-      },
-      {
-       "t": 1784114700,
-       "v": -0.0
-      },
-      {
-       "t": 1784115000,
-       "v": -0.0
-      },
-      {
-       "t": 1784115300,
-       "v": 0.0
-      },
-      {
-       "t": 1784115600,
-       "v": 0.0
-      },
-      {
-       "t": 1784115900,
-       "v": -0.0
-      },
-      {
-       "t": 1784116200,
-       "v": -0.0
-      },
-      {
-       "t": 1784116500,
-       "v": -0.0
-      },
-      {
-       "t": 1784116800,
-       "v": -0.0
-      },
-      {
-       "t": 1784117100,
-       "v": -0.0
-      },
-      {
-       "t": 1784117400,
-       "v": 0.0
-      },
-      {
-       "t": 1784117700,
-       "v": 0.0
-      },
-      {
-       "t": 1784118000,
-       "v": -0.0
-      },
-      {
-       "t": 1784118300,
-       "v": -0.0
-      },
-      {
-       "t": 1784118600,
-       "v": -0.0
-      },
-      {
-       "t": 1784118900,
-       "v": -0.0
-      },
-      {
-       "t": 1784119200,
-       "v": -0.0
-      },
-      {
-       "t": 1784119500,
-       "v": 0.0
-      },
-      {
-       "t": 1784119800,
-       "v": 0.0
-      },
-      {
-       "t": 1784120100,
-       "v": -0.0
-      },
-      {
-       "t": 1784120400,
-       "v": -0.0
-      },
-      {
-       "t": 1784120700,
-       "v": -0.0
-      },
-      {
-       "t": 1784121000,
-       "v": -0.0
-      },
-      {
-       "t": 1784121300,
-       "v": -0.0
-      },
-      {
-       "t": 1784121600,
-       "v": 0.0
-      },
-      {
-       "t": 1784121900,
-       "v": 0.0
-      },
-      {
-       "t": 1784122200,
-       "v": -0.0
-      },
-      {
-       "t": 1784122500,
-       "v": -0.0
-      },
-      {
-       "t": 1784122800,
-       "v": -0.0
-      },
-      {
-       "t": 1784123100,
-       "v": -0.0
-      },
-      {
-       "t": 1784123400,
-       "v": -0.0
-      },
-      {
-       "t": 1784123700,
-       "v": 0.0
-      },
-      {
-       "t": 1784124000,
-       "v": 0.0
-      },
-      {
-       "t": 1784124300,
-       "v": -0.0
-      },
-      {
-       "t": 1784124600,
-       "v": -0.0
-      },
-      {
-       "t": 1784124900,
-       "v": -0.0
-      },
-      {
-       "t": 1784125200,
-       "v": -0.0
-      },
-      {
-       "t": 1784125500,
-       "v": -0.0
-      },
-      {
-       "t": 1784125800,
-       "v": 0.0
-      },
-      {
-       "t": 1784126100,
-       "v": 0.0
-      },
-      {
-       "t": 1784126400,
-       "v": -0.0
-      },
-      {
-       "t": 1784126700,
-       "v": -0.0
-      },
-      {
-       "t": 1784127000,
-       "v": -0.0
-      },
-      {
-       "t": 1784127300,
-       "v": -0.0
-      },
-      {
-       "t": 1784127600,
-       "v": -0.0
-      },
-      {
-       "t": 1784127900,
-       "v": 0.0
-      },
-      {
-       "t": 1784128200,
-       "v": 0.0
-      },
-      {
-       "t": 1784128500,
-       "v": -0.0
-      },
-      {
-       "t": 1784128800,
-       "v": -0.0
-      },
-      {
-       "t": 1784129100,
-       "v": -0.0
-      },
-      {
-       "t": 1784129400,
-       "v": -0.0
-      },
-      {
-       "t": 1784129700,
-       "v": -0.0
-      },
-      {
-       "t": 1784130000,
-       "v": 0.0
-      },
-      {
-       "t": 1784130300,
-       "v": 0.0
-      },
-      {
-       "t": 1784130600,
-       "v": -0.0
-      },
-      {
-       "t": 1784130900,
-       "v": -0.0
-      },
-      {
-       "t": 1784131200,
-       "v": -0.0
-      },
-      {
-       "t": 1784131500,
-       "v": -0.0
-      },
-      {
-       "t": 1784131800,
-       "v": -0.0
-      },
-      {
-       "t": 1784132100,
-       "v": 0.0
-      },
-      {
-       "t": 1784132400,
-       "v": 0.0
-      },
-      {
-       "t": 1784132700,
-       "v": -0.0
-      },
-      {
-       "t": 1784133000,
-       "v": -0.0
-      },
-      {
-       "t": 1784133300,
-       "v": -0.0
-      },
-      {
-       "t": 1784133600,
-       "v": -0.0
-      },
-      {
-       "t": 1784133900,
-       "v": -0.0
-      },
-      {
-       "t": 1784134200,
-       "v": 0.0
-      },
-      {
-       "t": 1784134500,
-       "v": 0.0
-      },
-      {
-       "t": 1784134800,
-       "v": -0.0
-      },
-      {
-       "t": 1784135100,
-       "v": -0.0
-      },
-      {
-       "t": 1784135400,
-       "v": -0.0
-      },
-      {
-       "t": 1784135700,
-       "v": -0.0
-      },
-      {
-       "t": 1784136000,
-       "v": -0.0
-      },
-      {
-       "t": 1784136300,
-       "v": 0.0
-      },
-      {
-       "t": 1784136600,
-       "v": 0.0
-      },
-      {
-       "t": 1784136900,
-       "v": -0.0
-      },
-      {
-       "t": 1784137200,
-       "v": -0.0
-      },
-      {
-       "t": 1784137500,
-       "v": -0.0
-      },
-      {
-       "t": 1784137800,
-       "v": -0.0
-      },
-      {
-       "t": 1784138100,
-       "v": -0.0
-      },
-      {
-       "t": 1784138400,
-       "v": 0.0
-      },
-      {
-       "t": 1784138700,
-       "v": 0.0
-      },
-      {
-       "t": 1784139000,
-       "v": -0.0
-      },
-      {
-       "t": 1784139300,
-       "v": -0.0
-      },
-      {
-       "t": 1784139600,
-       "v": -0.0
-      },
-      {
-       "t": 1784139900,
-       "v": -0.0
-      },
-      {
-       "t": 1784140200,
-       "v": -0.0
-      },
-      {
-       "t": 1784140500,
-       "v": 0.0
-      },
-      {
-       "t": 1784140800,
-       "v": 0.0
-      },
-      {
-       "t": 1784141100,
-       "v": -0.0
-      },
-      {
-       "t": 1784141400,
-       "v": -0.0
-      },
-      {
-       "t": 1784141700,
-       "v": -0.0
-      },
-      {
-       "t": 1784142000,
-       "v": -0.0
-      },
-      {
-       "t": 1784142300,
-       "v": -0.0
-      },
-      {
-       "t": 1784142600,
-       "v": 0.0
-      },
-      {
-       "t": 1784142900,
-       "v": 0.0
-      },
-      {
-       "t": 1784143200,
-       "v": -0.0
-      },
-      {
-       "t": 1784143500,
-       "v": -0.0
-      },
-      {
-       "t": 1784143800,
-       "v": -0.0
-      },
-      {
-       "t": 1784144100,
-       "v": -0.0
-      },
-      {
-       "t": 1784144400,
-       "v": -0.0
-      },
-      {
-       "t": 1784144700,
-       "v": 0.0
-      },
-      {
-       "t": 1784145000,
-       "v": 0.0
-      },
-      {
-       "t": 1784145300,
-       "v": -0.0
-      },
-      {
-       "t": 1784145600,
-       "v": -0.0
-      },
-      {
-       "t": 1784145900,
-       "v": -0.0
-      },
-      {
-       "t": 1784146200,
-       "v": -0.0
-      },
-      {
-       "t": 1784146500,
-       "v": -0.0
-      },
-      {
-       "t": 1784146800,
-       "v": 0.0
-      },
-      {
-       "t": 1784147100,
-       "v": 0.0
-      },
-      {
-       "t": 1784147400,
-       "v": -0.0
-      },
-      {
-       "t": 1784147700,
-       "v": -0.0
-      },
-      {
-       "t": 1784148000,
-       "v": -0.0
-      },
-      {
-       "t": 1784148300,
-       "v": -0.0
-      },
-      {
-       "t": 1784148600,
-       "v": -0.0
-      },
-      {
-       "t": 1784148900,
-       "v": 0.0
-      },
-      {
-       "t": 1784149200,
-       "v": 0.0
-      },
-      {
-       "t": 1784149500,
-       "v": -0.0
-      },
-      {
-       "t": 1784149800,
-       "v": -0.0
-      },
-      {
-       "t": 1784150100,
-       "v": -0.0
-      },
-      {
-       "t": 1784150400,
-       "v": -0.0
-      },
-      {
-       "t": 1784150700,
-       "v": -0.0
-      },
-      {
-       "t": 1784151000,
-       "v": 0.0
-      },
-      {
-       "t": 1784151300,
-       "v": 0.0
-      },
-      {
-       "t": 1784151600,
-       "v": -0.0
-      },
-      {
-       "t": 1784151900,
-       "v": -0.0
-      },
-      {
-       "t": 1784152200,
-       "v": -0.0
-      },
-      {
-       "t": 1784152500,
-       "v": -0.0
-      }
-     ]
+     "skin_temp_day": []
     },
     "coverage": {
      "hr_samples": 79200,
@@ -82809,16 +79457,17 @@
     "scalars": {
      "rhr": 48.08833333333333,
      "rhr_nocturnal": 48.08833333333333,
-     "rmssd": 34.05412764733815,
+     "rmssd": 34.00273815428614,
      "rmssd_whole": 32.12768524038331,
-     "readiness": 73.92971281429905,
-     "readiness_z": 1.0423185711687242,
+     "readiness": 80.27322675938899,
+     "readiness_z": 1.4034593893356957,
      "strain": 11.394702575413639,
      "max_hr_used": 192.0,
-     "ln_rmssd": 3.5279512483715925,
+     "ln_rmssd": 3.5264410553230694,
      "resp_rate": 13.51304972588547,
-     "skin_temp_z": 2.083305937349391,
-     "skin_temp_adc": 30406.000110954952,
+     "skin_temp_z": null,
+     "skin_temp_adc": null,
+     "strap_temp_c": null,
      "skin_temp_coverage_frac": 1.0,
      "skin_temp_settled_frac": 1.0,
      "sdnn": 77.77577302925846,
@@ -82835,20 +79484,20 @@
      "sleeping_hr_nadir": 47.0,
      "sleeping_hr_nadir_ts": 1784072989.0,
      "waking_hr": 75.30632403863677,
-     "rem_min": 57.0,
-     "deep_min": 24.0,
-     "light_min": 332.0,
-     "tst_min": 413.0,
+     "rem_min": 118.0,
+     "deep_min": 93.0,
+     "light_min": 208.0,
+     "tst_min": 418.0,
      "lf_hf": 0.151,
      "hrv_cv": 6.9,
      "irregular_rhythm_flag": 0.0,
      "brv_cv": 0.0008,
      "brv_slope": 0.0004,
-     "efficiency": 91.7,
+     "efficiency": 92.7,
      "worn_min": 1320.0,
      "unobserved_min": 0.0,
-     "awakenings": 3.0,
-     "longest_sleep_min": 165.0,
+     "awakenings": 2.0,
+     "longest_sleep_min": 80.0,
      "sol_min": null,
      "midsleep_sec": -3589.0,
      "sleep_onset_sec": -17108.0,
@@ -84051,12 +80700,12 @@
        "is_main": true,
        "onset_ts": 1784070892,
        "wake_ts": 1784097930,
-       "duration_min": 413,
+       "duration_min": 418,
        "in_bed_min": 450,
-       "efficiency": 0.917
+       "efficiency": 0.927
       }
      ],
-     "total_asleep_min": 413
+     "total_asleep_min": 418
     },
     "sleep_charging": {
      "present": false
@@ -84479,11 +81128,11 @@
    },
    "finalized": 0,
    "rhr": 48.08833333333333,
-   "rmssd": 34.05412764733815,
-   "readiness": 73.92971281429905,
+   "rmssd": 34.00273815428614,
+   "readiness": 80.27322675938899,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "c0842323ce0e303d88c3fc02c727cd11ddce65fb3ee50fb7ce7b93d4c2eee272"
+   "payload_sha256": "40ead956151b084546dcdfa0a82f1afd5bfe82917cba54e85ae7433119474f8e"
   }
  ],
  "metric_series": [
@@ -84495,7 +81144,7 @@
   {
    "date": "2026-07-13",
    "key": "awakenings",
-   "value": 3.0
+   "value": 2.0
   },
   {
    "date": "2026-07-13",
@@ -84515,7 +81164,7 @@
   {
    "date": "2026-07-13",
    "key": "deep_min",
-   "value": 24.0
+   "value": 93.0
   },
   {
    "date": "2026-07-13",
@@ -84530,7 +81179,7 @@
   {
    "date": "2026-07-13",
    "key": "efficiency",
-   "value": 91.7
+   "value": 92.7
   },
   {
    "date": "2026-07-13",
@@ -84565,17 +81214,17 @@
   {
    "date": "2026-07-13",
    "key": "light_min",
-   "value": 332.0
+   "value": 208.0
   },
   {
    "date": "2026-07-13",
    "key": "ln_rmssd",
-   "value": 3.5279512483715925
+   "value": 3.5264410553230694
   },
   {
    "date": "2026-07-13",
    "key": "longest_sleep_min",
-   "value": 165.0
+   "value": 80.0
   },
   {
    "date": "2026-07-13",
@@ -84600,17 +81249,17 @@
   {
    "date": "2026-07-13",
    "key": "readiness",
-   "value": 44.101496921383124
+   "value": 53.2768793939363
   },
   {
    "date": "2026-07-13",
    "key": "readiness_z",
-   "value": -0.23704387557240558
+   "value": 0.1312633244996829
   },
   {
    "date": "2026-07-13",
    "key": "rem_min",
-   "value": 57.0
+   "value": 118.0
   },
   {
    "date": "2026-07-13",
@@ -84625,7 +81274,7 @@
   {
    "date": "2026-07-13",
    "key": "rmssd",
-   "value": 34.05412764733815
+   "value": 34.00273815428614
   },
   {
    "date": "2026-07-13",
@@ -84635,7 +81284,7 @@
   {
    "date": "2026-07-13",
    "key": "skin_temp_adc",
-   "value": 30406.000406834824
+   "value": null
   },
   {
    "date": "2026-07-13",
@@ -84645,7 +81294,7 @@
   {
    "date": "2026-07-13",
    "key": "skin_temp_z",
-   "value": 3.8092033860986256
+   "value": null
   },
   {
    "date": "2026-07-13",
@@ -84669,6 +81318,11 @@
   },
   {
    "date": "2026-07-13",
+   "key": "strap_temp_c",
+   "value": null
+  },
+  {
+   "date": "2026-07-13",
    "key": "stress",
    "value": 61.03520288391907
   },
@@ -84685,7 +81339,7 @@
   {
    "date": "2026-07-13",
    "key": "tst_min",
-   "value": 413.0
+   "value": 418.0
   },
   {
    "date": "2026-07-13",
@@ -84705,7 +81359,7 @@
   {
    "date": "2026-07-14",
    "key": "awakenings",
-   "value": 3.0
+   "value": 2.0
   },
   {
    "date": "2026-07-14",
@@ -84725,7 +81379,7 @@
   {
    "date": "2026-07-14",
    "key": "deep_min",
-   "value": 26.0
+   "value": 93.0
   },
   {
    "date": "2026-07-14",
@@ -84740,7 +81394,7 @@
   {
    "date": "2026-07-14",
    "key": "efficiency",
-   "value": 91.7
+   "value": 92.7
   },
   {
    "date": "2026-07-14",
@@ -84775,17 +81429,17 @@
   {
    "date": "2026-07-14",
    "key": "light_min",
-   "value": 331.0
+   "value": 208.0
   },
   {
    "date": "2026-07-14",
    "key": "ln_rmssd",
-   "value": 3.5279512483715925
+   "value": 3.5264410553230694
   },
   {
    "date": "2026-07-14",
    "key": "longest_sleep_min",
-   "value": 165.0
+   "value": 80.0
   },
   {
    "date": "2026-07-14",
@@ -84810,17 +81464,17 @@
   {
    "date": "2026-07-14",
    "key": "readiness",
-   "value": 44.10161991570773
+   "value": 53.2768793939363
   },
   {
    "date": "2026-07-14",
    "key": "readiness_z",
-   "value": -0.23703888636641135
+   "value": 0.1312633244996829
   },
   {
    "date": "2026-07-14",
    "key": "rem_min",
-   "value": 57.0
+   "value": 118.0
   },
   {
    "date": "2026-07-14",
@@ -84835,7 +81489,7 @@
   {
    "date": "2026-07-14",
    "key": "rmssd",
-   "value": 34.05412764733815
+   "value": 34.00273815428614
   },
   {
    "date": "2026-07-14",
@@ -84845,7 +81499,7 @@
   {
    "date": "2026-07-14",
    "key": "skin_temp_adc",
-   "value": 30406.00025889489
+   "value": null
   },
   {
    "date": "2026-07-14",
@@ -84855,7 +81509,7 @@
   {
    "date": "2026-07-14",
    "key": "skin_temp_z",
-   "value": 2.581998719140345
+   "value": null
   },
   {
    "date": "2026-07-14",
@@ -84879,6 +81533,11 @@
   },
   {
    "date": "2026-07-14",
+   "key": "strap_temp_c",
+   "value": null
+  },
+  {
+   "date": "2026-07-14",
    "key": "stress",
    "value": 61.03520288391907
   },
@@ -84895,7 +81554,7 @@
   {
    "date": "2026-07-14",
    "key": "tst_min",
-   "value": 413.0
+   "value": 418.0
   },
   {
    "date": "2026-07-14",
@@ -84915,7 +81574,7 @@
   {
    "date": "2026-07-15",
    "key": "awakenings",
-   "value": 3.0
+   "value": 2.0
   },
   {
    "date": "2026-07-15",
@@ -84935,7 +81594,7 @@
   {
    "date": "2026-07-15",
    "key": "deep_min",
-   "value": 24.0
+   "value": 93.0
   },
   {
    "date": "2026-07-15",
@@ -84950,7 +81609,7 @@
   {
    "date": "2026-07-15",
    "key": "efficiency",
-   "value": 91.7
+   "value": 92.7
   },
   {
    "date": "2026-07-15",
@@ -84985,17 +81644,17 @@
   {
    "date": "2026-07-15",
    "key": "light_min",
-   "value": 332.0
+   "value": 208.0
   },
   {
    "date": "2026-07-15",
    "key": "ln_rmssd",
-   "value": 3.5279512483715925
+   "value": 3.5264410553230694
   },
   {
    "date": "2026-07-15",
    "key": "longest_sleep_min",
-   "value": 165.0
+   "value": 80.0
   },
   {
    "date": "2026-07-15",
@@ -85020,17 +81679,17 @@
   {
    "date": "2026-07-15",
    "key": "readiness",
-   "value": 73.92971281429905
+   "value": 80.27322675938899
   },
   {
    "date": "2026-07-15",
    "key": "readiness_z",
-   "value": 1.0423185711687242
+   "value": 1.4034593893356957
   },
   {
    "date": "2026-07-15",
    "key": "rem_min",
-   "value": 57.0
+   "value": 118.0
   },
   {
    "date": "2026-07-15",
@@ -85045,7 +81704,7 @@
   {
    "date": "2026-07-15",
    "key": "rmssd",
-   "value": 34.05412764733815
+   "value": 34.00273815428614
   },
   {
    "date": "2026-07-15",
@@ -85055,7 +81714,7 @@
   {
    "date": "2026-07-15",
    "key": "skin_temp_adc",
-   "value": 30406.000110954952
+   "value": null
   },
   {
    "date": "2026-07-15",
@@ -85065,7 +81724,7 @@
   {
    "date": "2026-07-15",
    "key": "skin_temp_z",
-   "value": 2.083305937349391
+   "value": null
   },
   {
    "date": "2026-07-15",
@@ -85089,6 +81748,11 @@
   },
   {
    "date": "2026-07-15",
+   "key": "strap_temp_c",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
    "key": "stress",
    "value": 61.03520288391907
   },
@@ -85105,7 +81769,7 @@
   {
    "date": "2026-07-15",
    "key": "tst_min",
-   "value": 413.0
+   "value": 418.0
   },
   {
    "date": "2026-07-15",
@@ -85121,7 +81785,7 @@
  "metric_series_version": [
   {
    "date": "2026-07-13",
-   "algo_version": 117,
+   "algo_version": 118,
    "source": "band",
    "device_family": "gen4",
    "coverage_devices": "",
@@ -85129,7 +81793,7 @@
   },
   {
    "date": "2026-07-14",
-   "algo_version": 117,
+   "algo_version": 118,
    "source": "band",
    "device_family": "gen4",
    "coverage_devices": "",
@@ -85137,7 +81801,7 @@
   },
   {
    "date": "2026-07-15",
-   "algo_version": 117,
+   "algo_version": 118,
    "source": "band",
    "device_family": "gen4",
    "coverage_devices": "",
@@ -85147,7 +81811,7 @@
  "wake_day_features": [
   {
    "day_id": "2026-07-13",
-   "algo_version": 117,
+   "algo_version": 118,
    "payload_json": {
     "day_id": "2026-07-13",
     "active_min": 90,
@@ -86355,7 +83019,7 @@
   },
   {
    "day_id": "2026-07-14",
-   "algo_version": 117,
+   "algo_version": 118,
    "payload_json": {
     "day_id": "2026-07-14",
     "active_min": 239,
@@ -87563,7 +84227,7 @@
   },
   {
    "day_id": "2026-07-15",
-   "algo_version": 117,
+   "algo_version": 118,
    "payload_json": {
     "day_id": "2026-07-15",
     "active_min": 40,
@@ -88754,183 +85418,179 @@
   {
    "date": "2026-07-13",
    "rhr": 48.08833333333333,
-   "rmssd": 34.05412764733815,
-   "readiness": 44.101496921383124,
+   "rmssd": 34.00273815428614,
+   "readiness": 53.2768793939363,
    "resp_rate": 13.51304972588547,
-   "skin_temp_z": 3.8092033860986256,
-   "skin_temp_adc": 30406.000406834824,
+   "skin_temp_z": null,
+   "skin_temp_adc": null,
+   "strap_temp_c": null,
    "trimp": 207.05005214319849,
    "strain": 11.400417481097689,
    "steps": null,
    "nap_min": 0.0,
-   "efficiency": 91.7,
+   "efficiency": 92.7,
    "onset_sec": 1783898092,
    "wake_sec": 1783925129,
-   "tst_min": 413,
+   "tst_min": 418,
    "sleep_coverage": 1.0,
    "hypnogram": [
     {
      "start": 1783898092,
-     "end": 1783898872,
+     "end": 1783899112,
      "stage": "light"
     },
     {
-     "start": 1783898872,
-     "end": 1783899592,
-     "stage": "rem"
+     "start": 1783899112,
+     "end": 1783901602,
+     "stage": "deep"
     },
     {
-     "start": 1783899592,
-     "end": 1783901422,
-     "stage": "light"
-    },
-    {
-     "start": 1783901422,
-     "end": 1783901842,
-     "stage": "rem"
-    },
-    {
-     "start": 1783901842,
+     "start": 1783901602,
      "end": 1783902292,
      "stage": "light"
     },
     {
      "start": 1783902292,
-     "end": 1783902892,
+     "end": 1783902802,
+     "stage": "rem"
+    },
+    {
+     "start": 1783902802,
+     "end": 1783902952,
      "stage": "wake"
     },
     {
-     "start": 1783902892,
-     "end": 1783904032,
+     "start": 1783902952,
+     "end": 1783903192,
      "stage": "light"
     },
     {
-     "start": 1783904032,
-     "end": 1783904332,
-     "stage": "rem"
+     "start": 1783903192,
+     "end": 1783903222,
+     "stage": "wake"
     },
     {
-     "start": 1783904332,
-     "end": 1783906642,
+     "start": 1783903222,
+     "end": 1783904152,
      "stage": "light"
     },
     {
-     "start": 1783906642,
-     "end": 1783906942,
-     "stage": "rem"
+     "start": 1783904152,
+     "end": 1783906132,
+     "stage": "deep"
     },
     {
-     "start": 1783906942,
+     "start": 1783906132,
+     "end": 1783906792,
+     "stage": "light"
+    },
+    {
+     "start": 1783906792,
+     "end": 1783906912,
+     "stage": "wake"
+    },
+    {
+     "start": 1783906912,
      "end": 1783907902,
-     "stage": "light"
+     "stage": "rem"
     },
     {
      "start": 1783907902,
-     "end": 1783908472,
-     "stage": "rem"
-    },
-    {
-     "start": 1783908472,
-     "end": 1783908742,
+     "end": 1783908022,
      "stage": "wake"
     },
     {
-     "start": 1783908742,
-     "end": 1783911742,
+     "start": 1783908022,
+     "end": 1783908352,
      "stage": "light"
     },
     {
-     "start": 1783911742,
-     "end": 1783911982,
-     "stage": "deep"
-    },
-    {
-     "start": 1783911982,
-     "end": 1783912612,
-     "stage": "light"
-    },
-    {
-     "start": 1783912612,
-     "end": 1783912792,
-     "stage": "deep"
-    },
-    {
-     "start": 1783912792,
-     "end": 1783914622,
-     "stage": "light"
-    },
-    {
-     "start": 1783914622,
-     "end": 1783915252,
-     "stage": "rem"
-    },
-    {
-     "start": 1783915252,
-     "end": 1783916482,
-     "stage": "light"
-    },
-    {
-     "start": 1783916482,
-     "end": 1783916752,
-     "stage": "deep"
-    },
-    {
-     "start": 1783916752,
-     "end": 1783918640,
-     "stage": "light"
-    },
-    {
-     "start": 1783918640,
-     "end": 1783919582,
+     "start": 1783908352,
+     "end": 1783908832,
      "stage": "wake"
     },
     {
-     "start": 1783919582,
-     "end": 1783920122,
+     "start": 1783908832,
+     "end": 1783909552,
      "stage": "light"
     },
     {
-     "start": 1783920122,
-     "end": 1783920602,
+     "start": 1783909552,
+     "end": 1783910632,
+     "stage": "deep"
+    },
+    {
+     "start": 1783910632,
+     "end": 1783911622,
+     "stage": "light"
+    },
+    {
+     "start": 1783911622,
+     "end": 1783913032,
      "stage": "rem"
     },
     {
-     "start": 1783920602,
-     "end": 1783921022,
+     "start": 1783913032,
+     "end": 1783913182,
      "stage": "wake"
     },
     {
-     "start": 1783921022,
-     "end": 1783921112,
+     "start": 1783913182,
+     "end": 1783913992,
      "stage": "light"
     },
     {
-     "start": 1783921112,
-     "end": 1783921292,
-     "stage": "deep"
+     "start": 1783913992,
+     "end": 1783914022,
+     "stage": "wake"
     },
     {
-     "start": 1783921292,
-     "end": 1783921442,
+     "start": 1783914022,
+     "end": 1783916212,
      "stage": "light"
     },
     {
-     "start": 1783921442,
-     "end": 1783921712,
-     "stage": "deep"
+     "start": 1783916212,
+     "end": 1783918162,
+     "stage": "rem"
     },
     {
-     "start": 1783921712,
-     "end": 1783922072,
+     "start": 1783918162,
+     "end": 1783918792,
      "stage": "light"
     },
     {
-     "start": 1783922072,
-     "end": 1783922372,
-     "stage": "deep"
+     "start": 1783918792,
+     "end": 1783919422,
+     "stage": "wake"
     },
     {
-     "start": 1783922372,
+     "start": 1783919422,
+     "end": 1783920472,
+     "stage": "light"
+    },
+    {
+     "start": 1783920472,
+     "end": 1783920712,
+     "stage": "wake"
+    },
+    {
+     "start": 1783920712,
+     "end": 1783922902,
+     "stage": "rem"
+    },
+    {
+     "start": 1783922902,
+     "end": 1783924792,
+     "stage": "light"
+    },
+    {
+     "start": 1783924792,
+     "end": 1783924822,
+     "stage": "wake"
+    },
+    {
+     "start": 1783924822,
      "end": 1783925129,
      "stage": "light"
     }
@@ -88965,183 +85625,179 @@
   {
    "date": "2026-07-14",
    "rhr": 48.08833333333333,
-   "rmssd": 34.05412764733815,
-   "readiness": 44.10161991570773,
+   "rmssd": 34.00273815428614,
+   "readiness": 53.2768793939363,
    "resp_rate": 13.51304972588547,
-   "skin_temp_z": 2.581998719140345,
-   "skin_temp_adc": 30406.00025889489,
+   "skin_temp_z": null,
+   "skin_temp_adc": null,
+   "strap_temp_c": null,
    "trimp": 201.1077212716677,
    "strain": 11.395181698791921,
    "steps": null,
    "nap_min": 45.0,
-   "efficiency": 91.7,
+   "efficiency": 92.7,
    "onset_sec": 1783984492,
    "wake_sec": 1784011529,
-   "tst_min": 413,
+   "tst_min": 418,
    "sleep_coverage": 1.0,
    "hypnogram": [
     {
      "start": 1783984492,
-     "end": 1783985272,
+     "end": 1783985512,
      "stage": "light"
     },
     {
-     "start": 1783985272,
-     "end": 1783985992,
-     "stage": "rem"
+     "start": 1783985512,
+     "end": 1783988002,
+     "stage": "deep"
     },
     {
-     "start": 1783985992,
-     "end": 1783987822,
-     "stage": "light"
-    },
-    {
-     "start": 1783987822,
-     "end": 1783988242,
-     "stage": "rem"
-    },
-    {
-     "start": 1783988242,
+     "start": 1783988002,
      "end": 1783988692,
      "stage": "light"
     },
     {
      "start": 1783988692,
-     "end": 1783989292,
+     "end": 1783989202,
+     "stage": "rem"
+    },
+    {
+     "start": 1783989202,
+     "end": 1783989352,
      "stage": "wake"
     },
     {
-     "start": 1783989292,
-     "end": 1783990432,
+     "start": 1783989352,
+     "end": 1783989592,
      "stage": "light"
     },
     {
-     "start": 1783990432,
-     "end": 1783990732,
-     "stage": "rem"
+     "start": 1783989592,
+     "end": 1783989622,
+     "stage": "wake"
     },
     {
-     "start": 1783990732,
-     "end": 1783993042,
+     "start": 1783989622,
+     "end": 1783990552,
      "stage": "light"
     },
     {
-     "start": 1783993042,
-     "end": 1783993342,
-     "stage": "rem"
+     "start": 1783990552,
+     "end": 1783992532,
+     "stage": "deep"
     },
     {
-     "start": 1783993342,
+     "start": 1783992532,
+     "end": 1783993192,
+     "stage": "light"
+    },
+    {
+     "start": 1783993192,
+     "end": 1783993312,
+     "stage": "wake"
+    },
+    {
+     "start": 1783993312,
      "end": 1783994302,
-     "stage": "light"
+     "stage": "rem"
     },
     {
      "start": 1783994302,
-     "end": 1783994872,
-     "stage": "rem"
-    },
-    {
-     "start": 1783994872,
-     "end": 1783995142,
+     "end": 1783994422,
      "stage": "wake"
     },
     {
-     "start": 1783995142,
-     "end": 1783998142,
+     "start": 1783994422,
+     "end": 1783994752,
      "stage": "light"
     },
     {
-     "start": 1783998142,
-     "end": 1783998382,
-     "stage": "deep"
-    },
-    {
-     "start": 1783998382,
-     "end": 1783999012,
-     "stage": "light"
-    },
-    {
-     "start": 1783999012,
-     "end": 1783999192,
-     "stage": "deep"
-    },
-    {
-     "start": 1783999192,
-     "end": 1784001022,
-     "stage": "light"
-    },
-    {
-     "start": 1784001022,
-     "end": 1784001652,
-     "stage": "rem"
-    },
-    {
-     "start": 1784001652,
-     "end": 1784002882,
-     "stage": "light"
-    },
-    {
-     "start": 1784002882,
-     "end": 1784003152,
-     "stage": "deep"
-    },
-    {
-     "start": 1784003152,
-     "end": 1784005040,
-     "stage": "light"
-    },
-    {
-     "start": 1784005040,
-     "end": 1784005982,
+     "start": 1783994752,
+     "end": 1783995232,
      "stage": "wake"
     },
     {
-     "start": 1784005982,
-     "end": 1784006522,
+     "start": 1783995232,
+     "end": 1783995952,
      "stage": "light"
     },
     {
-     "start": 1784006522,
-     "end": 1784007002,
+     "start": 1783995952,
+     "end": 1783997032,
+     "stage": "deep"
+    },
+    {
+     "start": 1783997032,
+     "end": 1783998022,
+     "stage": "light"
+    },
+    {
+     "start": 1783998022,
+     "end": 1783999432,
      "stage": "rem"
     },
     {
-     "start": 1784007002,
-     "end": 1784007422,
+     "start": 1783999432,
+     "end": 1783999582,
      "stage": "wake"
     },
     {
-     "start": 1784007422,
-     "end": 1784007512,
+     "start": 1783999582,
+     "end": 1784000392,
      "stage": "light"
     },
     {
-     "start": 1784007512,
-     "end": 1784007692,
-     "stage": "deep"
+     "start": 1784000392,
+     "end": 1784000422,
+     "stage": "wake"
     },
     {
-     "start": 1784007692,
-     "end": 1784007842,
+     "start": 1784000422,
+     "end": 1784002612,
      "stage": "light"
     },
     {
-     "start": 1784007842,
-     "end": 1784008202,
-     "stage": "deep"
+     "start": 1784002612,
+     "end": 1784004562,
+     "stage": "rem"
     },
     {
-     "start": 1784008202,
-     "end": 1784008472,
+     "start": 1784004562,
+     "end": 1784005192,
      "stage": "light"
     },
     {
-     "start": 1784008472,
-     "end": 1784008772,
-     "stage": "deep"
+     "start": 1784005192,
+     "end": 1784005822,
+     "stage": "wake"
     },
     {
-     "start": 1784008772,
+     "start": 1784005822,
+     "end": 1784006872,
+     "stage": "light"
+    },
+    {
+     "start": 1784006872,
+     "end": 1784007112,
+     "stage": "wake"
+    },
+    {
+     "start": 1784007112,
+     "end": 1784009302,
+     "stage": "rem"
+    },
+    {
+     "start": 1784009302,
+     "end": 1784011192,
+     "stage": "light"
+    },
+    {
+     "start": 1784011192,
+     "end": 1784011222,
+     "stage": "wake"
+    },
+    {
+     "start": 1784011222,
      "end": 1784011529,
      "stage": "light"
     }
@@ -89176,183 +85832,179 @@
   {
    "date": "2026-07-15",
    "rhr": 48.08833333333333,
-   "rmssd": 34.05412764733815,
-   "readiness": 73.92971281429905,
+   "rmssd": 34.00273815428614,
+   "readiness": 80.27322675938899,
    "resp_rate": 13.51304972588547,
-   "skin_temp_z": 2.083305937349391,
-   "skin_temp_adc": 30406.000110954952,
+   "skin_temp_z": null,
+   "skin_temp_adc": null,
+   "strap_temp_c": null,
    "trimp": 198.26587894090684,
    "strain": 11.394702575413639,
    "steps": null,
    "nap_min": 0.0,
-   "efficiency": 91.7,
+   "efficiency": 92.7,
    "onset_sec": 1784070892,
    "wake_sec": 1784097929,
-   "tst_min": 413,
+   "tst_min": 418,
    "sleep_coverage": 1.0,
    "hypnogram": [
     {
      "start": 1784070892,
-     "end": 1784071672,
+     "end": 1784071912,
      "stage": "light"
     },
     {
-     "start": 1784071672,
-     "end": 1784072392,
-     "stage": "rem"
+     "start": 1784071912,
+     "end": 1784074402,
+     "stage": "deep"
     },
     {
-     "start": 1784072392,
-     "end": 1784074222,
-     "stage": "light"
-    },
-    {
-     "start": 1784074222,
-     "end": 1784074642,
-     "stage": "rem"
-    },
-    {
-     "start": 1784074642,
+     "start": 1784074402,
      "end": 1784075092,
      "stage": "light"
     },
     {
      "start": 1784075092,
-     "end": 1784075692,
+     "end": 1784075602,
+     "stage": "rem"
+    },
+    {
+     "start": 1784075602,
+     "end": 1784075752,
      "stage": "wake"
     },
     {
-     "start": 1784075692,
-     "end": 1784076832,
+     "start": 1784075752,
+     "end": 1784075992,
      "stage": "light"
     },
     {
-     "start": 1784076832,
-     "end": 1784077132,
-     "stage": "rem"
+     "start": 1784075992,
+     "end": 1784076022,
+     "stage": "wake"
     },
     {
-     "start": 1784077132,
-     "end": 1784079442,
+     "start": 1784076022,
+     "end": 1784076952,
      "stage": "light"
     },
     {
-     "start": 1784079442,
-     "end": 1784079742,
-     "stage": "rem"
+     "start": 1784076952,
+     "end": 1784078932,
+     "stage": "deep"
     },
     {
-     "start": 1784079742,
+     "start": 1784078932,
+     "end": 1784079592,
+     "stage": "light"
+    },
+    {
+     "start": 1784079592,
+     "end": 1784079712,
+     "stage": "wake"
+    },
+    {
+     "start": 1784079712,
      "end": 1784080702,
-     "stage": "light"
+     "stage": "rem"
     },
     {
      "start": 1784080702,
-     "end": 1784081272,
-     "stage": "rem"
-    },
-    {
-     "start": 1784081272,
-     "end": 1784081542,
+     "end": 1784080822,
      "stage": "wake"
     },
     {
-     "start": 1784081542,
-     "end": 1784084542,
+     "start": 1784080822,
+     "end": 1784081152,
      "stage": "light"
     },
     {
-     "start": 1784084542,
-     "end": 1784084782,
-     "stage": "deep"
-    },
-    {
-     "start": 1784084782,
-     "end": 1784085412,
-     "stage": "light"
-    },
-    {
-     "start": 1784085412,
-     "end": 1784085592,
-     "stage": "deep"
-    },
-    {
-     "start": 1784085592,
-     "end": 1784087422,
-     "stage": "light"
-    },
-    {
-     "start": 1784087422,
-     "end": 1784088052,
-     "stage": "rem"
-    },
-    {
-     "start": 1784088052,
-     "end": 1784089282,
-     "stage": "light"
-    },
-    {
-     "start": 1784089282,
-     "end": 1784089552,
-     "stage": "deep"
-    },
-    {
-     "start": 1784089552,
-     "end": 1784091440,
-     "stage": "light"
-    },
-    {
-     "start": 1784091440,
-     "end": 1784092382,
+     "start": 1784081152,
+     "end": 1784081632,
      "stage": "wake"
     },
     {
-     "start": 1784092382,
-     "end": 1784092922,
+     "start": 1784081632,
+     "end": 1784082352,
      "stage": "light"
     },
     {
-     "start": 1784092922,
-     "end": 1784093402,
+     "start": 1784082352,
+     "end": 1784083432,
+     "stage": "deep"
+    },
+    {
+     "start": 1784083432,
+     "end": 1784084422,
+     "stage": "light"
+    },
+    {
+     "start": 1784084422,
+     "end": 1784085832,
      "stage": "rem"
     },
     {
-     "start": 1784093402,
-     "end": 1784093822,
+     "start": 1784085832,
+     "end": 1784085982,
      "stage": "wake"
     },
     {
-     "start": 1784093822,
-     "end": 1784093912,
+     "start": 1784085982,
+     "end": 1784086792,
      "stage": "light"
     },
     {
-     "start": 1784093912,
-     "end": 1784094092,
-     "stage": "deep"
+     "start": 1784086792,
+     "end": 1784086822,
+     "stage": "wake"
     },
     {
-     "start": 1784094092,
-     "end": 1784094242,
+     "start": 1784086822,
+     "end": 1784089012,
      "stage": "light"
     },
     {
-     "start": 1784094242,
-     "end": 1784094512,
-     "stage": "deep"
+     "start": 1784089012,
+     "end": 1784090962,
+     "stage": "rem"
     },
     {
-     "start": 1784094512,
-     "end": 1784094872,
+     "start": 1784090962,
+     "end": 1784091592,
      "stage": "light"
     },
     {
-     "start": 1784094872,
-     "end": 1784095172,
-     "stage": "deep"
+     "start": 1784091592,
+     "end": 1784092222,
+     "stage": "wake"
     },
     {
-     "start": 1784095172,
+     "start": 1784092222,
+     "end": 1784093272,
+     "stage": "light"
+    },
+    {
+     "start": 1784093272,
+     "end": 1784093512,
+     "stage": "wake"
+    },
+    {
+     "start": 1784093512,
+     "end": 1784095702,
+     "stage": "rem"
+    },
+    {
+     "start": 1784095702,
+     "end": 1784097592,
+     "stage": "light"
+    },
+    {
+     "start": 1784097592,
+     "end": 1784097622,
+     "stage": "wake"
+    },
+    {
+     "start": 1784097622,
      "end": 1784097929,
      "stage": "light"
     }
@@ -89400,13 +86052,7 @@
    "drivers": [],
    "note": "need_baseline:have=2,need=10"
   },
-  "temp_illness": {
-   "date": "2026-07-15",
-   "flag": "normal",
-   "luteal": false,
-   "confidence": 0.0,
-   "note": "need_baseline:have=2,need=7"
-  },
+  "temp_illness": null,
   "load": {
    "value": "—",
    "confidence": 0.0,
@@ -89529,7 +86175,7 @@
   },
   "sleep_debt": {
    "value": {
-    "habitual_hours": 6.883333,
+    "habitual_hours": 6.966667,
     "has_free_night": false
    },
    "confidence": 0.3,
@@ -89566,13 +86212,18 @@
   },
   "sleep_coach": {
    "need": {
-    "value": "—",
-    "confidence": 0.0,
+    "value": {
+     "need_sec": 37440.0
+    },
+    "confidence": 0.3,
     "tier": "ESTIMATE",
     "inputs_used": [
-     "osd_hours"
+     "baseline",
+     "strain",
+     "sleep_debt",
+     "naps"
     ],
-    "note": "need_baseline:have=0,need=1"
+    "note": "baseline:population_prior — baseline + strain (logistic, US 12,318,226) + debt − naps"
    },
    "nap_credit_min": null,
    "strain_bonus_min": null,
@@ -89584,29 +86235,51 @@
      "tst",
      "sleep_need"
     ],
-    "note": "need_baseline:have=0,need=1"
+    "note": "need_input:name=tst_min"
    },
+   "need_detail": {
+    "need_sec": 37440.0,
+    "baseline_sec": 30240.0,
+    "baseline_source": "population_prior",
+    "personal_nights": 0,
+    "strain_sec": 0.0,
+    "debt_sec": 7200.0,
+    "debt_ledger_sec": 7612.3035004003395,
+    "nap_credit_sec": 0.0,
+    "goals_sec": {
+     "peak": 37440.0,
+     "perform": 31824.0,
+     "get_by": 26208.0
+    },
+    "method": "patent_us12318226_logistic_strain+ledger_debt"
+   },
+   "debt_hours": 2.1145287501112056,
+   "consistency_4d_pct": null,
+   "restorative_pct": null,
    "bedtime": {
-    "value": "—",
-    "confidence": 0.0,
+    "value": {
+     "bedtime_min_of_day": 1172.3441747572815
+    },
+    "confidence": 0.6,
     "tier": "ESTIMATE",
     "inputs_used": [
      "sleep_need",
      "wake_time",
      "efficiency"
-    ],
-    "note": "need_baseline:have=0,need=1"
+    ]
    },
    "wake": {
-    "value": "—",
-    "confidence": 0.0,
+    "value": {
+     "wake_min_of_day": 405.4833333333331
+    },
+    "confidence": 0.55,
     "tier": "ESTIMATE",
     "inputs_used": [
      "sleep_need",
      "bedtime",
      "efficiency"
     ],
-    "note": "need_baseline:have=0,need=1"
+    "note": "wake = bedtime + the time in bed the need and your efficiency imply"
    }
   },
   "strain_coach": {
