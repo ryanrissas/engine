@@ -48,6 +48,7 @@ IconData _icon(Finding f) => switch (f.kind) {
       FindingKind.irregularRhythm => LucideIcons.heartPulse,
       FindingKind.lowReadiness => LucideIcons.batteryLow,
       FindingKind.rhrShift => LucideIcons.trendingUp,
+      FindingKind.illnessWatch => LucideIcons.activity,
     };
 
 class FindingsLog extends StatelessWidget {

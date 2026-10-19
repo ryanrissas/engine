@@ -15729,5 +15729,13 @@
   "reportStageSharing": "Preparing to share…",
   "@reportStageSharing": {
     "description": "Report screen: progress text inside the busy button."
+  },
+  "findingIllnessWatchTitle": "Your body may be fighting something",
+  "@findingIllnessWatchTitle": {
+    "description": "Findings log / health-exception copy (lib/compute/findings.dart)."
+  },
+  "findingIllnessWatchDetail": "Two nights in a row, at least two of resting heart rate, breathing rate and HRV moved away from your usual. A pattern worth noticing — not a diagnosis.",
+  "@findingIllnessWatchDetail": {
+    "description": "Findings log / health-exception copy (lib/compute/findings.dart)."
   }
 }

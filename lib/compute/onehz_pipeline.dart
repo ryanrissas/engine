@@ -36,6 +36,7 @@ import 'night_hrv.dart' show overlappingNightRmssd;
 import 'provisional_recovery.dart' show provisionalReadiness;
 import 'strap_temp.dart' show nightlyStrapTemp;
 import 'reserve_strain.dart' show reserveStrainCurve, reserveStrainMetric;
+import 'resp_count_adv.dart' show countAdvRespRate, fusedNightRespRate;
 import 'hr_max.dart'
     show
         trainingMaxHr,
@@ -694,6 +695,11 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
           inputs_used: const ['rr_cleaned'],
           note: needInputNote('nn_beats', have: nn.length, need: 30),
         );
+  // v118 — count-adv (Schäfer & Kratky 2008) as a second RSA estimator, used
+  // only to CORROBORATE the Lomb–Scargle rate through the Karlen gate
+  // (compute/resp_count_adv.dart). RSA withheld ⇒ no rate.
+  final respCountAdv = countAdvRespRate(nn, nnTimes);
+  final respFused = fusedNightRespRate(resp, respCountAdv);
   final cvhr = nn.length >= 60
       ? cvhrApneaScreen(nn, nnTimes, artifactFraction: artifactFraction)
       : Metric<CvhrResult>.absent(
@@ -868,7 +874,7 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
   // used to live HERE, on top of a `rhr` that fell back to daytime; it now
   // lives in `rhr` itself, so this is the same number the card shows.
   final rhrToday = rhr.present ? rhr.value!.low30Mean : null;
-  final respToday = resp.present ? resp.value!.brpm : null;
+  final respToday = respFused.brpm;
   final readinessInputs = [
     hrvInput(lnToday, d.lnRmssdHistory),
     rhrInput(rhrToday, d.rhrHistory),
@@ -1419,6 +1425,13 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
 
   final respiration = <String, dynamic>{
     'rsa': resp.toJson((v) => v.toJson()),
+    'count_adv': respCountAdv.toJson((v) => v.toJson()),
+    'fused': {
+      'brpm': respFused.brpm,
+      'confidence': respFused.confidence,
+      'decision': respFused.decision,
+      'method': 'lomb_scargle_rsa+count_adv_karlen_gate_2brpm',
+    },
     'cvhr_apnea': cvhr.toJson((v) => v.toJson()),
     'odi': odi.toJson((v) => v.toJson()),
   };
