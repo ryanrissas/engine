@@ -7,6 +7,7 @@
 // a value the truth makes plausible.
 
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:openstrap_edge/ble/colmi_link.dart';
@@ -195,12 +196,24 @@ void main() {
     final xm = await crossDayAsOf(_dayId);
     expect(((xm['regularity'] as Map)['value'] as Map)['sri'], 100);
     expect(((xm['sleep_debt'] as Map)['value'] as Map)['debt_hours'], 0);
+    // v118: need is baseline + strain + debt − naps, every term published,
+    // and the baseline sits between the stored night and the 8.4 h prior.
+    final coach = xm['sleep_coach'] as Map;
+    final detail = coach['need_detail'] as Map;
+    final needSec =
+        ((coach['need'] as Map)['value'] as Map)['need_sec'] as num;
     expect(
-        ((((xm['sleep_coach'] as Map)['need'] as Map)['value'] as Map)[
-                    'need_sec'] as num) /
-                60 -
-            ((full['scalars'] as Map)['tst_min'] as num),
-        inInclusiveRange(-15, 15));
+        needSec,
+        closeTo(
+            (detail['baseline_sec'] as num) +
+                (detail['strain_sec'] as num) +
+                (detail['debt_sec'] as num) -
+                (detail['nap_credit_sec'] as num),
+            1));
+    final tstSec = ((full['scalars'] as Map)['tst_min'] as num) * 60;
+    expect(detail['baseline_sec'] as num,
+        inInclusiveRange(math.min(tstSec, 8.4 * 3600) - 1,
+            math.max(tstSec, 8.4 * 3600) + 1));
   }, timeout: const Timeout(Duration(minutes: 3)));
 
   test('with 14 nights behind it, readiness is ours: the partial composite '

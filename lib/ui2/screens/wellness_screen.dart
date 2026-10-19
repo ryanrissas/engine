@@ -469,7 +469,7 @@ class _WellnessScreenState extends State<WellnessScreen> with RevisionReload {
     final wakeMin = _nested(coachMap, 'wake', 'wake_min_of_day');
     final napMin = _reading(coachMap?['nap_credit_min']);
     final strainMin = _reading(coachMap?['strain_bonus_min']);
-    final debtH = _nested(_insights, 'sleep_debt', 'debt_hours');
+    final debtH = _reading(coachMap?['debt_hours']);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

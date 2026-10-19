@@ -123,6 +123,8 @@ class _Repo extends LocalRepository {
           },
           'nap_credit_min': 20,
           'strain_bonus_min': 15,
+          // v118: the running debt ledger the Recovery card reads.
+          'debt_hours': 1.4,
         },
       };
 
@@ -272,6 +274,7 @@ void main() {
                 },
                 'nap_credit_min': 'twenty',
                 'strain_bonus_min': double.nan,
+                'debt_hours': 'a lot',
               },
               // The envelope's own `value` is a String, not a map or a number.
               'sleep_debt': {'value': 'a lot'},

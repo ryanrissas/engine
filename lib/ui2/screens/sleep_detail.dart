@@ -186,6 +186,15 @@ class SleepData {
   final Map<String, dynamic> timeline;
   final Metric need, debt, bedtime;
 
+  /// Sleep goals in minutes: peak (100 %), perform (85 %), get_by (70 %).
+  final Map<String, double> goalsMin;
+
+  /// Where the need's baseline came from: population_prior | blended | personal.
+  final String? needSource;
+
+  /// 4-day sleep consistency and last night's restorative share, 0–100.
+  final num? consistencyPct, restorativePct;
+
   /// The user's own recent nights, LAST NIGHT EXCLUDED, oldest→newest. Minutes
   /// for duration and deep, whole percent for efficiency, epoch seconds for
   /// onset. Empty until enough nights exist, which the screen renders as a
@@ -212,6 +221,10 @@ class SleepData {
     this.need = Metric.empty,
     this.debt = Metric.empty,
     this.bedtime = Metric.empty,
+    this.goalsMin = const {},
+    this.needSource,
+    this.consistencyPct,
+    this.restorativePct,
     this.tstHistory = const [],
     this.deepHistory = const [],
     this.effHistory = const [],
@@ -309,8 +322,12 @@ class SleepData {
     final coach = cd['sleep_coach'];
     final needEnv = coach is Map ? coach['need'] : null;
     final needSec = envValue(needEnv)?['need_sec'] as num?;
-    final debtEnv = cd['sleep_debt'];
-    final debtH = envValue(debtEnv)?['debt_hours'] as num?;
+    // The running debt ledger (v118), carried on the need's own envelope.
+    final debtH = coach is Map ? coach['debt_hours'] as num? : null;
+    final needDetail = coach is Map && coach['need_detail'] is Map
+        ? (coach['need_detail'] as Map).cast<String, dynamic>()
+        : const <String, dynamic>{};
+    final goalsSec = needDetail['goals_sec'];
     final bedEnv = coach is Map ? coach['bedtime'] : null;
 
     // Personal history for the comparisons. These are `metric_series` reads —
@@ -343,7 +360,16 @@ class SleepData {
       night: night,
       timeline: timeline,
       need: envMetric(needEnv, needSec == null ? null : needSec / 60, unit: 'min'),
-      debt: envMetric(debtEnv, debtH == null ? null : debtH * 60, unit: 'min'),
+      debt: envMetric(needEnv, debtH == null ? null : debtH * 60, unit: 'min'),
+      goalsMin: goalsSec is Map
+          ? {
+              for (final e in goalsSec.entries)
+                if (e.value is num) '${e.key}': (e.value as num) / 60,
+            }
+          : const {},
+      needSource: needDetail['baseline_source'] as String?,
+      consistencyPct: coach is Map ? coach['consistency_4d_pct'] as num? : null,
+      restorativePct: coach is Map ? coach['restorative_pct'] as num? : null,
       bedtime:
           envMetric(bedEnv, envValue(bedEnv)?['bedtime_min_of_day'] as num?),
       tstHistory: tst,
@@ -2049,6 +2075,39 @@ class _SleepDetailState extends State<SleepDetail> with RevisionReload {
         if (reason.isNotEmpty) ...[
           const SizedBox(height: S.x3),
           Text('$reason.', style: F.body.copyWith(color: p.ink2, height: 1.5)),
+        ],
+        if (d.goalsMin.isNotEmpty) ...[
+          const SizedBox(height: S.x3),
+          Text(
+            [
+              if (d.goalsMin['peak'] != null) 'Peak ${hm(d.goalsMin['peak']!)}',
+              if (d.goalsMin['perform'] != null)
+                'Perform ${hm(d.goalsMin['perform']!)}',
+              if (d.goalsMin['get_by'] != null)
+                'Get by ${hm(d.goalsMin['get_by']!)}',
+            ].join('  ·  '),
+            style: F.cap.copyWith(color: p.ink2),
+          ),
+        ],
+        if (d.consistencyPct != null || d.restorativePct != null) ...[
+          const SizedBox(height: S.x2),
+          Text(
+            [
+              if (d.consistencyPct != null)
+                'Consistency ${d.consistencyPct!.round()}%',
+              if (d.restorativePct != null)
+                'Restorative ${d.restorativePct!.round()}% (40–50% is ideal)',
+            ].join('  ·  '),
+            style: F.cap.copyWith(color: p.ink3),
+          ),
+        ],
+        if (d.needSource == 'population_prior' || d.needSource == 'blended') ...[
+          const SizedBox(height: S.x2),
+          Text(
+            'Still learning your own need — this starts from what young adults '
+            'need and moves to yours as your nights come in.',
+            style: F.cap.copyWith(color: p.ink3, height: 1.4),
+          ),
         ],
       ]),
     );
