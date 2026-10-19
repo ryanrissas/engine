@@ -26050,7 +26050,15 @@
      "calories_total": 2297.5125051784576,
      "dyn_p90": 0.016945539023250016,
      "nap_min": 0.0,
-     "hrr_bpm": 18.0
+     "hrr_bpm": 18.0,
+     "stress_day": null,
+     "stress_ref_h": 0.018557919621749387,
+     "stress_ref_h_mad": 0.05038386524822692,
+     "stress_ref_x": 3.4565506452470878,
+     "stress_ref_x_mad": 0.4942511812061587,
+     "stress_s_p05": -0.8815753206202279,
+     "stress_s_p99": 1.1722418935169798,
+     "stress_ref_n": 70.0
     },
     "sleep_source": "auto",
     "calories_total": {
@@ -27480,6 +27488,18 @@
       "hrr_bpm": 18.0
      }
     ],
+    "daytime_stress": {
+     "value": "—",
+     "confidence": 0,
+     "tier": "relative",
+     "inputs_used": [
+      "hr_1hz",
+      "rr_still",
+      "gravity",
+      "resting_hr"
+     ],
+     "note": "need_baseline:have=0,need=3,still_min=0,need_min=600"
+    },
     "hr_ceiling": {
      "value": "—",
      "confidence": 0.0,
@@ -27891,7 +27911,7 @@
    "readiness": 53.2768793939363,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "fea10516a479dd0ced16bbb16f3bfc8667ae227abdc759a605aeb2e35caaa0a4"
+   "payload_sha256": "2eec4c6169aae9db3f98aa9d1bad61360a6053643418b93d4dbebf1fa26ad74e"
   },
   {
    "day_id": "2026-07-14",
@@ -53584,6 +53604,14 @@
      "dyn_p90": 0.6766952190329969,
      "nap_min": 45.0,
      "hrr_bpm": 14.0,
+     "stress_day": null,
+     "stress_ref_h": 0.06477541371158392,
+     "stress_ref_h_mad": 0.010690141843971615,
+     "stress_ref_x": 2.78226783590912,
+     "stress_ref_x_mad": 0.04262421376227857,
+     "stress_s_p05": -1.53155124433828,
+     "stress_s_p99": 0.38988549631820174,
+     "stress_ref_n": 25.0,
      "hr_ceiling_bpm": 157.0
     },
     "sleep_source": "auto",
@@ -54979,6 +55007,18 @@
      "present": false
     },
     "workout_suggestions": [],
+    "daytime_stress": {
+     "value": "—",
+     "confidence": 0,
+     "tier": "relative",
+     "inputs_used": [
+      "hr_1hz",
+      "rr_still",
+      "gravity",
+      "resting_hr"
+     ],
+     "note": "need_baseline:have=1,need=3,still_min=70,need_min=600"
+    },
     "hr_ceiling": {
      "value": {
       "bpm": 157.0,
@@ -55397,7 +55437,7 @@
    "readiness": 53.2768793939363,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "dfc9511e2ff190873a7bfbdb6e37280f99ebd919a1b2876dc5468f539485b925"
+   "payload_sha256": "63b2be96d9d4864fc52af269d74bb8da4d2697062d42d688f5da113d005c7a98"
   },
   {
    "day_id": "2026-07-15",
@@ -79507,7 +79547,15 @@
      "calories_total": 2151.991671845124,
      "dyn_p90": 0.0166173604770428,
      "nap_min": 0.0,
-     "hrr_bpm": 18.0
+     "hrr_bpm": 18.0,
+     "stress_day": null,
+     "stress_ref_h": null,
+     "stress_ref_h_mad": null,
+     "stress_ref_x": null,
+     "stress_ref_x_mad": null,
+     "stress_s_p05": null,
+     "stress_s_p99": null,
+     "stress_ref_n": null
     },
     "sleep_source": "auto",
     "calories_total": {
@@ -80721,6 +80769,18 @@
       "hrr_bpm": 18.0
      }
     ],
+    "daytime_stress": {
+     "value": "—",
+     "confidence": 0,
+     "tier": "relative",
+     "inputs_used": [
+      "hr_1hz",
+      "rr_still",
+      "gravity",
+      "resting_hr"
+     ],
+     "note": "need_baseline:have=2,need=3,still_min=140,need_min=600"
+    },
     "hr_ceiling": {
      "value": "—",
      "confidence": 0.0,
@@ -81132,7 +81192,7 @@
    "readiness": 80.27322675938899,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "620340fcbeada5488c653eaf5c4d50aa50103bba360e34a952982e62cacdecc2"
+   "payload_sha256": "c02277bccf7dac4779e0ce1e855d7da9fe866195a15599f719609ff1fb56060d"
   }
  ],
  "metric_series": [
@@ -81325,6 +81385,46 @@
    "date": "2026-07-13",
    "key": "stress",
    "value": 61.03520288391907
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_day",
+   "value": null
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_h",
+   "value": 0.018557919621749387
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_h_mad",
+   "value": 0.05038386524822692
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_n",
+   "value": 70.0
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_x",
+   "value": 3.4565506452470878
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_x_mad",
+   "value": 0.4942511812061587
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_s_p05",
+   "value": -0.8815753206202279
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_s_p99",
+   "value": 1.1722418935169798
   },
   {
    "date": "2026-07-13",
@@ -81543,6 +81643,46 @@
   },
   {
    "date": "2026-07-14",
+   "key": "stress_day",
+   "value": null
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_h",
+   "value": 0.06477541371158392
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_h_mad",
+   "value": 0.010690141843971615
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_n",
+   "value": 25.0
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_x",
+   "value": 2.78226783590912
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_x_mad",
+   "value": 0.04262421376227857
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_s_p05",
+   "value": -1.53155124433828
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_s_p99",
+   "value": 0.38988549631820174
+  },
+  {
+   "date": "2026-07-14",
    "key": "trimp",
    "value": 201.1077212716677
   },
@@ -81755,6 +81895,46 @@
    "date": "2026-07-15",
    "key": "stress",
    "value": 61.03520288391907
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_day",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_h",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_h_mad",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_n",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_x",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_x_mad",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_s_p05",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_s_p99",
+   "value": null
   },
   {
    "date": "2026-07-15",

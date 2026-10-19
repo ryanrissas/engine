@@ -27196,7 +27196,15 @@
      "steps": 18240.0,
      "dyn_p90": 0.016945539023250016,
      "nap_min": 0.0,
-     "hrr_bpm": 18.0
+     "hrr_bpm": 18.0,
+     "stress_day": null,
+     "stress_ref_h": 0.019366505566945177,
+     "stress_ref_h_mad": 0.05257913746271636,
+     "stress_ref_x": 3.4565506452470878,
+     "stress_ref_x_mad": 0.4942511812061587,
+     "stress_s_p05": -0.8815753331229066,
+     "stress_s_p99": 1.1643480625241627,
+     "stress_ref_n": 70.0
     },
     "sleep_source": "auto",
     "calories_total": {
@@ -28803,6 +28811,18 @@
       "hrr_bpm": 18.0
      }
     ],
+    "daytime_stress": {
+     "value": "—",
+     "confidence": 0,
+     "tier": "relative",
+     "inputs_used": [
+      "hr_1hz",
+      "rr_still",
+      "gravity",
+      "resting_hr"
+     ],
+     "note": "need_baseline:have=0,need=3,still_min=0,need_min=600"
+    },
     "hr_ceiling": {
      "value": "—",
      "confidence": 0.0,
@@ -29214,7 +29234,7 @@
    "readiness": 80.276851408764,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "f6e43e2702f59e2220cd7689a81eff8f65b079081fa7b572cb3e50bc7676f0e8"
+   "payload_sha256": "1dbe3502b6d6df9e10e827fc38ec6735efc582e4d938fb60f6c9a6e482c95040"
   },
   {
    "day_id": "2026-07-14",
@@ -56053,6 +56073,14 @@
      "dyn_p90": 0.6766952190329969,
      "nap_min": 45.0,
      "hrr_bpm": 14.0,
+     "stress_day": null,
+     "stress_ref_h": 0.06759773917634375,
+     "stress_ref_h_mad": 0.011155921339915472,
+     "stress_ref_x": 2.7859088099689813,
+     "stress_ref_x_mad": 0.0480223219034286,
+     "stress_s_p05": -1.5921083058300747,
+     "stress_s_p99": 0.37510751091131384,
+     "stress_ref_n": 25.0,
      "hr_ceiling_bpm": 157.0
     },
     "sleep_source": "auto",
@@ -57620,6 +57648,18 @@
      "present": false
     },
     "workout_suggestions": [],
+    "daytime_stress": {
+     "value": "—",
+     "confidence": 0,
+     "tier": "relative",
+     "inputs_used": [
+      "hr_1hz",
+      "rr_still",
+      "gravity",
+      "resting_hr"
+     ],
+     "note": "need_baseline:have=1,need=3,still_min=70,need_min=600"
+    },
     "hr_ceiling": {
      "value": {
       "bpm": 157.0,
@@ -58038,7 +58078,7 @@
    "readiness": 80.276851408764,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "b99b3a71f14b39cdf6bac7e4a640113528dfdd950898d1abe438e2c5a463a3a4"
+   "payload_sha256": "8c4585e0c2f7227f45608e6717d629daa8c791edd4ff500e14aa068fd10b2d04"
   },
   {
    "day_id": "2026-07-15",
@@ -83192,7 +83232,15 @@
      "steps": 17640.0,
      "dyn_p90": 0.0166173604770428,
      "nap_min": 0.0,
-     "hrr_bpm": 18.0
+     "hrr_bpm": 18.0,
+     "stress_day": null,
+     "stress_ref_h": null,
+     "stress_ref_h_mad": null,
+     "stress_ref_x": null,
+     "stress_ref_x_mad": null,
+     "stress_s_p05": null,
+     "stress_s_p99": null,
+     "stress_ref_n": null
     },
     "sleep_source": "auto",
     "calories_total": {
@@ -84573,6 +84621,18 @@
       "hrr_bpm": 18.0
      }
     ],
+    "daytime_stress": {
+     "value": "—",
+     "confidence": 0,
+     "tier": "relative",
+     "inputs_used": [
+      "hr_1hz",
+      "rr_still",
+      "gravity",
+      "resting_hr"
+     ],
+     "note": "need_baseline:have=2,need=3,still_min=140,need_min=600"
+    },
     "hr_ceiling": {
      "value": "—",
      "confidence": 0.0,
@@ -84984,7 +85044,7 @@
    "readiness": 70.92465786683135,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "dfea2eb13d9b2ef97a4eed0bdd802699aeabc837b365962ae38ff47796247145"
+   "payload_sha256": "904b1870ecfd9141b1da8282ef0d9a38061667f521733538932064ddf23a21b0"
   }
  ],
  "metric_series": [
@@ -85177,6 +85237,46 @@
    "date": "2026-07-13",
    "key": "stress",
    "value": 61.03520288391907
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_day",
+   "value": null
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_h",
+   "value": 0.019366505566945177
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_h_mad",
+   "value": 0.05257913746271636
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_n",
+   "value": 70.0
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_x",
+   "value": 3.4565506452470878
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_ref_x_mad",
+   "value": 0.4942511812061587
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_s_p05",
+   "value": -0.8815753331229066
+  },
+  {
+   "date": "2026-07-13",
+   "key": "stress_s_p99",
+   "value": 1.1643480625241627
   },
   {
    "date": "2026-07-13",
@@ -85395,6 +85495,46 @@
   },
   {
    "date": "2026-07-14",
+   "key": "stress_day",
+   "value": null
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_h",
+   "value": 0.06759773917634375
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_h_mad",
+   "value": 0.011155921339915472
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_n",
+   "value": 25.0
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_x",
+   "value": 2.7859088099689813
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_ref_x_mad",
+   "value": 0.0480223219034286
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_s_p05",
+   "value": -1.5921083058300747
+  },
+  {
+   "date": "2026-07-14",
+   "key": "stress_s_p99",
+   "value": 0.37510751091131384
+  },
+  {
+   "date": "2026-07-14",
    "key": "trimp",
    "value": 264.7945672636178
   },
@@ -85607,6 +85747,46 @@
    "date": "2026-07-15",
    "key": "stress",
    "value": 61.03520288391907
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_day",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_h",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_h_mad",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_n",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_x",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_ref_x_mad",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_s_p05",
+   "value": null
+  },
+  {
+   "date": "2026-07-15",
+   "key": "stress_s_p99",
+   "value": null
   },
   {
    "date": "2026-07-15",
