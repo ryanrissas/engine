@@ -401,8 +401,9 @@ void main() {
       final s = strainFromPerMinuteHr(perMin,
           profile: _profile, restingHr: 55, hrMax: _hrMax, quietHrr: 0.20)!;
 
-      // The canonical figure for this effort.
-      expect(s, closeTo(11.62, 0.05));
+      // The canonical figure for this effort: 74 % of reserve for an hour,
+      // on WHOOP's published scale ("1 h run ≈ 12"; reserve_strain.dart).
+      expect(s, closeTo(12.08, 0.05));
       expect(s, lessThanOrEqualTo(21.0));
 
       // What the retired live accrual produced for the identical hour, so the
@@ -444,12 +445,13 @@ void main() {
           strainFromPerMinuteHr(perMin,
               profile: _profile, restingHr: 55, hrMax: null, quietHrr: 0.20),
           isNull);
-      // No sex → no Banister weighting constant.
+      // No sex is NOT a missing anchor any more (v116): the reserve strain
+      // has no sex constant, so it scores.
       expect(
           strainFromPerMinuteHr(perMin,
               profile: const Profile(ageYears: 30), restingHr: 55,
               hrMax: _hrMax, quietHrr: 0.20),
-          isNull);
+          isNotNull);
       // No HR at all.
       expect(
           strainFromPerMinuteHr(const [],
@@ -457,9 +459,9 @@ void main() {
           isNull);
     });
 
-    test('abstains without this user\'s quiet-waking level', () {
-      // The 0.20 population reference used to stand in here. A session is
-      // priced on the quiet level of the day it sits in, or not at all.
+    test('does not wait on a quiet-waking level (v116)', () {
+      // The reserve strain needs only the two reserve anchors, so a session
+      // scores the same whether or not its day has a quiet level yet.
       final w = _flat(0, 45, 150);
       final none = computeManualSessionStats(
         hrTs: w.ts,
@@ -469,10 +471,6 @@ void main() {
         restingHr: 55,
         quietHrr: null,
       );
-      expect(none.strain, isNull);
-      // Everything else about the session is still scored.
-      expect(none.avgHr, 150);
-      expect(none.calories, isNotNull);
       final priced = computeManualSessionStats(
         hrTs: w.ts,
         hrBpm: w.bpm,
@@ -481,11 +479,10 @@ void main() {
         restingHr: 55,
         quietHrr: 0.20,
       );
-      expect(priced.strain, isNotNull);
-      expect(
-          strainFromPerMinuteHr(List<double>.filled(60, 150),
-              profile: _profile, restingHr: 55, hrMax: _hrMax, quietHrr: null),
-          isNull);
+      expect(none.strain, isNotNull);
+      expect(none.strain, priced.strain);
+      expect(none.avgHr, 150);
+      expect(none.calories, isNotNull);
     });
 
     test('is exactly what computeManualSessionStats reports', () {

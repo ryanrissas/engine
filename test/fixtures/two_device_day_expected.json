@@ -185,8 +185,8 @@
         "tier": "ESTIMATE",
         "inputs_used": [
           "hr_1hz",
-          "profile",
-          "quiet_waking_hrr_history"
+          "resting_hr",
+          "max_hr"
         ],
         "note": "need_input:name=age"
       },
