@@ -221,11 +221,15 @@ SleepNeedResult? sleepNeedTonight(
     lastIdx = b;
   }
 
-  if (!lastIsToday || days.isEmpty) return null;
+  if (days.isEmpty) return null;
+  // Today's strain and naps set tonight's need only when the last row IS
+  // today; otherwise today has produced neither yet, and the need stands on
+  // the baseline and the debt.
   final today = days.last;
-  final strainSec =
-      today.strain == null ? 0.0 : strainSleepSec(today.strain!);
-  final napSec = (today.napMin ?? 0.0) * 60;
+  final strainSec = !lastIsToday || today.strain == null
+      ? 0.0
+      : strainSleepSec(today.strain!);
+  final napSec = lastIsToday ? (today.napMin ?? 0.0) * 60 : 0.0;
   final debtAdd = math.min(debt, kSleepDebtCapSec);
   final need = (base.sec + strainSec + debtAdd - napSec)
       .clamp(kSleepNeedMinSec, kSleepNeedMaxSec);
@@ -238,7 +242,7 @@ SleepNeedResult? sleepNeedTonight(
     debtSec: debtAdd,
     debtLedgerSec: debt,
     napCreditSec: napSec,
-    lastNightNeedSec: lastNightNeed,
+    lastNightNeedSec: lastIsToday ? lastNightNeed : null,
     confidence: base.confidence,
   );
 }

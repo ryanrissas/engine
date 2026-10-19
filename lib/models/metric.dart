@@ -210,6 +210,9 @@ const _inputWhy = {
       'Today has not produced any activity to read yet — nothing has reached '
           'the app for it.',
   'tst_min': 'That night has no total sleep time behind it.',
+  'sleep_nights': 'No nights of sleep have been recorded yet to work this out.',
+  'last_night_need':
+      'There is no sleep need on record for the night that just ended.',
   'wake_time': 'That night has no wake time behind it.',
   'efficiency': 'That night has no sleep efficiency behind it.',
   'observed_ceiling':

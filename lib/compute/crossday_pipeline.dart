@@ -350,7 +350,7 @@ Map<String, dynamic> buildCrossDayBundle(
       ? ana.Metric<ana.SleepNeed>.absent(
           tier: ana.Tier.estimate,
           inputs_used: const ['baseline', 'strain', 'sleep_debt', 'naps'],
-          note: needInputNote('today'),
+          note: needInputNote('sleep_nights'),
         )
       : ana.Metric<ana.SleepNeed>(
           value: ana.SleepNeed(needRes.needSec),

@@ -100,8 +100,14 @@ void main() {
     expect(hoursVsNeedPct(null, r.lastNightNeedSec), isNull);
   });
 
-  test('not today → no tonight', () {
-    expect(sleepNeedTonight(_days([8.0, 8.0]), lastIsToday: false), isNull);
+  test('not today → baseline and debt only, no last-night score', () {
+    final r = sleepNeedTonight(
+        _days([8.4, 6.4], strain: [null, 21], napMin: [null, 60]),
+        lastIsToday: false)!;
+    expect(r.strainSec, 0);
+    expect(r.napCreditSec, 0);
+    expect(r.debtLedgerSec / 3600, closeTo(2.0, 1e-9));
+    expect(r.lastNightNeedSec, isNull);
   });
 
   group('four-day consistency', () {
