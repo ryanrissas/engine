@@ -373,9 +373,8 @@ class _HubScoreTabState extends State<HubScoreTab> with RevisionReload {
     String head, body;
     if (calibrating) {
       head = 'Learning your usual';
-      body = 'Recovery is scored against your own nights, and a week of them '
-          'is the least that means anything. $nights of '
-          '$kRecoveryCalibrationNights so far.';
+      body = 'Recovery is scored against your own nights. The first read '
+          'comes on night $kRecoveryCalibrationNights; $nights so far.';
     } else if (v == null) {
       head = t.recoveryState == 'night_in_progress' ? 'Sleeping…' : 'Not scored';
       body = t.recoveryState == 'night_in_progress'
@@ -422,7 +421,11 @@ class _HubScoreTabState extends State<HubScoreTab> with RevisionReload {
             ? (calibrating ? nights / kRecoveryCalibrationNights : null)
             : v / 100,
         word: calibrating ? 'Learning' : head,
-        sub: calibrating ? '$nights of $kRecoveryCalibrationNights nights' : '',
+        sub: calibrating
+            ? '$nights of $kRecoveryCalibrationNights nights'
+            : recoveryEarlyRead(nights)
+                ? 'Early read · night $nights'
+                : '',
       ),
       const SizedBox(height: S.x5),
       ScoreWords(headline: head, body: body),

@@ -55,8 +55,6 @@ import '../../l10n/decimal_text.dart';
 import '../../state/locale_controller.dart';
 import '../../state/prefs.dart';
 import 'package:intl/intl.dart';
-import 'package:openstrap_analytics/onehz.dart'
-    show quietHrrMinDays, readinessCompositeMinBaseline;
 import '../../models/metric.dart';
 import '../../models/payloads.dart' show todayHeadlineOf;
 import '../../notify/notification_prefs.dart' show NotificationPrefs;
@@ -1782,7 +1780,13 @@ _RingState _ringOf(HomeRingKind k, HomeData d, AppLocalizations? l) {
                   '')
           : _RingState(k, l?.homeRingRecovery ?? 'Recovery',
               LucideIcons.batteryCharging, band.color,
-              value: '${v.round()}', unit: '%', sub: band.label, frac: v / 100);
+              value: '${v.round()}',
+              unit: '%',
+              // Nights 5–14 score against a short baseline: said, not hidden.
+              sub: recoveryEarlyRead(nights)
+                  ? 'Early read · night $nights'
+                  : band.label,
+              frac: v / 100);
     case HomeRingKind.strain:
       final v = d.strain.value;
       // 0–21 is the scale's own ceiling, not a target invented here.
@@ -2674,7 +2678,7 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
     final firstWeeks = isToday &&
         widget.data == null &&
         d.readiness.isEmpty &&
-        _days.length <= readinessCompositeMinBaseline;
+        _days.length < kRecoveryCalibrationNights;
 
     final stale = staleInsightsCard(d.insightsStale, syncOf(c), l);
     // Above the greeting, not below it: if the app had to rebuild the database
@@ -3255,16 +3259,16 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
 }
 
 /// What happens in the first weeks, with the counts the pipeline actually
-/// gates on: sleep after the first night, strain once [quietHrrMinDays] earlier
-/// days give it a resting level, recovery once [readinessCompositeMinBaseline]
-/// earlier nights give it a normal range. Read from the analytics constants so
-/// the card cannot drift from the gate.
+/// gates on: sleep after the first night, strain from the first day (the
+/// reserve strain needs no baseline), recovery's early read from
+/// [kRecoveryCalibrationNights]. Read from the gate's own constant so the card
+/// cannot drift from it.
 Widget firstWeekCard(BuildContext c,
     {required int days, required bool strainScored}) {
   final p = P.of(c);
   final l = AppLocalizations.of(c);
-  final strainDay = quietHrrMinDays + 1;
-  final recoveryNight = readinessCompositeMinBaseline + 1;
+  const strainDay = 1;
+  final recoveryNight = kRecoveryCalibrationNights;
   Widget step(bool done, String text) => Semantics(
         // The tick is drawn, so it is also said.
         label: done ? (l?.homeFirstWeekDone(text) ?? 'Done: $text') : text,

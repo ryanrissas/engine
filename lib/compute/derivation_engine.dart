@@ -1853,7 +1853,14 @@ import 'vendor_sleep.dart';
 // consecutive-window estimator stays the validity gate and its value is kept
 // beside the headline (`rmssd_sleep_session.consecutive_rmssd_ms`). Days
 // whose raw is pruned keep their v116 value, so the readiness baseline mixes
-// the two methods for its first weeks. Edge-only.
+// the two methods for its first weeks.
+// Also in 117 (early recovery): from four nights of HRV and resting-HR
+// baseline the readiness composite scores against the short baseline, its z
+// shrunk by nights/14 toward the middle, labelled `provisional:` in its note
+// and `early_baseline` on the envelope (compute/provisional_recovery.dart).
+// WHOOP shows a first calibrating recovery after about four nights; this was
+// blank until 14. The ring shows it from night 5 as an "early read"; the
+// ordinary composite takes over at 14 nights of baseline. Edge-only.
 const int kAlgoVersion = 117;
 /// The sibling SHAs this version was derived against, asserted against
 /// pubspec.yaml in test/db_serve_version_and_reads_test.dart.

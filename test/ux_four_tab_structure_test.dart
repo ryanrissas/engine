@@ -3,11 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:openstrap_analytics/onehz.dart'
-    show quietHrrMinDays, readinessCompositeMinBaseline;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:openstrap_edge/compute/recovery_calibration.dart'
+    show kRecoveryCalibrationNights;
 import 'package:openstrap_edge/state/app_state.dart';
 import 'package:openstrap_edge/state/prefs.dart';
 import 'package:openstrap_edge/ui2/onboarding/profile_setup.dart';
@@ -48,14 +48,14 @@ void main() {
       (t) async {
     await t.pumpWidget(_app(Builder(
         builder: (c) => firstWeekCard(c, days: 2, strainScored: false))));
-    // Strain needs this many earlier days with a resting level; recovery
-    // this many earlier nights. The card is one past each.
-    expect(find.text('Strain: from day ${quietHrrMinDays + 1}'),
-        findsOneWidget);
+    // Strain needs no baseline (v116); recovery's early read comes on the
+    // night with four nights of baseline behind it (v117).
+    expect(find.text('Strain: from day 1'), findsOneWidget);
     expect(
-        find.text('Recovery: from night ${readinessCompositeMinBaseline + 1}, '
+        find.text('Recovery: from night $kRecoveryCalibrationNights, '
             'once it knows your normal'),
         findsOneWidget);
+    expect(kRecoveryCalibrationNights, 5);
     expect(find.text('2 days recorded so far'), findsOneWidget);
   });
 

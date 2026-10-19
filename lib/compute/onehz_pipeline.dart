@@ -33,6 +33,7 @@ import 'package:openstrap_analytics/onehz.dart';
 import 'inputs/garmin_inputs.dart'
     show isWearableFamily, kHrCadenceSec, kOneHzRunGapSec;
 import 'night_hrv.dart' show overlappingNightRmssd;
+import 'provisional_recovery.dart' show provisionalReadiness;
 import 'reserve_strain.dart' show reserveStrainCurve, reserveStrainMetric;
 import 'hr_max.dart'
     show
@@ -811,7 +812,7 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
   // lives in `rhr` itself, so this is the same number the card shows.
   final rhrToday = rhr.present ? rhr.value!.low30Mean : null;
   final respToday = resp.present ? resp.value!.brpm : null;
-  final composite = readinessComposite([
+  final readinessInputs = [
     hrvInput(lnToday, d.lnRmssdHistory),
     rhrInput(rhrToday, d.rhrHistory),
     respInput(respToday, d.respHistory),
@@ -828,15 +829,29 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
       d.skinTempAdcHistory,
       settledFraction: skinTempSettledFrac,
     ),
-  ],
-      // A wearable gives no beats, so HRV (and resp) never enter: the
-      // composite is PARTIAL, resting HR and skin temperature, which weigh
-      // 0.30 + 0.10. Still two measured inputs, never one; the band's own
-      // floor is untouched.
-      minWeightSum: hrCadence == null
-          ? readinessCompositeMinWeight
-          : kPartialReadinessMinWeight,
+  ];
+  // A wearable gives no beats, so HRV (and resp) never enter: the composite
+  // is PARTIAL, resting HR and skin temperature, which weigh 0.30 + 0.10.
+  // Still two measured inputs, never one; the band's own floor is untouched.
+  final readinessMinWeight = hrCadence == null
+      ? readinessCompositeMinWeight
+      : kPartialReadinessMinWeight;
+  final fullComposite = readinessComposite(readinessInputs,
+      minWeightSum: readinessMinWeight,
       compositeZHistory: d.readinessZHistory);
+  // v117 — between 4 and 13 nights of baseline, a PROVISIONAL recovery
+  // (provisional_recovery.dart): the same composite on the short baseline,
+  // its z shrunk by nights/14, labelled `provisional`. WHOOP shows a first
+  // calibrating recovery after about four nights; this used to be blank for
+  // two weeks.
+  final composite = provisionalReadiness(
+        fullComposite,
+        readinessInputs,
+        hrvNights: d.lnRmssdHistory.length,
+        rhrNights: d.rhrHistory.length,
+        minWeightSum: readinessMinWeight,
+      ) ??
+      fullComposite;
   // Populated when readiness comes back absent, so the main isolate can log WHY
   // instead of a bare null (this runs inside Isolate.run, so it can't call
   // Firebase directly; it just returns data). TWO consumers now, and the second
@@ -1230,6 +1245,10 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
     'readiness_lnrmssd': lnReadiness.toJson((v) => v.toJson()),
     'readiness_composite': {
       ...composite.toJson((v) => v.toJson()),
+      // Scored against a baseline under 14 nights (provisional_recovery.dart).
+      // Its own key: `provisional` already means a wearable's unsettled temp.
+      if ((composite.note ?? '').startsWith('provisional:'))
+        'early_baseline': true,
       if (tempProvisional && composite.inputs_used.contains('temp')) ...{
         'confidence': _round(composite.confidence * 0.5, 6),
         'provisional': true,
