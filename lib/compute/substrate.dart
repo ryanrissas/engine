@@ -19,6 +19,7 @@ import 'package:openstrap_analytics/onehz.dart' as ana;
 import 'package:openstrap_protocol/openstrap_protocol.dart' as proto;
 
 import '../data/day_label.dart';
+import 'night_stager.dart' show restageNight;
 import 'vendor_sleep.dart';
 
 /// Minimum fraction of a nocturnal search window that must carry a REAL
@@ -1426,6 +1427,47 @@ List<PhysioDay> calendarDays(
             why = 'not_staged';
           }
           vendorIgnored.add('VENDOR_SLEEP_IGNORED:${vn.source}:$why');
+        }
+      }
+
+      // v118 — STAGES from the per-night HMM (compute/night_stager.dart) on
+      // every window we staged ourselves; a device's own staging and a
+      // rejected night are left alone. The window, its edges and confidence
+      // stay the segmentation's; only the per-second labels are re-read. A
+      // night the HMM cannot stage, or one it would turn mostly to wake,
+      // keeps its base labels.
+      if (s.present &&
+          s.window != null &&
+          s.window!.onsetMs != null &&
+          src != 'vendor_staged' &&
+          src != 'rejected') {
+        final w = s.window!;
+        final a0 = w.onsetIdx.clamp(0, hrSlice.length);
+        final a1 = (w.onsetIdx + s.stages4.length).clamp(a0, hrSlice.length);
+        final on = w.onsetMs! ~/ 1000;
+        final endMs = (on + s.stages4.length) * 1000.0;
+        final wRr = <double>[], wTs = <double>[];
+        for (var k = 0; k < rrTsSeg.length; k++) {
+          final t = rrTsSeg[k];
+          if (t >= on * 1000.0 && t < endMs) {
+            wRr.add(rrMsSeg[k]);
+            wTs.add(t);
+          }
+        }
+        final re = restageNight(
+          hr: hrSlice.sublist(a0, a1),
+          accel: accelSlice.sublist(
+              a0.clamp(0, accelSlice.length), a1.clamp(0, accelSlice.length)),
+          rrMs: wRr,
+          rrTsMs: wTs,
+          onsetSec: on,
+          baseStages4: s.stages4,
+        );
+        if (re != null) {
+          final r = segmentationFromStages4(w, re, s.confidence,
+              reported: const {'wake', 'light', 'deep', 'rem'},
+              bandOffsetTrimSec: s.bandOffsetTrimSec);
+          if (r.present && (r.tstSec ?? 0) * 2 >= (s.tstSec ?? 0)) s = r;
         }
       }
 

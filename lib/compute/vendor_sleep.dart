@@ -228,6 +228,22 @@ ana.SleepSegmentation _staged(
       s4[t - start] = e.stage;
     }
   }
+  return segmentationFromStages4(win, s4, confidence,
+      reported: vendorStagesReported(n.source));
+}
+
+/// A segmentation over [win] whose every stage figure is read off [s4] (the
+/// per-second 'wake'|'light'|'deep'|'rem'|'unobserved' labels). [reported] is
+/// the set of stages the labeller tells apart; a figure for a stage it does not
+/// report stays null rather than reading 0.
+ana.SleepSegmentation segmentationFromStages4(
+  ana.SleepWindow win,
+  List<String> s4,
+  double confidence, {
+  required Set<String> reported,
+  int? bandOffsetTrimSec,
+}) {
+  final inBed = s4.length;
   var tst = 0, light = 0, deep = 0, rem = 0, wake = 0, unobserved = 0;
   var first = -1, last = -1;
   for (var i = 0; i < inBed; i++) {
@@ -267,7 +283,6 @@ ana.SleepSegmentation _staged(
   // A device that reports no wake stages every second of its night as sleep:
   // efficiency would read 100 and awakenings 0 every night by construction,
   // which is no measurement. Those figures stay null for it.
-  final reported = vendorStagesReported(n.source);
   final seesWake = reported.contains('wake');
   return ana.SleepSegmentation(
     window: win,
@@ -299,5 +314,6 @@ ana.SleepSegmentation _staged(
     sustainedAwakenings: seesWake ? awakenings : null,
     longestSleepRunSec: longest,
     confidence: confidence,
+    bandOffsetTrimSec: bandOffsetTrimSec,
   );
 }
