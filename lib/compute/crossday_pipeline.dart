@@ -25,6 +25,7 @@ import '../data/day_label.dart';
 // isolate safety. One grammar for "a required input was missing" across both
 // pipelines rather than a second one here.
 import 'onehz_pipeline.dart' show needInputNote;
+import 'illness_watch.dart' as iw;
 import 'sleep_need_model.dart' as snm;
 
 /// Build the cross-day analytics bundle from a time-ordered (OLDEST FIRST) list
@@ -494,6 +495,18 @@ Map<String, dynamic> buildCrossDayBundle(
   final latestTemp =
       at(tempIllness, newestScored((i) => tempRawList[i] != null));
 
+  // v118 — ILLNESS WATCH (compute/illness_watch.dart): resting HR +4 bpm
+  // (NightSignal), respiratory z ≥ 2.33, HRV z ≤ −2; two of three on a night
+  // is yellow, two yellow nights in a row is red. No temperature input.
+  final watch = iw.illnessWatch(
+    dates: dates,
+    rhr: rhrList,
+    resp: respList,
+    rmssd: rmssdList,
+    unsettled: unsettled,
+  );
+  final latestWatch = at(watch, newestScored((i) => watch[i] != null));
+
   // per-day flags (for notifications / trends): asleep/illness/anomaly/temp,
   // plus the nightly RESTING HR the "your resting HR trend shifted" CUSUM
   // notification reads back off these rows. That consumer
@@ -518,6 +531,7 @@ Map<String, dynamic> buildCrossDayBundle(
       'temp':
           i < tempIllness.length &&
           tempIllness[i].flag == ana.TempFlag.elevated,
+      'illness_watch': watch[i]?.level.name,
     });
   }
 
@@ -527,6 +541,7 @@ Map<String, dynamic> buildCrossDayBundle(
     'illness': latestIllness?.toJson(),
     'anomaly': latestAnomaly?.toJson(),
     'temp_illness': latestTemp?.toJson(),
+    'illness_watch': latestWatch?.toJson(),
     'load': load.toJson((v) => v.toJson()),
     // `value.pairs[]` carries the two night labels (SLP-08) alongside the
     // headline SRI — same arithmetic, decomposed.
