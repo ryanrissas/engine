@@ -103,7 +103,8 @@ void main() {
     final calm = _score(_day(240)).summary;
     final r = _score(_day(240, seed: 5), history: _historyOf(calm, 5));
     expect(r.dayScore, isNotNull);
-    expect(r.dayScore!, inInclusiveRange(0.3, 1.8));
+    // Calm against calm sits in the low band — never in the high one.
+    expect(r.dayScore!, inInclusiveRange(0.0, 1.5));
     final v = r.block['value'] as Map;
     expect(v['scored_min'], greaterThan(200));
     expect(v['high_min'], lessThan(20));
@@ -113,6 +114,8 @@ void main() {
     final calm = _score(_day(240)).summary;
     final r = _score(_day(240, stressedFrom: 100, stressedTo: 160),
         history: _historyOf(calm, 5));
+    final quiet = _score(_day(240, seed: 5), history: _historyOf(calm, 5));
+    expect(r.dayScore!, greaterThan(quiet.dayScore! + 0.3));
     final v = r.block['value'] as Map;
     expect(v['high_min'], greaterThan(30));
     expect(v['peak'], greaterThan(2.5));
