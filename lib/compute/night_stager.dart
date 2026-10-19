@@ -73,7 +73,9 @@ List<List<double>> _transitions() {
   for (var s = 0; s < 4; s++) {
     final stay = 1 - (kStagerEpochSec / 60) / bout[s];
     t[s][s] = stay;
-    exits[s].forEach((to, p) => t[s][to] = (1 - stay) * p);
+    for (final ex in exits[s].entries) {
+      t[s][ex.key] = (1 - stay) * ex.value;
+    }
   }
   return [
     for (final row in t) [for (final p in row) math.log(p + 1e-12)],
