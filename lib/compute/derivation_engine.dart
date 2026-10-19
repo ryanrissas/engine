@@ -1844,7 +1844,17 @@ import 'vendor_sleep.dart';
 // (`max_hr` on the profile; zones band on it, source `manual_max`). Every
 // day with raw re-derives; zones, TRIMP and calories move with the ceiling.
 // Edge-only.
-const int kAlgoVersion = 116;
+// 116 → 117 (nightly HRV on WHOOP's described method): the headline `rmssd`
+// is RMSSD over OVERLAPPING 5-min windows stepping every 30 s across the sleep
+// session, windows mostly awake removed, likely slow-wave windows (mostly NREM
+// and in the night's lowest third of heart rate) weighted double
+// (compute/night_hrv.dart) — the method WHOOP's data-science lead described
+// (WHOOP Community, Aug 13 2025); the weights are ours. The analytics
+// consecutive-window estimator stays the validity gate and its value is kept
+// beside the headline (`rmssd_sleep_session.consecutive_rmssd_ms`). Days
+// whose raw is pruned keep their v116 value, so the readiness baseline mixes
+// the two methods for its first weeks. Edge-only.
+const int kAlgoVersion = 117;
 /// The sibling SHAs this version was derived against, asserted against
 /// pubspec.yaml in test/db_serve_version_and_reads_test.dart.
 ///

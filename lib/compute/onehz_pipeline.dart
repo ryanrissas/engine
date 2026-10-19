@@ -32,6 +32,7 @@ import 'package:openstrap_analytics/onehz.dart';
 // instead of two that can drift.
 import 'inputs/garmin_inputs.dart'
     show isWearableFamily, kHrCadenceSec, kOneHzRunGapSec;
+import 'night_hrv.dart' show overlappingNightRmssd;
 import 'reserve_strain.dart' show reserveStrainCurve, reserveStrainMetric;
 import 'hr_max.dart'
     show
@@ -582,8 +583,23 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
     endSec: d.sleepOffsetSec,
   );
   final sessionDetail = sleepSessionRmssdMetric.value;
-  final sleepSessionRmssd =
-      sleepSessionRmssdMetric.present ? sessionDetail!.rmssd : null;
+  // v117 — the VALUE is WHOOP's described method (night_hrv.dart): overlapping
+  // 5-min windows stepping 30 s, wake removed, likely slow-wave windows
+  // weighted double. The analytics estimator above stays the GATE: a night it
+  // refuses (beats banking more time than elapsed, the jitter floor) stays
+  // absent, and when no overlapping window qualifies its own value stands.
+  final overlapRmssd = sleepSessionRmssdMetric.present
+      ? overlappingNightRmssd(
+          rrMs: d.sleepRrMs,
+          rrTsMs: d.sleepRrTsMs,
+          startSec: d.sleepOnsetSec,
+          endSec: d.sleepOffsetSec,
+          stagesPerSec: d.hypnoStages,
+        )
+      : null;
+  final sleepSessionRmssd = sleepSessionRmssdMetric.present
+      ? (overlapRmssd ?? sessionDetail!.rmssd)
+      : null;
   final hrvF = nn.length >= 20
       ? hrvFreq(nn, nnTimes, artifactFraction: artifactFraction)
       : Metric<HrvFreq>.absent(
@@ -1196,6 +1212,14 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
       // floor: how much of the night the mean does NOT rest on.
       'thin_windows': sessionDetail?.thinWindows,
       'min_diffs_per_window': sessionDetail?.minDiffsPerWindow,
+      // Which estimate the value is, and the consecutive-window one beside it
+      // so the change of method stays visible.
+      'method': overlapRmssd != null
+          ? 'overlap_5min_step30s_sws_weighted'
+          : 'consecutive_5min_mean',
+      'consecutive_rmssd_ms': sessionDetail?.rmssd == null
+          ? null
+          : _round(sessionDetail!.rmssd, 1),
     },
     'rmssd_nocturnal': robustRmssd.toJson(),
     'hrv_freq': hrvF.toJson((v) => v.toJson()),
