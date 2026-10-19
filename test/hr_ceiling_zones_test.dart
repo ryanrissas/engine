@@ -402,7 +402,7 @@ void main() {
     test('no observed ceiling ⇒ tanaka, and the minutes land in Z2', () {
       final b = bundle();
       expect(b['zone_source'], 'tanaka');
-      expect(b['zone_max_hr'], 187);
+      expect(b['zone_max_hr'], 186); // Gellish 185.7 at 30
       expect((b['zones'] as Map)['z2'], greaterThan(300));
       expect((b['zones'] as Map)['z1'], 0);
     });
@@ -414,11 +414,9 @@ void main() {
       // 128 bpm is now Z1 (53% of reserve), not Z2.
       expect((b['zones'] as Map)['z1'], greaterThan(300));
       expect((b['zones'] as Map)['z2'], 0);
-      // `max_hr_used` is DELIBERATELY untouched: TRIMP/calories are not moved
-      // onto the observed ceiling here, because that re-scores every strain the
-      // user has ever seen. The two ceilings on one screen are named, not
-      // silently merged.
-      expect(b['max_hr_used'], closeTo(187, 0.01));
+      // Since v116 strain, TRIMP and calories use the observed ceiling too
+      // when it beats the age estimate — WHOOP raises its max the same way.
+      expect(b['max_hr_used'], closeTo(196, 0.01));
     });
 
     test('the zone timeline is binned by the same set as the zone minutes', () {
@@ -481,7 +479,7 @@ void main() {
         // screen used to be two paragraphs of copy and nothing else on every
         // real export, including a 287-day history.
         expect(z['source'], 'tanaka');
-        expect(z['max_hr'], 187);
+        expect(z['max_hr'], 186);
         expect(z['zones'], isNotEmpty);
         // The DISTRIBUTION still refuses: it needs measured anchors.
         expect(z['distribution'], isNull);
@@ -496,7 +494,7 @@ void main() {
         final z = await repo.getZones();
         expect(z['ceiling'], isNull);
         expect(z['source'], 'tanaka');
-        expect(z['max_hr'], 187);
+        expect(z['max_hr'], 186);
         // THE GATE. Not a chart with a caveat — nothing at all.
         expect(z['distribution'], isNull);
         // …and no resting anchor is claimed either, because these edges are not

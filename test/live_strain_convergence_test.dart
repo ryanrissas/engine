@@ -79,7 +79,9 @@ void main() {
         w.accrueHr(150);
       }
       expect(w.perMinuteHr(), hasLength(60));
-      expect(w.strain, closeTo(11.62, 0.05));
+      // RHR 55 / HRmax 187: 72 % of reserve for an hour — WHOOP's published
+      // "1 h run ≈ 12" (reserve_strain.dart).
+      expect(w.strain, closeTo(12.08, 0.05));
       expect(w.strain, lessThanOrEqualTo(21.0));
     });
 
@@ -97,7 +99,7 @@ void main() {
       expect(w.strain, isNull);
     });
 
-    test('abstains until a quiet level lands, then fills the gap', () {
+    test('does not wait on a quiet level (v116)', () {
       final w = LiveWorkoutState(
         startTime: DateTime(2026, 1, 1, 9),
         targetKcal: 300,
@@ -111,15 +113,15 @@ void main() {
         w.elapsed = Duration(seconds: i);
         w.accrueHr(150);
       }
-      // No level read yet — never the 0.20 population reference.
-      expect(w.strain, isNull);
-      // `_refreshNightlyRhr` fills the gap when the read lands; the next
-      // sample re-scores through it.
+      // The reserve strain needs only resting HR and max HR: it scores
+      // before any quiet level is read, and a level landing does not move it.
+      expect(w.strain, isNotNull);
+      expect(w.strain, greaterThan(0));
+      final before = w.strain;
       w.quietHrr = 0.20;
       w.elapsed = const Duration(seconds: 120);
       w.accrueHr(150);
-      expect(w.strain, isNotNull);
-      expect(w.strain, greaterThan(0));
+      expect(w.strain, greaterThanOrEqualTo(before!));
     });
 
     test('off-skin zeros neither pollute a minute nor reset the score', () {

@@ -4046,7 +4046,9 @@
      "avg": 68
     },
     "calories": 360.0,
-    "absent_notes": {},
+    "absent_notes": {
+     "trimp_net": "need_baseline:have=0,need=3"
+    },
     "respiration": {
      "rsa": {
       "value": {
@@ -29214,7 +29216,7 @@
    "readiness": 72.95885235383324,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "6fb725830a94a6476034657d4a80a3df9dc09b1d87066798060544a1597910e1"
+   "payload_sha256": "7b6fd2f45d869140877240575b9bc0d9dda64c016c8d14edbc46e3391b7004a8"
   },
   {
    "day_id": "2026-07-14",
@@ -33262,7 +33264,9 @@
      "avg": 67
     },
     "calories": 360.0,
-    "absent_notes": {},
+    "absent_notes": {
+     "trimp_net": "need_baseline:have=1,need=3"
+    },
     "respiration": {
      "rsa": {
       "value": {
@@ -58038,7 +58042,7 @@
    "readiness": 72.95885235383324,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "e0625afedc7ebe717630dbacb72ef8a06e850a169656af8bb942e9a7b8cec306"
+   "payload_sha256": "36c1987a6af12c0308b5baf5231c07b64632496e44348dd03418b42c24e2944f"
   },
   {
    "day_id": "2026-07-15",
@@ -62086,7 +62090,9 @@
      "avg": 69
     },
     "calories": 360.0,
-    "absent_notes": {},
+    "absent_notes": {
+     "trimp_net": "need_baseline:have=2,need=3"
+    },
     "respiration": {
      "rsa": {
       "value": {
@@ -84984,7 +84990,7 @@
    "readiness": 61.79377627786914,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "a322eaf4ae664226a028b09daef23ee713f20835fd38195e24426cb33d2498ab"
+   "payload_sha256": "bb863309147eee87fc7535331942ce8a1e742c56384228b376850b8741e8ef69"
   }
  ],
  "metric_series": [
@@ -85657,7 +85663,9 @@
     "quiet_hrr": 0.17384573771837883,
     "trimp_net": null,
     "strain_absent": null,
-    "absent_notes": {},
+    "absent_notes": {
+     "trimp_net": "need_baseline:have=0,need=3"
+    },
     "calories": 359.8518200286807,
     "steps": 18240.0,
     "calories_total": 1707.6018200286808,
@@ -86850,7 +86858,7 @@
      "coverage_pct": 100
     }
    },
-   "payload_sha256": "3b035db4a380eb07281abe2320548345538f600057c4ce1b65fa284397e46b7e"
+   "payload_sha256": "ee0b79ae4ecb136c08dbcd73b45d7a2a999402e697c802549c56f6858d01f107"
   },
   {
    "day_id": "2026-07-14",
@@ -86863,7 +86871,9 @@
     "quiet_hrr": 0.17203446726913546,
     "trimp_net": null,
     "strain_absent": null,
-    "absent_notes": {},
+    "absent_notes": {
+     "trimp_net": "need_baseline:have=1,need=3"
+    },
     "calories": 359.8518200286807,
     "steps": 17640.0,
     "calories_total": 1707.6018200286808,
@@ -88056,7 +88066,7 @@
      "coverage_pct": 100
     }
    },
-   "payload_sha256": "6076fa204c6323b8e57c9012e30e8eb5b4870980f77592f953c105e9ab633cc1"
+   "payload_sha256": "6a23dfd6579dca702245eccb44667cb0d9be48a8490c3137361875209914ecc0"
   },
   {
    "day_id": "2026-07-15",
@@ -88069,7 +88079,9 @@
     "quiet_hrr": 0.1780720354332801,
     "trimp_net": null,
     "strain_absent": null,
-    "absent_notes": {},
+    "absent_notes": {
+     "trimp_net": "need_baseline:have=2,need=3"
+    },
     "calories": 359.8518200286807,
     "steps": 17640.0,
     "calories_total": 1595.2893200286808,
@@ -89166,7 +89178,7 @@
      "coverage_pct": 100
     }
    },
-   "payload_sha256": "5aa52f1342537b0297cbd5ddccd55d861a749b065b903d6e9e349d9ec4fc56fb"
+   "payload_sha256": "2a2ea3557ad14077c3a8730d8249a99cac9ca9184c1804c78719d4a7375e2d0f"
   }
  ],
  "activity_suggestions": [

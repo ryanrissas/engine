@@ -70,11 +70,13 @@ double _strain({int tonight = 0}) {
 }
 
 void main() {
-  test('falling asleep before midnight does not lower the day\'s strain', () {
+  test('falling asleep before midnight does not move the day\'s strain', () {
     final awake = _strain();
     final asleep = _strain(tonight: _t0 + 6 * 3600);
-    // Three hours asleep no longer pay the waking allowance.
-    expect(asleep, greaterThan(awake));
+    // Since v116 a minute near rest weighs almost nothing in the reserve
+    // integral, so moving three hours from "awake" to "asleep" cannot cost
+    // the day its strain (and no longer inflates it either).
+    expect(asleep, closeTo(awake, 0.01));
   });
 
   group('tonightSleep', () {
