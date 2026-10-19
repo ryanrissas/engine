@@ -1881,6 +1881,29 @@ import 'vendor_sleep.dart';
 //     illness/anomaly checks read it. Re-derived gen4 days lose their ADC
 //     value; pruned days keep it, and the cross-day checks ignore it once any
 //     strap night exists.
+//   * DAYTIME STRESS MONITOR 0–3 (compute/daytime_stress.dart) over still
+//     waking minutes (sleep, naps, workouts and their recovery tails out): HR
+//     vs the 14-night sleeping resting HR, handed to trailing still ln-RMSSD
+//     as HR rises, ~5-min EMA, mapped on the prior 14 days' own p5–p99.
+//     Structure WHOOP US20240188865A1; HRV direction Castaldo 2015; the
+//     handover curve and mapping are ours. Absent until 3 days / 600 still
+//     reference minutes, and on days under 60 scored minutes.
+//   * BREATHING: nightly respiratory rate = the RSA estimate corroborated by
+//     Schäfer & Kratky count-adv (2008) through the Karlen fusion gate; the
+//     CVHR breathing-disturbance screen (Hayano 2020) on Sleep, gated on 4
+//     clean hours, never labelled oxygen or a diagnosis; ILLNESS WATCH
+//     (compute/illness_watch.dart): resting HR ≥ median + 4 bpm (Alavi 2022),
+//     respiratory robust z ≥ 2.33 (Natarajan 2020), ln RMSSD z ≤ −2 (ours);
+//     two of three = yellow, two yellow nights running = red, emitted once
+//     per day through NotificationCenter.
+//   * HEALTHSPAN (compute/healthspan.dart, cross-day only): Engine Age from
+//     published hazard ratios (RHR Zhang 2016 / Jensen 2013, MVPA Arem 2015,
+//     strength Momma 2022 held at its nadir, steps Paluch 2022, sleep
+//     Cappuccio 2010 and Windred 2023, VO2max Kodama 2009 only from an entered
+//     test) over a Gompertz slope 0.10 with the NCHS 0.0705 as a range; ≥4
+//     inputs needed; Pace of Aging needs 60 days. No vo2max/fitness_age key.
+//   Edge-only, like everything in 118. Muscular load and the throw log are
+//   session-side and move no derived output.
 const int kAlgoVersion = 118;
 /// The sibling SHAs this version was derived against, asserted against
 /// pubspec.yaml in test/db_serve_version_and_reads_test.dart.
