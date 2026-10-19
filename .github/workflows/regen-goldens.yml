@@ -23,11 +23,16 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
       - name: Regenerate under UTC, +05:30 and -04:00
+        # Logs are kept in the pushed branch (artifact and log downloads are
+        # blocked from the cloud session), and a failure still pushes them.
         run: |
-          TZ=UTC GENERATE_GOLDEN=1 flutter test --concurrency=1 test/whoop_freeze_golden_test.dart
-          TZ=Asia/Kolkata GENERATE_GOLDEN=1 flutter test --concurrency=1 test/whoop_freeze_golden_test.dart
-          TZ=America/New_York GENERATE_GOLDEN=1 flutter test --concurrency=1 test/whoop_freeze_golden_test.dart
-          TZ=UTC GENERATE_GOLDEN=1 flutter test --concurrency=1 test/two_device_fixture_test.dart
+          set -o pipefail
+          rc=0
+          TZ=UTC GENERATE_GOLDEN=1 flutter test --concurrency=1 test/whoop_freeze_golden_test.dart 2>&1 | tee regen_utc.log || rc=1
+          TZ=Asia/Kolkata GENERATE_GOLDEN=1 flutter test --concurrency=1 test/whoop_freeze_golden_test.dart 2>&1 | tee regen_ist.log || rc=1
+          TZ=America/New_York GENERATE_GOLDEN=1 flutter test --concurrency=1 test/whoop_freeze_golden_test.dart 2>&1 | tee regen_ny.log || rc=1
+          TZ=UTC GENERATE_GOLDEN=1 flutter test --concurrency=1 test/two_device_fixture_test.dart 2>&1 | tee regen_two.log || rc=1
+          echo "rc=$rc" > regen_status.txt
       # Pushed to a side branch, never to main: a human (or the session that
       # asked for it) reviews the diff and copies it over deliberately.
       - name: Push the regenerated goldens to goldens-regen-<branch>
@@ -35,6 +40,6 @@ jobs:
           git config user.name "goldens-bot"
           git config user.email "goldens-bot@users.noreply.github.com"
           git checkout -B "goldens-regen-${GITHUB_REF_NAME}"
-          git add test/fixtures/whoop_freeze/*.json test/fixtures/two_device_day_expected.json
+          git add -f test/fixtures/whoop_freeze/*.json test/fixtures/two_device_day_expected.json regen_*.log regen_status.txt
           git commit -m "Regenerated WHOOP freeze goldens from ${GITHUB_SHA::8}" || echo "no change"
           git push -f origin "goldens-regen-${GITHUB_REF_NAME}"
