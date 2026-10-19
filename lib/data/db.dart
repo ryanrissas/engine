@@ -50,6 +50,8 @@ import '../models/activity_suggestion.dart';
 import '../compute/accepted_naps.dart';
 import '../compute/nap_edits.dart' show NapEditKind;
 import '../compute/vendor_sleep.dart' show VendorEpoch, VendorNight;
+import '../compute/strap_temp.dart'
+    show kStrapTempEventId, strapTempFromEventHex;
 import 'journal_fields.dart';
 import 'live_coverage_policy.dart';
 import 'step_calibration.dart';
@@ -3789,6 +3791,37 @@ class LocalDb {
         offId: proto.EventId.wristOff,
         deviceId: deviceId,
       );
+
+  /// The strap's own temperature samples (°C) in [loSec, hiSec), from its
+  /// EXTENDED_BATTERY_INFORMATION events (compute/strap_temp.dart — gen4
+  /// body revision 1 only; anything else is skipped). Ascending by time.
+  static Future<({List<int> ts, List<double> c})> strapTempSamples(
+    int loSec,
+    int hiSec, {
+    required String deviceId,
+  }) async {
+    final ts = <int>[];
+    final c = <double>[];
+    if (hiSec <= loSec) return (ts: ts, c: c);
+    final db = await instance;
+    final rows = await db.query(
+      'band_events',
+      columns: ['ts', 'hex'],
+      where: 'device_id = ? AND event_id = ? AND ts >= ? AND ts < ?',
+      whereArgs: [deviceId, kStrapTempEventId, loSec, hiSec],
+      orderBy: 'ts ASC',
+    );
+    for (final r in rows) {
+      final t = (r['ts'] as num?)?.toInt();
+      final h = r['hex'];
+      if (t == null || h is! String) continue;
+      final v = strapTempFromEventHex(h);
+      if (v == null) continue;
+      ts.add(t);
+      c.add(v);
+    }
+    return (ts: ts, c: c);
+  }
 
   /// Spans ([startSec, endSec]) in [loSec, hiSec) during which the band was on
   /// the charger — off-wrist by definition, and motionless.

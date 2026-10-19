@@ -34,6 +34,7 @@ import 'inputs/garmin_inputs.dart'
     show isWearableFamily, kHrCadenceSec, kOneHzRunGapSec;
 import 'night_hrv.dart' show overlappingNightRmssd;
 import 'provisional_recovery.dart' show provisionalReadiness;
+import 'strap_temp.dart' show nightlyStrapTemp;
 import 'reserve_strain.dart' show reserveStrainCurve, reserveStrainMetric;
 import 'hr_max.dart'
     show
@@ -55,6 +56,16 @@ const MetricCfg _skinTempAdcCfg = MetricCfg(
   minVal: 1.0,
   maxVal: 65535.0,
   floorSpread: 25.0,
+  halfLifeB: 14.0,
+  halfLifeS: 21.0,
+);
+
+/// The strap's own temperature (°C, gen4 event 63): the field's range and a
+/// 0.1 °C spread floor — its resolution.
+const MetricCfg _strapTempCfg = MetricCfg(
+  minVal: 15.0,
+  maxVal: 45.0,
+  floorSpread: 0.1,
   halfLifeB: 14.0,
   halfLifeS: 21.0,
 );
@@ -306,6 +317,14 @@ class DayBundleInput {
   /// matches today's raw mean (the old z-vs-z series was a unit mismatch bug).
   final List<double> skinTempAdcHistory;
 
+  /// v118 — the strap's own temperature samples over the sleep window (gen4,
+  /// event 63; compute/strap_temp.dart), the charging spans that overlap it,
+  /// and the trailing nightly medians (`strap_temp_c`) it is read against.
+  final List<int> strapTempTs;
+  final List<double> strapTempC;
+  final List<List<int>> sleepChargingSpans;
+  final List<double> strapTempHistory;
+
   /// Trailing per-day quiet-waking levels (`quiet_hrr`, %HRR fraction),
   /// strictly before this day, oldest→newest. Strain is priced against their
   /// median ([personalQuietWakingHrr]) — never against this day's own level,
@@ -374,6 +393,10 @@ class DayBundleInput {
     this.respHistory = const [],
     this.rmssdHistory = const [],
     this.skinTempAdcHistory = const [],
+    this.strapTempTs = const [],
+    this.strapTempC = const [],
+    this.sleepChargingSpans = const [],
+    this.strapTempHistory = const [],
     this.quietHrrHistory = const [],
     this.readinessZHistory = const [],
     this.observedHrCeilingBpm,
@@ -407,6 +430,10 @@ class DayBundleInput {
     'resp_history': respHistory,
     'rmssd_history': rmssdHistory,
     'skin_temp_adc_history': skinTempAdcHistory,
+    'strap_temp_ts': strapTempTs,
+    'strap_temp_c': strapTempC,
+    'sleep_charging_spans': sleepChargingSpans,
+    'strap_temp_c_history': strapTempHistory,
     'quiet_hrr_history': quietHrrHistory,
     'readiness_z_history': readinessZHistory,
     'observed_hr_ceiling_bpm': observedHrCeilingBpm,
@@ -459,6 +486,13 @@ class DayBundleInput {
       respHistory: dbls('resp_history'),
       rmssdHistory: dbls('rmssd_history'),
       skinTempAdcHistory: dbls('skin_temp_adc_history'),
+      strapTempTs: ints('strap_temp_ts'),
+      strapTempC: dbls('strap_temp_c'),
+      sleepChargingSpans: [
+        for (final r in (m['sleep_charging_spans'] as List? ?? const []))
+          [for (final v in (r as List)) (v as num).toInt()],
+      ],
+      strapTempHistory: dbls('strap_temp_c_history'),
       quietHrrHistory: dbls('quiet_hrr_history'),
       readinessZHistory: dbls('readiness_z_history'),
       observedHrCeilingBpm: (m['observed_hr_ceiling_bpm'] as num?)?.toDouble(),
@@ -741,8 +775,24 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
           : null);
   final minTempSamples =
       tempCadence == null ? 60 : math.max(1, 3600 ~/ tempCadence);
-  final double? skinTempAdc =
-      tempValid.length >= minTempSamples ? _mean(tempValid) : null;
+  // v118 — on a WHOOP 4.0 the 1 Hz "skin temp" u16 is NOT a temperature
+  // (protocol records.dart `skinTempRaw`: it moves 5–15 counts a second). It
+  // is no longer a nightly value, a z, a baseline or a readiness driver there;
+  // the strap's own temperature (event 63, compute/strap_temp.dart) is.
+  final gen4Strap = d.deviceFamily == 'gen4';
+  final double? skinTempAdc = !gen4Strap && tempValid.length >= minTempSamples
+      ? _mean(tempValid)
+      : null;
+  final strapNight = gen4Strap && d.sleepOnsetSec > 0
+      ? nightlyStrapTemp(
+          tsSec: d.strapTempTs,
+          tempC: d.strapTempC,
+          onsetSec: d.sleepOnsetSec,
+          offsetSec: d.sleepOffsetSec,
+          chargingSpans: d.sleepChargingSpans,
+        )
+      : null;
+  final double? strapTempC = strapNight?.medianC;
   // WH-11a — how much of the night that mean is actually made of. The gate above
   // is sixty 1 Hz samples, i.e. one minute; on real hardware the temp channel
   // runs 35-90 samples/hour, so a "last night" skin temperature can be ~1.5% of
@@ -789,6 +839,13 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
   // the previously-computed z-scores; that unit mismatch was the bug). Gated on
   // ≥3 prior raw means.
   double? skinTempZ;
+  // The strap's z: same ≥3-night bootstrap, a 0.1 °C quantum floor (the
+  // field's resolution) instead of one ADC count.
+  if (strapTempC != null && d.strapTempHistory.length >= 3) {
+    final base = _mean(d.strapTempHistory)!;
+    final sd = _stddev(d.strapTempHistory);
+    if (sd != null && sd >= 0.1) skinTempZ = (strapTempC - base) / sd;
+  }
   if (skinTempAdc != null && d.skinTempAdcHistory.length >= 3) {
     final base = _mean(d.skinTempAdcHistory)!;
     final sd = _stddev(d.skinTempAdcHistory);
@@ -824,7 +881,16 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
     // the stored history is a series of raw nightly means. The settled fraction
     // is the GATE on using it at all: below 0.80 the driver is refused for this
     // night, by name, and readiness renormalises over the three that are left.
-    tempInput(
+    // gen4: the strap's nightly median in 0.1 °C steps (so the composite's
+    // one-count quantum guard is the field's own resolution), gated on its
+    // own settled share. Elsewhere: the device's channel, unchanged.
+    gen4Strap
+        ? tempInput(
+            strapTempC == null ? null : strapTempC * 10,
+            [for (final v in d.strapTempHistory) v * 10],
+            settledFraction: strapNight?.settledFraction,
+          )
+        : tempInput(
       skinTempAdc,
       d.skinTempAdcHistory,
       settledFraction: skinTempSettledFrac,
@@ -1367,10 +1433,20 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
       // this is only ever a deviation from the user's OWN baseline. The two
       // never mix within one day's array — see derive_prepare.dart's
       // _skinTempFor / _skinTempUnit for the read-side gate.
-      'inputs_used': const ['skin_temp_raw', 'skin_temp_c'],
-      'note':
-          'relative deviation (z) vs your baseline; raw sensor units, '
-          'never an absolute °C',
+      'inputs_used': gen4Strap
+          ? const ['strap_temp_c']
+          : const ['skin_temp_raw', 'skin_temp_c'],
+      'note': gen4Strap
+          ? 'strap temperature vs your normal (the band\'s own internal '
+              'sensor, not a skin probe); relative only'
+          : 'relative deviation (z) vs your baseline; raw sensor units, '
+              'never an absolute °C',
+      // v118 — gen4: tonight's strap temperature minus the mean of your
+      // previous nights, in °C, once three exist.
+      if (gen4Strap &&
+          strapTempC != null &&
+          d.strapTempHistory.length >= 3)
+        'delta_c': _round(strapTempC - _mean(d.strapTempHistory)!, 2),
     },
   };
 
@@ -1620,6 +1696,12 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
       skinTempAdc,
       _skinTempAdcCfg,
     ),
+    if (gen4Strap)
+      'strap_temp': baselineBlock(
+        d.strapTempHistory,
+        strapTempC,
+        _strapTempCfg,
+      ),
   };
 
   return <String, dynamic>{
@@ -1738,6 +1820,9 @@ Map<String, dynamic> deriveDayBundle(Map<String, dynamic> inputJson) {
       // still null in the ≤3-day bootstrap), so the series fills and z starts
       // computing from ~day 4. This is the series _attachHistory must feed back.
       'skin_temp_adc': skinTempAdc,
+      // v118 — the strap's nightly temperature (°C, gen4 event 63), the
+      // baseline series for the gen4 temperature z and readiness driver.
+      'strap_temp_c': strapTempC == null ? null : _round(strapTempC, 2),
       // WH-11a — the fraction of the sleep window the temp channel actually
       // covered. Emitted, NOT gated on: no floor is defensible until we have
       // looked at what this reads on real nights.

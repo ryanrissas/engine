@@ -2582,6 +2582,7 @@ class _BaselineHistoryCache {
     'rhr',
     'resp_rate',
     'skin_temp_adc',
+    'strap_temp_c',
     'readiness',
     // The readiness composite z — later days' scores are calibrated against
     // its spread (`calibratedReadinessScore`).
@@ -5248,8 +5249,40 @@ class DerivationEngine {
         ? null
         : await LocalDb.stepCalibrationProfile(
             daySub.deviceFamily!, counterWearing);
+    // v118 — the strap's own temperature over the sleep window (gen4 event
+    // 63; compute/strap_temp.dart), and the charging spans that bear on it
+    // (from an hour before onset: the hour after a charge is excluded too).
+    var strapTs = const <int>[];
+    var strapC = const <double>[];
+    final sleepCharging = <List<int>>[];
+    if (daySub.deviceFamily == 'gen4' &&
+        day.sleepOnsetSec > 0 &&
+        day.sleepOffsetSec > day.sleepOnsetSec) {
+      final ids = <String>{
+        for (final s in day.ownership[InputSignal.hr1Hz] ?? const <OwnedSpan>[])
+          if (s.deviceId != null) s.deviceId!,
+      };
+      if (ids.isEmpty) ids.add(LocalDb.kPrimaryDeviceId);
+      final ts = <int>[];
+      final c = <double>[];
+      for (final id in ids) {
+        final r = await LocalDb.strapTempSamples(
+            day.sleepOnsetSec, day.sleepOffsetSec + 1,
+            deviceId: id);
+        ts.addAll(r.ts);
+        c.addAll(r.c);
+        sleepCharging.addAll(await LocalDb.chargingSpans(
+            day.sleepOnsetSec - 3600, day.sleepOffsetSec,
+            deviceId: id));
+      }
+      strapTs = ts;
+      strapC = c;
+    }
     final input = DayBundleInput(
       date: day.date,
+      strapTempTs: strapTs,
+      strapTempC: strapC,
+      sleepChargingSpans: sleepCharging,
       dayTsSec: daySub.tsSec,
       dayHr: daySub.hr,
       stepSpans: stepSpans,
@@ -5912,6 +5945,7 @@ class DerivationEngine {
         // EVERY day (even during the bootstrap window where skin_temp_z is null)
         // so the baseline fills and z begins computing from ~day 4.
         'skin_temp_adc': sc('skin_temp_adc'),
+        'strap_temp_c': sc('strap_temp_c'),
         'dip_pct': sc('dip_pct'),
         // Headline 0–21 strain (for trend/sparkline); raw TRIMP kept too.
         // Written even when NULL: an abstaining day must overwrite a value a
@@ -6425,6 +6459,8 @@ class DerivationEngine {
     // mismatch that left z permanently null. The raw mean is stored every day so
     // this series fills and z starts computing once ≥3 days exist.
     m['skin_temp_adc_history'] = before('skin_temp_adc');
+    // v118 — the gen4 strap temperature's own baseline (°C nightly medians).
+    m['strap_temp_c_history'] = before('strap_temp_c');
     // TS-03/TS-04 — the observed ceiling this day's ZONES are banded on. A max,
     // not a window (see [maxBefore]), and strictly before today so a day is
     // never banded on a ceiling its own session set.
@@ -6846,6 +6882,7 @@ class DerivationEngine {
       // detector — both standardise internally ("DO NOT PASS A Z-SCORE") and
       // were fed `skin_temp_z`, which standardised it twice.
       'skin_temp_adc': sc('skin_temp_adc'),
+      'strap_temp_c': sc('strap_temp_c'),
       'trimp': sc('trimp'),
       // Headline 0–21 strain, daily steps, nap minutes — feed Sleep/Strain Coach
       // + VO₂max/Fitness Age in the cross-day rollup.
@@ -9547,7 +9584,10 @@ class DerivationEngine {
         tonightSleepOnsetSec: inp.tonightSleepOnsetSec);
     seriesPatch['hrv_day'] = dayHrvCurve(daySub);
     seriesPatch['resp_day'] = dayRespCurve(daySub);
-    seriesPatch['skin_temp_day'] = _daySkinTempCurve(daySub);
+    // v118 — gen4's 1 Hz "skin temp" u16 is not a temperature (see
+    // compute/strap_temp.dart); no curve is drawn from it.
+    seriesPatch['skin_temp_day'] =
+        daySub.deviceFamily == 'gen4' ? const [] : _daySkinTempCurve(daySub);
     bundlePatch['restlessness'] = _restlessness(sleepSub);
     // napSub extends a few hours past this day's calendar end so a nap/
     // secondary-sleep block spanning midnight isn't bisected — but a run that

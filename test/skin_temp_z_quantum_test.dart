@@ -32,7 +32,9 @@ void main() {
         sleepOffsetSec: 0,
         profile: const {},
         skinTempAdcHistory: adcHistory,
-        deviceFamily: 'gen4',
+        // gen5: a real temperature channel. gen4's 1 Hz u16 is not one and is no
+        // longer read (v118, compute/strap_temp.dart).
+        deviceFamily: 'gen5',
       ).toJson(),
     );
   }

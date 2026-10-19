@@ -330,8 +330,12 @@ void main() {
     // How much of "last night" a nightly skin temperature is actually made of.
     test('the temperature mean carries its coverage fraction', () {
       final scalars =
-          (bundleFor(stages: List<String>.filled(7200, 'light'), tempEvery: 10)[
-                  'scalars'] as Map)
+          (bundleFor(
+                  stages: List<String>.filled(7200, 'light'),
+                  tempEvery: 10,
+                  // gen5's channel is a temperature; gen4's 1 Hz u16 is not
+                  // and is no longer read (v118).
+                  deviceFamily: 'gen5')['scalars'] as Map)
               .cast<String, dynamic>();
       expect(scalars['skin_temp_adc'], isNotNull);
       expect(scalars['skin_temp_coverage_frac'] as num, closeTo(0.1, 0.001));

@@ -73,9 +73,18 @@ Map<String, dynamic> buildCrossDayBundle(
   // PASS A Z-SCORE" (analytics temp_health.dart / anomaly.dart). They were fed
   // [tempList] and standardised it twice, so their thresholds did not mean
   // what they say. Everything else here keeps the z.
-  final tempRawList = <double?>[
-    for (final d in days) _numOrNull(d['skin_temp_adc']),
+  //
+  // v118 — on a WHOOP 4.0 the nightly temperature is the strap's own
+  // (`strap_temp_c`, °C, compute/strap_temp.dart); the gen4 `skin_temp_adc`
+  // was never a temperature. Once any night carries it, it is the series, and
+  // the old ADC nights are left out rather than mixed into its baseline in
+  // another unit.
+  final strapRaw = <double?>[
+    for (final d in days) _numOrNull(d['strap_temp_c']),
   ];
+  final tempRawList = strapRaw.any((v) => v != null)
+      ? strapRaw
+      : <double?>[for (final d in days) _numOrNull(d['skin_temp_adc'])];
 
   // A day flagged `unsettled` (today, until it was derived from a complete
   // overnight: the data edge at least an hour past wake) is a truncated
