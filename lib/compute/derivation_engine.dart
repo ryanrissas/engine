@@ -1904,7 +1904,17 @@ import 'vendor_sleep.dart';
 //     inputs needed; Pace of Aging needs 60 days. No vo2max/fitness_age key.
 //   Edge-only, like everything in 118. Muscular load and the throw log are
 //   session-side and move no derived output.
-const int kAlgoVersion = 118;
+// 118 → 119 (sleep stages from a model trained on sleep-lab nights,
+// compute/sleep_stage_model.dart): gradient-boosted trees over 15 per-epoch
+// heart-rate and wrist-motion features, trained on PhysioNet sleep-accel
+// (31 healthy adults, polysomnography-scored; ODC-By, see NOTICE.md), then a
+// Viterbi pass with the trained transitions. Held out: 4-class κ 0.41 pooled /
+// 0.42 median night, sleep/wake 0.51 (the rule stager it replaces: 0.13).
+// Restages every window we stage ourselves; a device's own staging and a
+// rejected night are untouched, and a night it would turn mostly to wake
+// keeps its base labels. TST, WASO, efficiency, deep/REM minutes, cycles,
+// the slow-wave HRV weights and everything downstream move with it.
+const int kAlgoVersion = 119;
 /// The sibling SHAs this version was derived against, asserted against
 /// pubspec.yaml in test/db_serve_version_and_reads_test.dart.
 ///

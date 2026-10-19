@@ -19,6 +19,7 @@ import 'package:openstrap_analytics/onehz.dart' as ana;
 import 'package:openstrap_protocol/openstrap_protocol.dart' as proto;
 
 import '../data/day_label.dart';
+import 'sleep_stage_model.dart' show modelStageNight;
 import 'vendor_sleep.dart';
 
 /// Minimum fraction of a nocturnal search window that must carry a REAL
@@ -1426,6 +1427,41 @@ List<PhysioDay> calendarDays(
             why = 'not_staged';
           }
           vendorIgnored.add('VENDOR_SLEEP_IGNORED:${vn.source}:$why');
+        }
+      }
+
+      // v119 — STAGES from the model trained on sleep-lab nights
+      // (compute/sleep_stage_model.dart) on every window we stage ourselves;
+      // a device's own staging and a rejected night are left alone. The
+      // window, its edges and confidence stay the segmentation's; only the
+      // per-second labels are re-read. A night too thinly observed for the
+      // model, or one it would turn mostly to wake, keeps its base labels.
+      if (s.present &&
+          s.window != null &&
+          s.window!.onsetMs != null &&
+          src != 'vendor_staged' &&
+          src != 'rejected') {
+        final w = s.window!;
+        final a0 = w.onsetIdx.clamp(0, hrSlice.length);
+        final a1 = (w.onsetIdx + s.stages4.length).clamp(a0, hrSlice.length);
+        final re = modelStageNight(
+          hr: hrSlice.sublist(a0, a1),
+          gravity: [
+            for (var i = a0; i < a1 && i < accelSlice.length; i++)
+              accelSlice[i].valid &&
+                      (accelSlice[i].x != 0 ||
+                          accelSlice[i].y != 0 ||
+                          accelSlice[i].z != 0)
+                  ? [accelSlice[i].x, accelSlice[i].y, accelSlice[i].z]
+                  : null,
+          ],
+          baseStages4: s.stages4,
+        );
+        if (re != null) {
+          final r = segmentationFromStages4(w, re, s.confidence,
+              reported: const {'wake', 'light', 'deep', 'rem'},
+              bandOffsetTrimSec: s.bandOffsetTrimSec);
+          if (r.present && (r.tstSec ?? 0) * 2 >= (s.tstSec ?? 0)) s = r;
         }
       }
 
