@@ -26,6 +26,7 @@ import '../data/day_label.dart';
 // pipelines rather than a second one here.
 import 'onehz_pipeline.dart' show needInputNote;
 import 'illness_watch.dart' as iw;
+import 'healthspan.dart' as hs;
 import 'sleep_need_model.dart' as snm;
 
 /// Build the cross-day analytics bundle from a time-ordered (OLDEST FIRST) list
@@ -56,6 +57,7 @@ Map<String, dynamic> buildCrossDayBundle(
   Map<String, dynamic> profile, {
   List<String> cycleStartDates = const [],
   Map<String, List<String>> sessionTypesByDate = const {},
+  Map<String, double> strengthMinByDate = const {},
 }) {
   final days = daysOldestFirst;
   final n = days.length;
@@ -600,6 +602,11 @@ Map<String, dynamic> buildCrossDayBundle(
       'wake': wakeRec.toJson((v) => v.toJson()),
     },
     'strain_coach': strainTgt.toJson((v) => v.toJson()),
+    // v118 — Engine Age / Pace of Aging (compute/healthspan.dart): published
+    // hazard ratios over the habits the band measures, in years. Absent with
+    // a `need_baseline:` note until enough of them have a month behind them.
+    'healthspan': _healthspan(days, profile, strengthMinByDate, sri)
+        .toJson((v) => v.toJson()),
     'percentiles': percentiles,
     'recent': recent,
   };
@@ -1061,6 +1068,38 @@ bool _isNextDay(String a, String b) {
 /// gap of missing calendar days gets one all-invalid grid rather than letting
 /// the nights either side of it pair up. Returns the date of every grid, padding
 /// included, since `SriPair.dayIndex` indexes those grids, not [days].
+ana.Metric<hs.HealthspanResult> _healthspan(
+  List<Map<String, dynamic>> days,
+  Map<String, dynamic> profile,
+  Map<String, double> strengthMinByDate,
+  ana.Metric<ana.SriResult> sriWindow,
+) {
+  final hsDays = <hs.HealthspanDay>[
+    for (final d in days)
+      hs.HealthspanDay(
+        date: (d['date'] as String?) ?? '',
+        rhr: _numOrNull(d['rhr']),
+        tstMin: _numOrNull(d['tst_min']),
+        steps: _numOrNull(d['steps']),
+        mvpaModMin: _numOrNull(d['mvpa_mod_min'])?.round(),
+        mvpaVigMin: _numOrNull(d['mvpa_vig_min'])?.round(),
+        wornMin: _numOrNull(d['worn_min']),
+        strengthMin: strengthMinByDate[d['date']] ?? 0.0,
+      ),
+  ];
+  final last30 = days.length > 30 ? days.sublist(days.length - 30) : days;
+  final (sri30, _) = _crossDaySri(last30);
+  return hs.healthspan(
+    hsDays,
+    ageYears: (profile['age'] as num?)?.round(),
+    sex: (profile['sex'] as String?)?.toLowerCase(),
+    sriWindow: sriWindow.present ? sriWindow.value!.sri : null,
+    sri30: sri30.present ? sri30.value!.sri : null,
+    vo2maxTest: (profile['vo2max_test'] as num?)?.toDouble(),
+    vo2maxTestDate: profile['vo2max_test_date'] as String?,
+  );
+}
+
 (ana.Metric<ana.SriResult>, List<String>) _crossDaySri(
     List<Map<String, dynamic>> days) {
   const epochsPerDay = 1440; // 1-minute epochs over 24 h

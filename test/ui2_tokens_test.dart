@@ -207,6 +207,10 @@ const _notComponents = {
   // phase by phase.
   'EcgEntryCard', 'EcgHomeScreen', 'EcgCaptureScreen', 'EcgDetailScreen',
   'EcgWristSheet',
+  // Healthspan: the screen reads the repository and writes the profile (the
+  // VO2max test sheet needs AppState); the card is its Health-tab door and
+  // pushes that route, like EcgEntryCard.
+  'HealthspanCard', 'HealthspanScreen',
   // onboarding routes
   'BootSplash', 'WelcomeScreen', 'WelcomeView', 'PairingScreen', 'PairingView',
   'ProfileSetupScreen', 'ProfileSetupView',

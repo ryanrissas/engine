@@ -70,6 +70,7 @@ import 'hr_max.dart'
     show kHrFloorBpm, smoothedMaxHr, smoothedMinHr, trainingMaxHr;
 import 'reserve_strain.dart' show reserveStrain;
 import 'daytime_stress.dart';
+import 'healthspan.dart' show isStrengthSessionType, mvpaMinutes;
 import 'movement_floor_policy.dart' as mfp;
 import 'sleep_profile_policy.dart';
 import 'derive_prepare.dart';
@@ -6583,6 +6584,9 @@ class DerivationEngine {
       // TS-11's grouping key. Read here (sqflite is main-isolate only) and
       // handed in as plain strings so the bundle stays pure.
       final sessionTypes = await _sessionTypesByDate(days);
+      // Healthspan's strength input: minutes of saved strength sessions per
+      // local day, read here (sqflite) and handed in as plain numbers.
+      final strengthMin = await _strengthMinutesByDate(days);
       // Encode INSIDE the isolate too — a real ~3.5-4.7s main-isolate hang was
       // caught in production (Crashlytics jank_watchdog, correlated with a
       // heavy derive pass) coming from jsonEncode-ing this bundle back on the
@@ -6607,6 +6611,7 @@ class DerivationEngine {
                   profileMap,
                   cycleStartDates: cycleStarts,
                   sessionTypesByDate: sessionTypes,
+                  strengthMinByDate: strengthMin,
                 )
                 ..['algo_version'] = kAlgoVersion
                 ..['built_for_day'] = builtForDay
@@ -6678,6 +6683,32 @@ class DerivationEngine {
             () => <String>[],
           )
           .add(type);
+    }
+    return out;
+  }
+
+  /// Minutes of FINISHED strength sessions per local start day.
+  static Future<Map<String, double>> _strengthMinutesByDate(
+    List<Map<String, dynamic>> days,
+  ) async {
+    if (days.isEmpty) return const {};
+    final first = days.first['date'];
+    if (first is! String || first.isEmpty) return const {};
+    final fromSec = _localDayLabelToSec(first);
+    final toSec = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final out = <String, double>{};
+    for (final r in await LocalDb.sessionsInRange(fromSec, toSec)) {
+      if (r['status'] == 'live') continue;
+      if (!isStrengthSessionType(r['type']?.toString())) continue;
+      final start = (r['start_ts'] as num?)?.toInt();
+      final end = (r['end_ts'] as num?)?.toInt();
+      final dur = (r['duration_min'] as num?)?.toDouble() ??
+          (start != null && end != null && end > start
+              ? (end - start) / 60.0
+              : null);
+      if (start == null || dur == null || dur <= 0 || dur > 360) continue;
+      final day = dayLabelOf(DateTime.fromMillisecondsSinceEpoch(start * 1000));
+      out[day] = (out[day] ?? 0.0) + dur;
     }
     return out;
   }
@@ -6919,6 +6950,15 @@ class DerivationEngine {
 
     final onsetMs = (winVal?['onset_ms'] as num?)?.toDouble();
     final offsetMs = (winVal?['offset_ms'] as num?)?.toDouble();
+    // Healthspan's activity input: minutes at 40–59 % / ≥ 60 % of heart rate
+    // reserve off this day's per-minute curve, against the day's own resting
+    // rate and the max HR its zones used. Null without either anchor.
+    final rhrDay = (col('rhr') ?? sc('rhr'))?.toDouble();
+    final mvpa = mvpaMinutes(
+      series?['hr_curve'],
+      restingHr: rhrDay,
+      maxHr: (payload['max_hr_used'] as num?)?.toDouble(),
+    );
     final tstSec = (acctVal?['tst_sec'] as num?)?.toDouble();
     final inBedSec = (acctVal?['in_bed_sec'] as num?)?.toDouble();
     final observedSec = (acctVal?['observed_in_bed_sec'] as num?)?.toDouble();
@@ -6965,6 +7005,9 @@ class DerivationEngine {
       // as an accepted input alongside activity. 24 numbers a day, so the
       // artifact stays small.
       'hourly_hr': hourlyHrProfile(series?['hr_curve']),
+      'worn_min': sc('worn_min'),
+      'mvpa_mod_min': mvpa?.moderate,
+      'mvpa_vig_min': mvpa?.vigorous,
     };
   }
 
