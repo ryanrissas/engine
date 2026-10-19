@@ -85,7 +85,7 @@
           "rr_cleaned",
           "beat_times"
         ],
-        "note": "robust nocturnal RMSSD = MEDIAN of 46 consecutive 5-min-window RMSSDs (REM/arousal-robust). PRV not ECG-HRV; RMSSD is quantization-sensitive at 1 Hz."
+        "note": "robust nocturnal RMSSD = MEDIAN of 47 consecutive 5-min-window RMSSDs (REM/arousal-robust). PRV not ECG-HRV; RMSSD is quantization-sensitive at 1 Hz."
       },
       "hrv_freq": {
         "value": {
@@ -225,7 +225,7 @@
         "n_valid": 0,
         "nights_since_update": 0,
         "status": "calibrating",
-        "value": 19.899465615763678,
+        "value": 19.8994655594903,
         "z": null,
         "delta": null,
         "ratio": null,
@@ -299,20 +299,20 @@
       },
       "accounting": {
         "value": {
-          "tst_sec": 14369,
-          "waso_sec": 30,
+          "tst_sec": 14399,
+          "waso_sec": 0,
           "in_bed_sec": 14399,
           "unobserved_sec": 0,
           "observed_in_bed_sec": 14399,
-          "efficiency_pct": 99.791652,
-          "nrem_sec": 14070,
-          "light_sec": 13950,
-          "deep_sec": 120,
-          "rem_sec": 299,
-          "wake_sec": 30,
+          "efficiency_pct": 100.0,
+          "nrem_sec": 14399,
+          "light_sec": 14399,
+          "deep_sec": 0,
+          "rem_sec": 0,
+          "wake_sec": 0,
           "deep_low_confidence": true,
           "awakenings": 0,
-          "longest_sleep_sec": 14190,
+          "longest_sleep_sec": 14399,
           "sol_sec": null
         },
         "confidence": 0.585694,
@@ -325,9 +325,9 @@
       "band_offset_trim_sec": null,
       "stager": {
         "value": {
-          "wake_pct": 0.20834780193068964,
-          "nrem_pct": 97.9191314635674,
-          "rem_pct": 2.080868536432598,
+          "wake_pct": 0.0,
+          "nrem_pct": 100.0,
+          "rem_pct": 0.0,
           "epoch_sec": 1,
           "epochs": 14399
         },
@@ -3861,33 +3861,8 @@
       "hypnogram": [
         {
           "start": 1577923200,
-          "end": 1577923380,
-          "stage": "rem"
-        },
-        {
-          "start": 1577923380,
-          "end": 1577923440,
-          "stage": "deep"
-        },
-        {
-          "start": 1577923440,
-          "end": 1577937390,
-          "stage": "light"
-        },
-        {
-          "start": 1577937390,
-          "end": 1577937420,
-          "stage": "wake"
-        },
-        {
-          "start": 1577937420,
-          "end": 1577937480,
-          "stage": "deep"
-        },
-        {
-          "start": 1577937480,
           "end": 1577937599,
-          "stage": "rem"
+          "stage": "light"
         }
       ]
     },
@@ -3924,13 +3899,13 @@
     "scalars": {
       "rhr": 62.998333333333335,
       "rhr_nocturnal": 62.998333333333335,
-      "rmssd": 19.899465615763678,
+      "rmssd": 19.8994655594903,
       "rmssd_whole": 19.99843722189908,
       "readiness": null,
       "readiness_z": null,
       "strain": null,
       "max_hr_used": null,
-      "ln_rmssd": 2.9906928778906736,
+      "ln_rmssd": 2.9906928750627895,
       "resp_rate": 12.265550239234448,
       "skin_temp_z": null,
       "skin_temp_adc": null,
@@ -3951,20 +3926,20 @@
       "sleeping_hr_nadir": 60.0,
       "sleeping_hr_nadir_ts": 1577923200.0,
       "waking_hr": 62.999444290080575,
-      "rem_min": 5.0,
-      "deep_min": 2.0,
-      "light_min": 233.0,
-      "tst_min": 239.0,
+      "rem_min": 0.0,
+      "deep_min": 0.0,
+      "light_min": 240.0,
+      "tst_min": 240.0,
       "lf_hf": 0.003,
       "hrv_cv": 1.4,
       "irregular_rhythm_flag": 0.0,
       "brv_cv": 0.0,
       "brv_slope": 0.0,
-      "efficiency": 99.8,
+      "efficiency": 100.0,
       "worn_min": 360.0,
       "unobserved_min": 0.0,
       "awakenings": 0.0,
-      "longest_sleep_min": 237.0,
+      "longest_sleep_min": 240.0,
       "sol_min": null,
       "midsleep_sec": -7200.0,
       "sleep_onset_sec": -14400.0

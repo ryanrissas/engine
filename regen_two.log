@@ -1,0 +1,7 @@
+
+✅ fixture covers all six documented regions
+✅ case 1: single-device is byte-identical against the golden deriveDayBundle over gen4-only rows matches the committed golden
+✅ case 2: two devices at one collision rec_ts both devices land at the same rec_ts and read back as distinct rows
+✅ case 3: the skin-temp unit gate over both devices gen4 raw ADC counts and oura centi-C never mix in one skinTemp[]
+
+🎉 4 tests passed.
