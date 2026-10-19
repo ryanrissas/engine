@@ -592,6 +592,10 @@ class LocalRepositoryImpl extends LocalRepository {
           sleepBundle,
           _scalar(sleepBundle, 'readiness'),
         ),
+      // v118 — the daytime stress monitor (0–3) is TODAY's, so it comes off
+      // today's own bundle, never the held-over night.
+      if (activityBundle != null && activityBundle['daytime_stress'] is Map)
+        'daytime_stress': activityBundle['daytime_stress'],
       if (sleepBundle != null && sleepBundle['spo2'] is Map)
         'spo2': sleepBundle['spo2'],
       if (activityBundle != null && activityBundle['activity'] is Map)
@@ -1594,6 +1598,8 @@ class LocalRepositoryImpl extends LocalRepository {
       // both computed in the engine from accel / day-RR.
       'restlessness': b['restlessness'],
       'daytime_hrv': b['daytime_hrv'],
+      // v118 — the waking-day 0–3 stress monitor (compute/daytime_stress.dart).
+      'daytime_stress': b['daytime_stress'],
     };
   }
 

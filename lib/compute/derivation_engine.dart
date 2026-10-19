@@ -69,6 +69,7 @@ import 'inputs/ultrahuman_inputs.dart' show ultrahumanDayBlock;
 import 'hr_max.dart'
     show kHrFloorBpm, smoothedMaxHr, smoothedMinHr, trainingMaxHr;
 import 'reserve_strain.dart' show reserveStrain;
+import 'daytime_stress.dart';
 import 'movement_floor_policy.dart' as mfp;
 import 'sleep_profile_policy.dart';
 import 'derive_prepare.dart';
@@ -2626,6 +2627,16 @@ class _BaselineHistoryCache {
     // against the median of the PRIOR days' values — a trait, never the day
     // under test. Unitless, so no family-seam mask applies.
     'quiet_hrr',
+    // v118 daytime-stress reference summaries (compute/daytime_stress.dart):
+    // each day's own still-minute medians/spreads; later days are priced on
+    // the median of the PRIOR 14.
+    'stress_ref_h',
+    'stress_ref_h_mad',
+    'stress_ref_x',
+    'stress_ref_x_mad',
+    'stress_s_p05',
+    'stress_s_p99',
+    'stress_ref_n',
   ];
 
   /// DATED baseline samples, ascending by date, one entry per day (metric_series
@@ -5709,6 +5720,19 @@ class DerivationEngine {
         dataNowSec: dataNowSec,
         tonightSleepOnsetSec: day.tonightSleepOnsetSec,
         tonightSleepOffsetSec: day.tonightSleepOffsetSec,
+        stressRhr: stressRestingHr(
+          history.valuesBefore('rhr', day.date),
+          (scMap?['rhr_nocturnal'] as num?)?.toDouble(),
+        ),
+        stressHistory: StressHistory(
+          hMed: history.valuesBefore('stress_ref_h', day.date),
+          hMad: history.valuesBefore('stress_ref_h_mad', day.date),
+          xMed: history.valuesBefore('stress_ref_x', day.date),
+          xMad: history.valuesBefore('stress_ref_x_mad', day.date),
+          sP05: history.valuesBefore('stress_s_p05', day.date),
+          sP99: history.valuesBefore('stress_s_p99', day.date),
+          nStill: history.valuesBefore('stress_ref_n', day.date),
+        ),
       );
       await debugSecondHalfHook?.call(day.date);
       final blocks =
@@ -5983,6 +6007,16 @@ class DerivationEngine {
         // per-day load a CTL/ATL training-load read takes, where gross `trimp`
         // would count being awake as training.
         'trimp_net': sc('trimp_net'),
+        // v118 daytime stress: the day's 0–3 score, and the per-day reference
+        // summary LATER days' scores are priced against (never this day's).
+        'stress_day': sc('stress_day'),
+        'stress_ref_h': sc('stress_ref_h'),
+        'stress_ref_h_mad': sc('stress_ref_h_mad'),
+        'stress_ref_x': sc('stress_ref_x'),
+        'stress_ref_x_mad': sc('stress_ref_x_mad'),
+        'stress_s_p05': sc('stress_s_p05'),
+        'stress_s_p99': sc('stress_s_p99'),
+        'stress_ref_n': sc('stress_ref_n'),
         // `strain_effort`, `spo2` and `odi_per_hour` used to be listed here.
         // Nothing in the tree ever produced them (12 rows, 0 values per key on
         // a real install), so they were three permanently-null series with a
@@ -9671,6 +9705,61 @@ class DerivationEngine {
     bundlePatch['workout_suggestions'] = wc.boutJson;
     if (wc.hrrBpm != null) scMap['hrr_bpm'] = wc.hrrBpm;
     if (wc.hrrTauS != null) scMap['hrr_tau_s'] = wc.hrrTauS;
+    // v118 — DAYTIME STRESS MONITOR (compute/daytime_stress.dart): still
+    // waking minutes, sleep/naps/workouts and their recovery tails excluded,
+    // scored 0–3 against the PRIOR 14 days of this wearer.
+    final stressExclude = <(int, int)>[
+      if (offset > onset) (onset, offset),
+      if (inp.tonightSleepOnsetSec > 0)
+        (
+          inp.tonightSleepOnsetSec,
+          inp.tonightSleepOffsetSec > inp.tonightSleepOnsetSec
+              ? inp.tonightSleepOffsetSec
+              : inp.dayEndSec + 86400,
+        ),
+      for (final p in napPeriods ?? const <Map<String, dynamic>>[])
+        if (p['onset_ts'] is num && p['wake_ts'] is num)
+          ((p['onset_ts'] as num).toInt(), (p['wake_ts'] as num).toInt()),
+    ];
+    final stressExercise = <(int, int)>[
+      for (final r in inp.savedSessions)
+        if (r['start_ts'] is num)
+          (
+            (r['start_ts'] as num).toInt(),
+            r['end_ts'] is num ? (r['end_ts'] as num).toInt() : inp.dataNowSec,
+          ),
+      for (final b in wc.boutJson)
+        if (b['start'] is num && b['end'] is num)
+          ((b['start'] as num).toInt(), (b['end'] as num).toInt()),
+    ];
+    final stressRes = daytimeStress(
+      tsSec: daySub.tsSec,
+      hr: daySub.hr,
+      ax: daySub.ax,
+      ay: daySub.ay,
+      az: daySub.az,
+      rrMs: daySub.rrMs,
+      rrTsMs: daySub.rrTsMs,
+      excludeSpans: stressExclude,
+      exerciseSpans: stressExercise,
+      restingHr: inp.stressRhr,
+      maxHr: inp.trainingMaxHrBpm ?? inp.maxHrUsed?.toDouble(),
+      quietCutG: ana.calibrationFor(_quietEnmoCutG, daySub.deviceFamily),
+      history: inp.stressHistory,
+    );
+    bundlePatch['daytime_stress'] = stressRes.block;
+    // Written even when null, so a re-derive that now abstains erases what a
+    // previous one left (same rule as strain).
+    scMap['stress_day'] = stressRes.dayScore;
+    final sum = stressRes.summary;
+    scMap['stress_ref_h'] = sum.hMed;
+    scMap['stress_ref_h_mad'] = sum.hMad;
+    scMap['stress_ref_x'] = sum.xMed;
+    scMap['stress_ref_x_mad'] = sum.xMad;
+    scMap['stress_s_p05'] = sum.sP05;
+    scMap['stress_s_p99'] = sum.sP99;
+    scMap['stress_ref_n'] = sum.nStill == 0 ? null : sum.nStill.toDouble();
+
     final ceiling = _dayHrCeiling(daySub, inp.savedSessions);
     bundlePatch['hr_ceiling'] = ceiling;
     // TS-03 — the day's observed ceiling as a SCALAR too, so the app-wide
@@ -10435,6 +10524,13 @@ class _DayBlocksInput {
   /// See `PreparedDerivationDay.tonightSleepOnsetSec`. 0 = none.
   final int tonightSleepOnsetSec;
   final int tonightSleepOffsetSec;
+
+  /// The 14-night sleeping resting HR the daytime stress monitor is priced
+  /// against (median of the trailing nights' `rhr`, last night included).
+  final double? stressRhr;
+
+  /// Prior days' daytime-stress reference summaries (strictly before [date]).
+  final StressHistory stressHistory;
   const _DayBlocksInput({
     required this.daySub,
     required this.napSub,
@@ -10467,6 +10563,8 @@ class _DayBlocksInput {
     required this.dataNowSec,
     this.tonightSleepOnsetSec = 0,
     this.tonightSleepOffsetSec = 0,
+    this.stressRhr,
+    this.stressHistory = const StressHistory(),
   });
 }
 
