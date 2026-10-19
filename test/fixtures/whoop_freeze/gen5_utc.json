@@ -2,7 +2,7 @@
  "day_result": [
   {
    "day_id": "2026-07-13",
-   "algo_version": 118,
+   "algo_version": 119,
    "payload_json": {
     "date": "2026-07-13",
     "day_confidence": 0.6,
@@ -65,7 +65,7 @@
       "note": "Breathing-rate variability TREND (within-user only); surface a change only beyond the metric MDC"
      },
      "rmssd_sleep_session": {
-      "value": 34.1,
+      "value": 33.9,
       "confidence": 0.5453,
       "tier": "HIGH",
       "inputs_used": [
@@ -82,14 +82,14 @@
       "consecutive_rmssd_ms": 31.7
      },
      "rmssd_nocturnal": {
-      "value": 32.16077953226363,
-      "confidence": 0.53611,
+      "value": 33.781494911966846,
+      "confidence": 0.521464,
       "tier": "HIGH",
       "inputs_used": [
        "rr_cleaned",
        "beat_times"
       ],
-      "note": "robust nocturnal RMSSD = MEDIAN of 72 consecutive 5-min-window RMSSDs (REM/arousal-robust). PRV not ECG-HRV; RMSSD is quantization-sensitive at 1 Hz."
+      "note": "robust nocturnal RMSSD = MEDIAN of 48 consecutive 5-min-window RMSSDs (REM/arousal-robust). PRV not ECG-HRV; RMSSD is quantization-sensitive at 1 Hz."
      },
      "hrv_freq": {
       "value": {
@@ -171,11 +171,11 @@
      },
      "readiness_lnrmssd": {
       "value": {
-       "ln_rmssd_today": 3.527951,
+       "ln_rmssd_today": 3.522997,
        "rolling7_mean": 3.51852,
        "rolling7_median": 3.526361,
        "cv_pct": 1.688921,
-       "z": 0.023779,
+       "z": -0.050286,
        "swc": 0.033448,
        "band": "normal",
        "saturation_flag": false
@@ -189,8 +189,8 @@
      },
      "readiness_composite": {
       "value": {
-       "score": 80.198022,
-       "composite_z": 1.398717,
+       "score": 79.736621,
+       "composite_z": 1.369914,
        "calibration": {
         "status": "calibrating",
         "nights": 0
@@ -216,8 +216,8 @@
        },
        {
         "label": "HRV",
-        "contribution": 0.009247,
-        "detail": "oriented robust-z (median+MAD)=0.023779"
+        "contribution": -0.019556,
+        "detail": "oriented robust-z (median+MAD)=-0.050286"
        }
       ],
       "note": "GLASS-BOX readiness: disclosed weights autonomic (HRV+RHR, mean of their z) 0.70 > RR 0.20 > temp 0.10, renormalized over present inputs. Drivers are definitional within the formula (correction, not inferred cause). calibrating:have=0,need=14. Refused: temp: no settled fraction measured for this night — an ungated nightly mean cannot tell skin from a warming strap."
@@ -266,13 +266,13 @@
       "n_valid": 14,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 34.05412764733815,
-      "z": -0.086,
-      "delta": -0.539,
-      "ratio": -0.0156,
+      "value": 33.88581816272392,
+      "z": -0.113,
+      "delta": -0.708,
+      "ratio": -0.0205,
       "in_normal_range": true,
       "mdc": 17.366,
-      "mdc_multiples": -0.03
+      "mdc_multiples": -0.04
      },
      "resp": {
       "baseline": 13.639560498784569,
@@ -322,20 +322,20 @@
      },
      "accounting": {
       "value": {
-       "tst_sec": 24805,
-       "waso_sec": 2232,
+       "tst_sec": 24150,
+       "waso_sec": 1290,
        "in_bed_sec": 27037,
        "unobserved_sec": 0,
        "observed_in_bed_sec": 27037,
-       "efficiency_pct": 91.744646,
-       "nrem_sec": 21385,
-       "light_sec": 19945,
-       "deep_sec": 1440,
-       "rem_sec": 3420,
-       "wake_sec": 2232,
+       "efficiency_pct": 89.32204,
+       "nrem_sec": 14730,
+       "light_sec": 13140,
+       "deep_sec": 1590,
+       "rem_sec": 9420,
+       "wake_sec": 2887,
        "deep_low_confidence": true,
-       "awakenings": 3,
-       "longest_sleep_sec": 9898,
+       "awakenings": 2,
+       "longest_sleep_sec": 9870,
        "sol_sec": null
       },
       "confidence": 0.6,
@@ -348,9 +348,9 @@
      "band_offset_trim_sec": null,
      "stager": {
       "value": {
-       "wake_pct": 8.255353774457225,
-       "nrem_pct": 86.21245716589398,
-       "rem_pct": 13.787542834106027,
+       "wake_pct": 10.677959832821688,
+       "nrem_pct": 60.993788819875775,
+       "rem_pct": 39.006211180124225,
        "epoch_sec": 1,
        "epochs": 27037
       },
@@ -4273,7 +4273,7 @@
      "si": 159.44,
      "level": "elevated",
      "lf_hf": 0.151,
-     "rmssd": 34.1,
+     "rmssd": 33.9,
      "confidence": 0.7,
      "tier": "ESTIMATE",
      "inputs_used": [
@@ -20110,168 +20110,113 @@
      "hypnogram": [
       {
        "start": 1783898092,
-       "end": 1783898872,
-       "stage": "light"
-      },
-      {
-       "start": 1783898872,
-       "end": 1783899592,
-       "stage": "rem"
-      },
-      {
-       "start": 1783899592,
-       "end": 1783901422,
-       "stage": "light"
-      },
-      {
-       "start": 1783901422,
-       "end": 1783901842,
-       "stage": "rem"
-      },
-      {
-       "start": 1783901842,
-       "end": 1783902292,
-       "stage": "light"
-      },
-      {
-       "start": 1783902292,
-       "end": 1783902892,
+       "end": 1783899322,
        "stage": "wake"
       },
       {
-       "start": 1783902892,
-       "end": 1783904032,
+       "start": 1783899322,
+       "end": 1783901362,
        "stage": "light"
       },
       {
-       "start": 1783904032,
-       "end": 1783904332,
-       "stage": "rem"
-      },
-      {
-       "start": 1783904332,
-       "end": 1783906642,
-       "stage": "light"
-      },
-      {
-       "start": 1783906642,
-       "end": 1783906942,
-       "stage": "rem"
-      },
-      {
-       "start": 1783906942,
-       "end": 1783907902,
-       "stage": "light"
-      },
-      {
-       "start": 1783907902,
-       "end": 1783908472,
-       "stage": "rem"
-      },
-      {
-       "start": 1783908472,
-       "end": 1783908742,
-       "stage": "wake"
-      },
-      {
-       "start": 1783908742,
-       "end": 1783911742,
-       "stage": "light"
-      },
-      {
-       "start": 1783911742,
-       "end": 1783911982,
+       "start": 1783901362,
+       "end": 1783902112,
        "stage": "deep"
       },
       {
-       "start": 1783911982,
-       "end": 1783912612,
+       "start": 1783902112,
+       "end": 1783902322,
        "stage": "light"
       },
       {
-       "start": 1783912612,
+       "start": 1783902322,
+       "end": 1783902862,
+       "stage": "rem"
+      },
+      {
+       "start": 1783902862,
+       "end": 1783903252,
+       "stage": "light"
+      },
+      {
+       "start": 1783903252,
+       "end": 1783904092,
+       "stage": "deep"
+      },
+      {
+       "start": 1783904092,
+       "end": 1783906822,
+       "stage": "light"
+      },
+      {
+       "start": 1783906822,
+       "end": 1783907992,
+       "stage": "rem"
+      },
+      {
+       "start": 1783907992,
+       "end": 1783908322,
+       "stage": "light"
+      },
+      {
+       "start": 1783908322,
+       "end": 1783908892,
+       "stage": "wake"
+      },
+      {
+       "start": 1783908892,
        "end": 1783912792,
-       "stage": "deep"
+       "stage": "light"
       },
       {
        "start": 1783912792,
-       "end": 1783914622,
-       "stage": "light"
-      },
-      {
-       "start": 1783914622,
-       "end": 1783915252,
+       "end": 1783913092,
        "stage": "rem"
       },
       {
-       "start": 1783915252,
-       "end": 1783916482,
+       "start": 1783913092,
+       "end": 1783914592,
        "stage": "light"
       },
       {
-       "start": 1783916482,
-       "end": 1783916752,
-       "stage": "deep"
-      },
-      {
-       "start": 1783916752,
-       "end": 1783918640,
-       "stage": "light"
-      },
-      {
-       "start": 1783918640,
-       "end": 1783919582,
-       "stage": "wake"
-      },
-      {
-       "start": 1783919582,
-       "end": 1783920122,
-       "stage": "light"
-      },
-      {
-       "start": 1783920122,
-       "end": 1783920602,
+       "start": 1783914592,
+       "end": 1783915192,
        "stage": "rem"
       },
       {
-       "start": 1783920602,
-       "end": 1783921022,
+       "start": 1783915192,
+       "end": 1783915942,
+       "stage": "light"
+      },
+      {
+       "start": 1783915942,
+       "end": 1783918762,
+       "stage": "rem"
+      },
+      {
+       "start": 1783918762,
+       "end": 1783919482,
        "stage": "wake"
       },
       {
-       "start": 1783921022,
-       "end": 1783921112,
+       "start": 1783919482,
+       "end": 1783923292,
+       "stage": "rem"
+      },
+      {
+       "start": 1783923292,
+       "end": 1783924582,
        "stage": "light"
       },
       {
-       "start": 1783921112,
-       "end": 1783921292,
-       "stage": "deep"
+       "start": 1783924582,
+       "end": 1783924762,
+       "stage": "rem"
       },
       {
-       "start": 1783921292,
-       "end": 1783921442,
-       "stage": "light"
-      },
-      {
-       "start": 1783921442,
-       "end": 1783921712,
-       "stage": "deep"
-      },
-      {
-       "start": 1783921712,
-       "end": 1783922072,
-       "stage": "light"
-      },
-      {
-       "start": 1783922072,
-       "end": 1783922372,
-       "stage": "deep"
-      },
-      {
-       "start": 1783922372,
+       "start": 1783924762,
        "end": 1783925129,
-       "stage": "light"
+       "stage": "wake"
       }
      ],
      "hrv_day": [
@@ -27170,13 +27115,13 @@
     "scalars": {
      "rhr": 48.08833333333333,
      "rhr_nocturnal": 48.08833333333333,
-     "rmssd": 34.05412764733815,
+     "rmssd": 33.88581816272392,
      "rmssd_whole": 32.12768524038331,
-     "readiness": 80.19802151862692,
-     "readiness_z": 1.3987169892142113,
+     "readiness": 79.7366205310914,
+     "readiness_z": 1.369913670064358,
      "strain": 11.84049664218217,
      "max_hr_used": 186.113,
-     "ln_rmssd": 3.5279512483715925,
+     "ln_rmssd": 3.5229965835739607,
      "resp_rate": 13.522223733314192,
      "skin_temp_z": 3.8092033860986256,
      "skin_temp_adc": 30406.000406834824,
@@ -27197,19 +27142,19 @@
      "sleeping_hr_nadir": 47.0,
      "sleeping_hr_nadir_ts": 1783900189.0,
      "waking_hr": 73.60755598517802,
-     "rem_min": 57.0,
-     "deep_min": 24.0,
-     "light_min": 332.0,
-     "tst_min": 413.0,
+     "rem_min": 157.0,
+     "deep_min": 27.0,
+     "light_min": 219.0,
+     "tst_min": 403.0,
      "lf_hf": 0.151,
      "hrv_cv": 6.9,
      "irregular_rhythm_flag": 0.0,
      "brv_cv": 0.0008,
      "brv_slope": 0.0004,
-     "efficiency": 91.7,
+     "efficiency": 89.3,
      "worn_min": 1440.0,
      "unobserved_min": 0.0,
-     "awakenings": 3.0,
+     "awakenings": 2.0,
      "longest_sleep_min": 165.0,
      "sol_min": null,
      "midsleep_sec": -3589.0,
@@ -28815,12 +28760,12 @@
        "is_main": true,
        "onset_ts": 1783898092,
        "wake_ts": 1783925130,
-       "duration_min": 413,
+       "duration_min": 403,
        "in_bed_min": 450,
-       "efficiency": 0.917
+       "efficiency": 0.893
       }
      ],
-     "total_asleep_min": 413
+     "total_asleep_min": 403
     },
     "sleep_charging": {
      "present": false
@@ -29255,15 +29200,15 @@
    },
    "finalized": 0,
    "rhr": 48.08833333333333,
-   "rmssd": 34.05412764733815,
-   "readiness": 80.19802151862692,
+   "rmssd": 33.88581816272392,
+   "readiness": 79.7366205310914,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "c992a96fc1baddf099a064e8a1e14b3dcdd365cb2ebe61a81b27be53d60ee61d"
+   "payload_sha256": "d88eee0dad6665d6e4719792982a687a5ade117bc2380b2ce20800bc75eea777"
   },
   {
    "day_id": "2026-07-14",
-   "algo_version": 118,
+   "algo_version": 119,
    "payload_json": {
     "date": "2026-07-14",
     "day_confidence": 0.6,
@@ -29326,7 +29271,7 @@
       "note": "Breathing-rate variability TREND (within-user only); surface a change only beyond the metric MDC"
      },
      "rmssd_sleep_session": {
-      "value": 34.1,
+      "value": 33.9,
       "confidence": 0.5453,
       "tier": "HIGH",
       "inputs_used": [
@@ -29343,14 +29288,14 @@
       "consecutive_rmssd_ms": 31.7
      },
      "rmssd_nocturnal": {
-      "value": 32.16077953226363,
-      "confidence": 0.53611,
+      "value": 33.781494911966846,
+      "confidence": 0.521464,
       "tier": "HIGH",
       "inputs_used": [
        "rr_cleaned",
        "beat_times"
       ],
-      "note": "robust nocturnal RMSSD = MEDIAN of 72 consecutive 5-min-window RMSSDs (REM/arousal-robust). PRV not ECG-HRV; RMSSD is quantization-sensitive at 1 Hz."
+      "note": "robust nocturnal RMSSD = MEDIAN of 48 consecutive 5-min-window RMSSDs (REM/arousal-robust). PRV not ECG-HRV; RMSSD is quantization-sensitive at 1 Hz."
      },
      "hrv_freq": {
       "value": {
@@ -29432,12 +29377,12 @@
      },
      "readiness_lnrmssd": {
       "value": {
-       "ln_rmssd_today": 3.527951,
-       "rolling7_mean": 3.518747,
-       "rolling7_median": 3.526361,
-       "cv_pct": 1.689892,
-       "z": 0.023779,
-       "swc": 0.033448,
+       "ln_rmssd_today": 3.522997,
+       "rolling7_mean": 3.518039,
+       "rolling7_median": 3.522997,
+       "cv_pct": 1.687435,
+       "z": 0.0,
+       "swc": 0.030954,
        "band": "normal",
        "saturation_flag": false
       },
@@ -29450,8 +29395,8 @@
      },
      "readiness_composite": {
       "value": {
-       "score": 80.198022,
-       "composite_z": 1.398717,
+       "score": 79.736621,
+       "composite_z": 1.369914,
        "calibration": {
         "status": "calibrating",
         "nights": 1
@@ -29477,8 +29422,8 @@
        },
        {
         "label": "HRV",
-        "contribution": 0.009247,
-        "detail": "oriented robust-z (median+MAD)=0.023779"
+        "contribution": -0.019556,
+        "detail": "oriented robust-z (median+MAD)=-0.050286"
        }
       ],
       "note": "GLASS-BOX readiness: disclosed weights autonomic (HRV+RHR, mean of their z) 0.70 > RR 0.20 > temp 0.10, renormalized over present inputs. Drivers are definitional within the formula (correction, not inferred cause). calibrating:have=1,need=14. Refused: temp: no settled fraction measured for this night — an ungated nightly mean cannot tell skin from a warming strap."
@@ -29522,18 +29467,18 @@
       "mdc_multiples": -0.36
      },
      "hrv": {
-      "baseline": 34.56735765188194,
+      "baseline": 34.55922748798079,
       "spread": 5.0,
       "n_valid": 15,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 34.05412764733815,
-      "z": -0.082,
-      "delta": -0.513,
-      "ratio": -0.0148,
+      "value": 33.88581816272392,
+      "z": -0.107,
+      "delta": -0.673,
+      "ratio": -0.0195,
       "in_normal_range": true,
       "mdc": 17.366,
-      "mdc_multiples": -0.03
+      "mdc_multiples": -0.04
      },
      "resp": {
       "baseline": 13.633892564282293,
@@ -29583,20 +29528,20 @@
      },
      "accounting": {
       "value": {
-       "tst_sec": 24805,
-       "waso_sec": 2232,
+       "tst_sec": 24150,
+       "waso_sec": 1290,
        "in_bed_sec": 27037,
        "unobserved_sec": 0,
        "observed_in_bed_sec": 27037,
-       "efficiency_pct": 91.744646,
-       "nrem_sec": 21385,
-       "light_sec": 19855,
-       "deep_sec": 1530,
-       "rem_sec": 3420,
-       "wake_sec": 2232,
+       "efficiency_pct": 89.32204,
+       "nrem_sec": 14730,
+       "light_sec": 13140,
+       "deep_sec": 1590,
+       "rem_sec": 9420,
+       "wake_sec": 2887,
        "deep_low_confidence": true,
-       "awakenings": 3,
-       "longest_sleep_sec": 9898,
+       "awakenings": 2,
+       "longest_sleep_sec": 9870,
        "sol_sec": null
       },
       "confidence": 0.6,
@@ -29609,9 +29554,9 @@
      "band_offset_trim_sec": null,
      "stager": {
       "value": {
-       "wake_pct": 8.255353774457225,
-       "nrem_pct": 86.21245716589398,
-       "rem_pct": 13.787542834106027,
+       "wake_pct": 10.677959832821688,
+       "nrem_pct": 60.993788819875775,
+       "rem_pct": 39.006211180124225,
        "epoch_sec": 1,
        "epochs": 27037
       },
@@ -33534,7 +33479,7 @@
      "si": 159.44,
      "level": "elevated",
      "lf_hf": 0.151,
-     "rmssd": 34.1,
+     "rmssd": 33.9,
      "confidence": 0.7,
      "tier": "ESTIMATE",
      "inputs_used": [
@@ -49011,168 +48956,113 @@
      "hypnogram": [
       {
        "start": 1783984492,
-       "end": 1783985272,
-       "stage": "light"
-      },
-      {
-       "start": 1783985272,
-       "end": 1783985992,
-       "stage": "rem"
-      },
-      {
-       "start": 1783985992,
-       "end": 1783987822,
-       "stage": "light"
-      },
-      {
-       "start": 1783987822,
-       "end": 1783988242,
-       "stage": "rem"
-      },
-      {
-       "start": 1783988242,
-       "end": 1783988692,
-       "stage": "light"
-      },
-      {
-       "start": 1783988692,
-       "end": 1783989292,
+       "end": 1783985722,
        "stage": "wake"
       },
       {
-       "start": 1783989292,
-       "end": 1783990432,
+       "start": 1783985722,
+       "end": 1783987762,
        "stage": "light"
       },
       {
-       "start": 1783990432,
-       "end": 1783990732,
-       "stage": "rem"
-      },
-      {
-       "start": 1783990732,
-       "end": 1783993042,
-       "stage": "light"
-      },
-      {
-       "start": 1783993042,
-       "end": 1783993342,
-       "stage": "rem"
-      },
-      {
-       "start": 1783993342,
-       "end": 1783994302,
-       "stage": "light"
-      },
-      {
-       "start": 1783994302,
-       "end": 1783994872,
-       "stage": "rem"
-      },
-      {
-       "start": 1783994872,
-       "end": 1783995142,
-       "stage": "wake"
-      },
-      {
-       "start": 1783995142,
-       "end": 1783998142,
-       "stage": "light"
-      },
-      {
-       "start": 1783998142,
-       "end": 1783998382,
+       "start": 1783987762,
+       "end": 1783988512,
        "stage": "deep"
       },
       {
-       "start": 1783998382,
-       "end": 1783999012,
+       "start": 1783988512,
+       "end": 1783988722,
        "stage": "light"
       },
       {
-       "start": 1783999012,
+       "start": 1783988722,
+       "end": 1783989262,
+       "stage": "rem"
+      },
+      {
+       "start": 1783989262,
+       "end": 1783989652,
+       "stage": "light"
+      },
+      {
+       "start": 1783989652,
+       "end": 1783990492,
+       "stage": "deep"
+      },
+      {
+       "start": 1783990492,
+       "end": 1783993222,
+       "stage": "light"
+      },
+      {
+       "start": 1783993222,
+       "end": 1783994392,
+       "stage": "rem"
+      },
+      {
+       "start": 1783994392,
+       "end": 1783994722,
+       "stage": "light"
+      },
+      {
+       "start": 1783994722,
+       "end": 1783995292,
+       "stage": "wake"
+      },
+      {
+       "start": 1783995292,
        "end": 1783999192,
-       "stage": "deep"
+       "stage": "light"
       },
       {
        "start": 1783999192,
-       "end": 1784001022,
-       "stage": "light"
-      },
-      {
-       "start": 1784001022,
-       "end": 1784001652,
+       "end": 1783999492,
        "stage": "rem"
       },
       {
-       "start": 1784001652,
-       "end": 1784002882,
+       "start": 1783999492,
+       "end": 1784000992,
        "stage": "light"
       },
       {
-       "start": 1784002882,
-       "end": 1784003152,
-       "stage": "deep"
-      },
-      {
-       "start": 1784003152,
-       "end": 1784005040,
-       "stage": "light"
-      },
-      {
-       "start": 1784005040,
-       "end": 1784005982,
-       "stage": "wake"
-      },
-      {
-       "start": 1784005982,
-       "end": 1784006522,
-       "stage": "light"
-      },
-      {
-       "start": 1784006522,
-       "end": 1784007002,
+       "start": 1784000992,
+       "end": 1784001592,
        "stage": "rem"
       },
       {
-       "start": 1784007002,
-       "end": 1784007422,
+       "start": 1784001592,
+       "end": 1784002342,
+       "stage": "light"
+      },
+      {
+       "start": 1784002342,
+       "end": 1784005162,
+       "stage": "rem"
+      },
+      {
+       "start": 1784005162,
+       "end": 1784005882,
        "stage": "wake"
       },
       {
-       "start": 1784007422,
-       "end": 1784007512,
+       "start": 1784005882,
+       "end": 1784009692,
+       "stage": "rem"
+      },
+      {
+       "start": 1784009692,
+       "end": 1784010982,
        "stage": "light"
       },
       {
-       "start": 1784007512,
-       "end": 1784007692,
-       "stage": "deep"
+       "start": 1784010982,
+       "end": 1784011162,
+       "stage": "rem"
       },
       {
-       "start": 1784007692,
-       "end": 1784007842,
-       "stage": "light"
-      },
-      {
-       "start": 1784007842,
-       "end": 1784008202,
-       "stage": "deep"
-      },
-      {
-       "start": 1784008202,
-       "end": 1784008472,
-       "stage": "light"
-      },
-      {
-       "start": 1784008472,
-       "end": 1784008772,
-       "stage": "deep"
-      },
-      {
-       "start": 1784008772,
+       "start": 1784011162,
        "end": 1784011529,
-       "stage": "light"
+       "stage": "wake"
       }
      ],
      "hrv_day": [
@@ -56071,13 +55961,13 @@
     "scalars": {
      "rhr": 48.08833333333333,
      "rhr_nocturnal": 48.08833333333333,
-     "rmssd": 34.05412764733815,
+     "rmssd": 33.88581816272392,
      "rmssd_whole": 32.12768524038331,
-     "readiness": 80.19802151862692,
-     "readiness_z": 1.3987169892142113,
+     "readiness": 79.7366205310914,
+     "readiness_z": 1.369913670064358,
      "strain": 11.8362061213452,
      "max_hr_used": 186.113,
-     "ln_rmssd": 3.5279512483715925,
+     "ln_rmssd": 3.5229965835739607,
      "resp_rate": 13.522223733314192,
      "skin_temp_z": 2.581998719140345,
      "skin_temp_adc": 30406.00025889489,
@@ -56098,19 +55988,19 @@
      "sleeping_hr_nadir": 47.0,
      "sleeping_hr_nadir_ts": 1783986589.0,
      "waking_hr": 73.89752703749873,
-     "rem_min": 57.0,
-     "deep_min": 26.0,
-     "light_min": 331.0,
-     "tst_min": 413.0,
+     "rem_min": 157.0,
+     "deep_min": 27.0,
+     "light_min": 219.0,
+     "tst_min": 403.0,
      "lf_hf": 0.151,
      "hrv_cv": 6.9,
      "irregular_rhythm_flag": 0.0,
      "brv_cv": 0.0008,
      "brv_slope": 0.0004,
-     "efficiency": 91.7,
+     "efficiency": 89.3,
      "worn_min": 1440.0,
      "unobserved_min": 0.0,
-     "awakenings": 3.0,
+     "awakenings": 2.0,
      "longest_sleep_min": 165.0,
      "sol_min": null,
      "midsleep_sec": -3589.0,
@@ -57677,9 +57567,9 @@
        "is_main": true,
        "onset_ts": 1783984492,
        "wake_ts": 1784011530,
-       "duration_min": 413,
+       "duration_min": 403,
        "in_bed_min": 450,
-       "efficiency": 0.917
+       "efficiency": 0.893
       },
       {
        "is_main": false,
@@ -57692,7 +57582,7 @@
        "source": "confirmed"
       }
      ],
-     "total_asleep_min": 458
+     "total_asleep_min": 448
     },
     "sleep_charging": {
      "present": false
@@ -58124,15 +58014,15 @@
    },
    "finalized": 0,
    "rhr": 48.08833333333333,
-   "rmssd": 34.05412764733815,
-   "readiness": 80.19802151862692,
+   "rmssd": 33.88581816272392,
+   "readiness": 79.7366205310914,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "8eccbc88a41050617ef3b2421ad9fd489b3405efa27e31d34e5157d85c29f696"
+   "payload_sha256": "f146bd22d303fc8e01f3d971ab5f7ad305e883de8d6f68cbaaea43248f3a9f60"
   },
   {
    "day_id": "2026-07-15",
-   "algo_version": 118,
+   "algo_version": 119,
    "payload_json": {
     "date": "2026-07-15",
     "day_confidence": 0.6,
@@ -58195,7 +58085,7 @@
       "note": "Breathing-rate variability TREND (within-user only); surface a change only beyond the metric MDC"
      },
      "rmssd_sleep_session": {
-      "value": 34.1,
+      "value": 33.9,
       "confidence": 0.5453,
       "tier": "HIGH",
       "inputs_used": [
@@ -58212,14 +58102,14 @@
       "consecutive_rmssd_ms": 31.7
      },
      "rmssd_nocturnal": {
-      "value": 32.16077953226363,
-      "confidence": 0.53611,
+      "value": 33.781494911966846,
+      "confidence": 0.521464,
       "tier": "HIGH",
       "inputs_used": [
        "rr_cleaned",
        "beat_times"
       ],
-      "note": "robust nocturnal RMSSD = MEDIAN of 72 consecutive 5-min-window RMSSDs (REM/arousal-robust). PRV not ECG-HRV; RMSSD is quantization-sensitive at 1 Hz."
+      "note": "robust nocturnal RMSSD = MEDIAN of 48 consecutive 5-min-window RMSSDs (REM/arousal-robust). PRV not ECG-HRV; RMSSD is quantization-sensitive at 1 Hz."
      },
      "hrv_freq": {
       "value": {
@@ -58301,12 +58191,12 @@
      },
      "readiness_lnrmssd": {
       "value": {
-       "ln_rmssd_today": 3.527951,
-       "rolling7_mean": 3.52542,
-       "rolling7_median": 3.527951,
-       "cv_pct": 1.620447,
+       "ln_rmssd_today": 3.522997,
+       "rolling7_mean": 3.524005,
+       "rolling7_median": 3.522997,
+       "cv_pct": 1.620473,
        "z": 0.0,
-       "swc": 0.030824,
+       "swc": 0.030954,
        "band": "normal",
        "saturation_flag": false
       },
@@ -58319,8 +58209,8 @@
      },
      "readiness_composite": {
       "value": {
-       "score": 70.733248,
-       "composite_z": 0.882464,
+       "score": 70.219045,
+       "composite_z": 0.85775,
        "calibration": {
         "status": "calibrating",
         "nights": 2
@@ -58346,8 +58236,8 @@
        },
        {
         "label": "HRV",
-        "contribution": 0.004726,
-        "detail": "oriented robust-z (median+MAD)=0.012152"
+        "contribution": -0.019987,
+        "detail": "oriented robust-z (median+MAD)=-0.051396"
        }
       ],
       "note": "GLASS-BOX readiness: disclosed weights autonomic (HRV+RHR, mean of their z) 0.70 > RR 0.20 > temp 0.10, renormalized over present inputs. Drivers are definitional within the formula (correction, not inferred cause). calibrating:have=2,need=14. Refused: temp: no settled fraction measured for this night — an ungated nightly mean cannot tell skin from a warming strap."
@@ -58391,18 +58281,18 @@
       "mdc_multiples": -0.34
      },
      "hrv": {
-      "baseline": 34.542566155042095,
+      "baseline": 34.52669855356304,
       "spread": 5.0,
       "n_valid": 16,
       "nights_since_update": 0,
       "status": "trusted",
-      "value": 34.05412764733815,
-      "z": -0.078,
-      "delta": -0.488,
-      "ratio": -0.0141,
+      "value": 33.88581816272392,
+      "z": -0.102,
+      "delta": -0.641,
+      "ratio": -0.0186,
       "in_normal_range": true,
       "mdc": 17.366,
-      "mdc_multiples": -0.03
+      "mdc_multiples": -0.04
      },
      "resp": {
       "baseline": 13.628498418488897,
@@ -58452,20 +58342,20 @@
      },
      "accounting": {
       "value": {
-       "tst_sec": 24805,
-       "waso_sec": 2232,
+       "tst_sec": 24150,
+       "waso_sec": 1290,
        "in_bed_sec": 27037,
        "unobserved_sec": 0,
        "observed_in_bed_sec": 27037,
-       "efficiency_pct": 91.744646,
-       "nrem_sec": 21385,
-       "light_sec": 19945,
-       "deep_sec": 1440,
-       "rem_sec": 3420,
-       "wake_sec": 2232,
+       "efficiency_pct": 89.32204,
+       "nrem_sec": 14730,
+       "light_sec": 13140,
+       "deep_sec": 1590,
+       "rem_sec": 9420,
+       "wake_sec": 2887,
        "deep_low_confidence": true,
-       "awakenings": 3,
-       "longest_sleep_sec": 9898,
+       "awakenings": 2,
+       "longest_sleep_sec": 9870,
        "sol_sec": null
       },
       "confidence": 0.6,
@@ -58478,9 +58368,9 @@
      "band_offset_trim_sec": null,
      "stager": {
       "value": {
-       "wake_pct": 8.255353774457225,
-       "nrem_pct": 86.21245716589398,
-       "rem_pct": 13.787542834106027,
+       "wake_pct": 10.677959832821688,
+       "nrem_pct": 60.993788819875775,
+       "rem_pct": 39.006211180124225,
        "epoch_sec": 1,
        "epochs": 27037
       },
@@ -62403,7 +62293,7 @@
      "si": 159.44,
      "level": "elevated",
      "lf_hf": 0.151,
-     "rmssd": 34.1,
+     "rmssd": 33.9,
      "confidence": 0.7,
      "tier": "ESTIMATE",
      "inputs_used": [
@@ -76800,168 +76690,113 @@
      "hypnogram": [
       {
        "start": 1784070892,
-       "end": 1784071672,
-       "stage": "light"
-      },
-      {
-       "start": 1784071672,
-       "end": 1784072392,
-       "stage": "rem"
-      },
-      {
-       "start": 1784072392,
-       "end": 1784074222,
-       "stage": "light"
-      },
-      {
-       "start": 1784074222,
-       "end": 1784074642,
-       "stage": "rem"
-      },
-      {
-       "start": 1784074642,
-       "end": 1784075092,
-       "stage": "light"
-      },
-      {
-       "start": 1784075092,
-       "end": 1784075692,
+       "end": 1784072122,
        "stage": "wake"
       },
       {
-       "start": 1784075692,
-       "end": 1784076832,
+       "start": 1784072122,
+       "end": 1784074162,
        "stage": "light"
       },
       {
-       "start": 1784076832,
-       "end": 1784077132,
-       "stage": "rem"
-      },
-      {
-       "start": 1784077132,
-       "end": 1784079442,
-       "stage": "light"
-      },
-      {
-       "start": 1784079442,
-       "end": 1784079742,
-       "stage": "rem"
-      },
-      {
-       "start": 1784079742,
-       "end": 1784080702,
-       "stage": "light"
-      },
-      {
-       "start": 1784080702,
-       "end": 1784081272,
-       "stage": "rem"
-      },
-      {
-       "start": 1784081272,
-       "end": 1784081542,
-       "stage": "wake"
-      },
-      {
-       "start": 1784081542,
-       "end": 1784084542,
-       "stage": "light"
-      },
-      {
-       "start": 1784084542,
-       "end": 1784084782,
+       "start": 1784074162,
+       "end": 1784074912,
        "stage": "deep"
       },
       {
-       "start": 1784084782,
-       "end": 1784085412,
+       "start": 1784074912,
+       "end": 1784075122,
        "stage": "light"
       },
       {
-       "start": 1784085412,
+       "start": 1784075122,
+       "end": 1784075662,
+       "stage": "rem"
+      },
+      {
+       "start": 1784075662,
+       "end": 1784076052,
+       "stage": "light"
+      },
+      {
+       "start": 1784076052,
+       "end": 1784076892,
+       "stage": "deep"
+      },
+      {
+       "start": 1784076892,
+       "end": 1784079622,
+       "stage": "light"
+      },
+      {
+       "start": 1784079622,
+       "end": 1784080792,
+       "stage": "rem"
+      },
+      {
+       "start": 1784080792,
+       "end": 1784081122,
+       "stage": "light"
+      },
+      {
+       "start": 1784081122,
+       "end": 1784081692,
+       "stage": "wake"
+      },
+      {
+       "start": 1784081692,
        "end": 1784085592,
-       "stage": "deep"
+       "stage": "light"
       },
       {
        "start": 1784085592,
-       "end": 1784087422,
-       "stage": "light"
-      },
-      {
-       "start": 1784087422,
-       "end": 1784088052,
+       "end": 1784085892,
        "stage": "rem"
       },
       {
-       "start": 1784088052,
-       "end": 1784089282,
+       "start": 1784085892,
+       "end": 1784087392,
        "stage": "light"
       },
       {
-       "start": 1784089282,
-       "end": 1784089552,
-       "stage": "deep"
-      },
-      {
-       "start": 1784089552,
-       "end": 1784091440,
-       "stage": "light"
-      },
-      {
-       "start": 1784091440,
-       "end": 1784092382,
-       "stage": "wake"
-      },
-      {
-       "start": 1784092382,
-       "end": 1784092922,
-       "stage": "light"
-      },
-      {
-       "start": 1784092922,
-       "end": 1784093402,
+       "start": 1784087392,
+       "end": 1784087992,
        "stage": "rem"
       },
       {
-       "start": 1784093402,
-       "end": 1784093822,
+       "start": 1784087992,
+       "end": 1784088742,
+       "stage": "light"
+      },
+      {
+       "start": 1784088742,
+       "end": 1784091562,
+       "stage": "rem"
+      },
+      {
+       "start": 1784091562,
+       "end": 1784092282,
        "stage": "wake"
       },
       {
-       "start": 1784093822,
-       "end": 1784093912,
+       "start": 1784092282,
+       "end": 1784096092,
+       "stage": "rem"
+      },
+      {
+       "start": 1784096092,
+       "end": 1784097382,
        "stage": "light"
       },
       {
-       "start": 1784093912,
-       "end": 1784094092,
-       "stage": "deep"
+       "start": 1784097382,
+       "end": 1784097562,
+       "stage": "rem"
       },
       {
-       "start": 1784094092,
-       "end": 1784094242,
-       "stage": "light"
-      },
-      {
-       "start": 1784094242,
-       "end": 1784094512,
-       "stage": "deep"
-      },
-      {
-       "start": 1784094512,
-       "end": 1784094872,
-       "stage": "light"
-      },
-      {
-       "start": 1784094872,
-       "end": 1784095172,
-       "stage": "deep"
-      },
-      {
-       "start": 1784095172,
+       "start": 1784097562,
        "end": 1784097929,
-       "stage": "light"
+       "stage": "wake"
       }
      ],
      "hrv_day": [
@@ -83256,13 +83091,13 @@
     "scalars": {
      "rhr": 48.08833333333333,
      "rhr_nocturnal": 48.08833333333333,
-     "rmssd": 34.05412764733815,
+     "rmssd": 33.88581816272392,
      "rmssd_whole": 32.12768524038331,
-     "readiness": 70.73324756456391,
-     "readiness_z": 0.8824635823815328,
+     "readiness": 70.2190445316922,
+     "readiness_z": 0.857750452895528,
      "strain": 11.835903309094508,
      "max_hr_used": 186.113,
-     "ln_rmssd": 3.5279512483715925,
+     "ln_rmssd": 3.5229965835739607,
      "resp_rate": 13.522223733314192,
      "skin_temp_z": 2.083305937349391,
      "skin_temp_adc": 30406.000110954952,
@@ -83283,19 +83118,19 @@
      "sleeping_hr_nadir": 47.0,
      "sleeping_hr_nadir_ts": 1784072989.0,
      "waking_hr": 75.30632403863677,
-     "rem_min": 57.0,
-     "deep_min": 24.0,
-     "light_min": 332.0,
-     "tst_min": 413.0,
+     "rem_min": 157.0,
+     "deep_min": 27.0,
+     "light_min": 219.0,
+     "tst_min": 403.0,
      "lf_hf": 0.151,
      "hrv_cv": 6.9,
      "irregular_rhythm_flag": 0.0,
      "brv_cv": 0.0008,
      "brv_slope": 0.0004,
-     "efficiency": 91.7,
+     "efficiency": 89.3,
      "worn_min": 1320.0,
      "unobserved_min": 0.0,
-     "awakenings": 3.0,
+     "awakenings": 2.0,
      "longest_sleep_min": 165.0,
      "sol_min": null,
      "midsleep_sec": -3589.0,
@@ -84675,12 +84510,12 @@
        "is_main": true,
        "onset_ts": 1784070892,
        "wake_ts": 1784097930,
-       "duration_min": 413,
+       "duration_min": 403,
        "in_bed_min": 450,
-       "efficiency": 0.917
+       "efficiency": 0.893
       }
      ],
-     "total_asleep_min": 413
+     "total_asleep_min": 403
     },
     "sleep_charging": {
      "present": false
@@ -85115,11 +84950,11 @@
    },
    "finalized": 0,
    "rhr": 48.08833333333333,
-   "rmssd": 34.05412764733815,
-   "readiness": 70.73324756456391,
+   "rmssd": 33.88581816272392,
+   "readiness": 70.2190445316922,
    "skipped": 0,
    "partial": 0,
-   "payload_sha256": "6a9c9a6d520564ab4e29410ba707d24c35d8d7120e0763d09f2ec42c19677ccb"
+   "payload_sha256": "9b7e8f919746fc0f799fef182574f721f881c33a59df03642705ac7a476574ed"
   }
  ],
  "metric_series": [
@@ -85131,7 +84966,7 @@
   {
    "date": "2026-07-13",
    "key": "awakenings",
-   "value": 3.0
+   "value": 2.0
   },
   {
    "date": "2026-07-13",
@@ -85151,7 +84986,7 @@
   {
    "date": "2026-07-13",
    "key": "deep_min",
-   "value": 24.0
+   "value": 27.0
   },
   {
    "date": "2026-07-13",
@@ -85166,7 +85001,7 @@
   {
    "date": "2026-07-13",
    "key": "efficiency",
-   "value": 91.7
+   "value": 89.3
   },
   {
    "date": "2026-07-13",
@@ -85201,12 +85036,12 @@
   {
    "date": "2026-07-13",
    "key": "light_min",
-   "value": 332.0
+   "value": 219.0
   },
   {
    "date": "2026-07-13",
    "key": "ln_rmssd",
-   "value": 3.5279512483715925
+   "value": 3.5229965835739607
   },
   {
    "date": "2026-07-13",
@@ -85236,17 +85071,17 @@
   {
    "date": "2026-07-13",
    "key": "readiness",
-   "value": 80.19802151862692
+   "value": 79.7366205310914
   },
   {
    "date": "2026-07-13",
    "key": "readiness_z",
-   "value": 1.3987169892142113
+   "value": 1.369913670064358
   },
   {
    "date": "2026-07-13",
    "key": "rem_min",
-   "value": 57.0
+   "value": 157.0
   },
   {
    "date": "2026-07-13",
@@ -85261,7 +85096,7 @@
   {
    "date": "2026-07-13",
    "key": "rmssd",
-   "value": 34.05412764733815
+   "value": 33.88581816272392
   },
   {
    "date": "2026-07-13",
@@ -85366,7 +85201,7 @@
   {
    "date": "2026-07-13",
    "key": "tst_min",
-   "value": 413.0
+   "value": 403.0
   },
   {
    "date": "2026-07-13",
@@ -85386,7 +85221,7 @@
   {
    "date": "2026-07-14",
    "key": "awakenings",
-   "value": 3.0
+   "value": 2.0
   },
   {
    "date": "2026-07-14",
@@ -85406,7 +85241,7 @@
   {
    "date": "2026-07-14",
    "key": "deep_min",
-   "value": 26.0
+   "value": 27.0
   },
   {
    "date": "2026-07-14",
@@ -85421,7 +85256,7 @@
   {
    "date": "2026-07-14",
    "key": "efficiency",
-   "value": 91.7
+   "value": 89.3
   },
   {
    "date": "2026-07-14",
@@ -85456,12 +85291,12 @@
   {
    "date": "2026-07-14",
    "key": "light_min",
-   "value": 331.0
+   "value": 219.0
   },
   {
    "date": "2026-07-14",
    "key": "ln_rmssd",
-   "value": 3.5279512483715925
+   "value": 3.5229965835739607
   },
   {
    "date": "2026-07-14",
@@ -85491,17 +85326,17 @@
   {
    "date": "2026-07-14",
    "key": "readiness",
-   "value": 80.19802151862692
+   "value": 79.7366205310914
   },
   {
    "date": "2026-07-14",
    "key": "readiness_z",
-   "value": 1.3987169892142113
+   "value": 1.369913670064358
   },
   {
    "date": "2026-07-14",
    "key": "rem_min",
-   "value": 57.0
+   "value": 157.0
   },
   {
    "date": "2026-07-14",
@@ -85516,7 +85351,7 @@
   {
    "date": "2026-07-14",
    "key": "rmssd",
-   "value": 34.05412764733815
+   "value": 33.88581816272392
   },
   {
    "date": "2026-07-14",
@@ -85621,7 +85456,7 @@
   {
    "date": "2026-07-14",
    "key": "tst_min",
-   "value": 413.0
+   "value": 403.0
   },
   {
    "date": "2026-07-14",
@@ -85641,7 +85476,7 @@
   {
    "date": "2026-07-15",
    "key": "awakenings",
-   "value": 3.0
+   "value": 2.0
   },
   {
    "date": "2026-07-15",
@@ -85661,7 +85496,7 @@
   {
    "date": "2026-07-15",
    "key": "deep_min",
-   "value": 24.0
+   "value": 27.0
   },
   {
    "date": "2026-07-15",
@@ -85676,7 +85511,7 @@
   {
    "date": "2026-07-15",
    "key": "efficiency",
-   "value": 91.7
+   "value": 89.3
   },
   {
    "date": "2026-07-15",
@@ -85711,12 +85546,12 @@
   {
    "date": "2026-07-15",
    "key": "light_min",
-   "value": 332.0
+   "value": 219.0
   },
   {
    "date": "2026-07-15",
    "key": "ln_rmssd",
-   "value": 3.5279512483715925
+   "value": 3.5229965835739607
   },
   {
    "date": "2026-07-15",
@@ -85746,17 +85581,17 @@
   {
    "date": "2026-07-15",
    "key": "readiness",
-   "value": 70.73324756456391
+   "value": 70.2190445316922
   },
   {
    "date": "2026-07-15",
    "key": "readiness_z",
-   "value": 0.8824635823815328
+   "value": 0.857750452895528
   },
   {
    "date": "2026-07-15",
    "key": "rem_min",
-   "value": 57.0
+   "value": 157.0
   },
   {
    "date": "2026-07-15",
@@ -85771,7 +85606,7 @@
   {
    "date": "2026-07-15",
    "key": "rmssd",
-   "value": 34.05412764733815
+   "value": 33.88581816272392
   },
   {
    "date": "2026-07-15",
@@ -85876,7 +85711,7 @@
   {
    "date": "2026-07-15",
    "key": "tst_min",
-   "value": 413.0
+   "value": 403.0
   },
   {
    "date": "2026-07-15",
@@ -85892,7 +85727,7 @@
  "metric_series_version": [
   {
    "date": "2026-07-13",
-   "algo_version": 118,
+   "algo_version": 119,
    "source": "band",
    "device_family": "gen5",
    "coverage_devices": "",
@@ -85900,7 +85735,7 @@
   },
   {
    "date": "2026-07-14",
-   "algo_version": 118,
+   "algo_version": 119,
    "source": "band",
    "device_family": "gen5",
    "coverage_devices": "",
@@ -85908,7 +85743,7 @@
   },
   {
    "date": "2026-07-15",
-   "algo_version": 118,
+   "algo_version": 119,
    "source": "band",
    "device_family": "gen5",
    "coverage_devices": "",
@@ -85918,7 +85753,7 @@
  "wake_day_features": [
   {
    "day_id": "2026-07-13",
-   "algo_version": 118,
+   "algo_version": 119,
    "payload_json": {
     "day_id": "2026-07-13",
     "active_min": 90,
@@ -87126,7 +86961,7 @@
   },
   {
    "day_id": "2026-07-14",
-   "algo_version": 118,
+   "algo_version": 119,
    "payload_json": {
     "day_id": "2026-07-14",
     "active_min": 239,
@@ -88334,7 +88169,7 @@
   },
   {
    "day_id": "2026-07-15",
-   "algo_version": 118,
+   "algo_version": 119,
    "payload_json": {
     "day_id": "2026-07-15",
     "active_min": 40,
@@ -89525,8 +89360,8 @@
   {
    "date": "2026-07-13",
    "rhr": 48.08833333333333,
-   "rmssd": 34.05412764733815,
-   "readiness": 80.19802151862692,
+   "rmssd": 33.88581816272392,
+   "readiness": 79.7366205310914,
    "resp_rate": 13.522223733314192,
    "skin_temp_z": 3.8092033860986256,
    "skin_temp_adc": 30406.000406834824,
@@ -89535,176 +89370,121 @@
    "strain": 11.84049664218217,
    "steps": 18240.0,
    "nap_min": 0.0,
-   "efficiency": 91.7,
+   "efficiency": 89.3,
    "onset_sec": 1783898092,
    "wake_sec": 1783925129,
-   "tst_min": 413,
+   "tst_min": 403,
    "sleep_coverage": 1.0,
    "hypnogram": [
     {
      "start": 1783898092,
-     "end": 1783898872,
-     "stage": "light"
-    },
-    {
-     "start": 1783898872,
-     "end": 1783899592,
-     "stage": "rem"
-    },
-    {
-     "start": 1783899592,
-     "end": 1783901422,
-     "stage": "light"
-    },
-    {
-     "start": 1783901422,
-     "end": 1783901842,
-     "stage": "rem"
-    },
-    {
-     "start": 1783901842,
-     "end": 1783902292,
-     "stage": "light"
-    },
-    {
-     "start": 1783902292,
-     "end": 1783902892,
+     "end": 1783899322,
      "stage": "wake"
     },
     {
-     "start": 1783902892,
-     "end": 1783904032,
+     "start": 1783899322,
+     "end": 1783901362,
      "stage": "light"
     },
     {
-     "start": 1783904032,
-     "end": 1783904332,
-     "stage": "rem"
-    },
-    {
-     "start": 1783904332,
-     "end": 1783906642,
-     "stage": "light"
-    },
-    {
-     "start": 1783906642,
-     "end": 1783906942,
-     "stage": "rem"
-    },
-    {
-     "start": 1783906942,
-     "end": 1783907902,
-     "stage": "light"
-    },
-    {
-     "start": 1783907902,
-     "end": 1783908472,
-     "stage": "rem"
-    },
-    {
-     "start": 1783908472,
-     "end": 1783908742,
-     "stage": "wake"
-    },
-    {
-     "start": 1783908742,
-     "end": 1783911742,
-     "stage": "light"
-    },
-    {
-     "start": 1783911742,
-     "end": 1783911982,
+     "start": 1783901362,
+     "end": 1783902112,
      "stage": "deep"
     },
     {
-     "start": 1783911982,
-     "end": 1783912612,
+     "start": 1783902112,
+     "end": 1783902322,
      "stage": "light"
     },
     {
-     "start": 1783912612,
+     "start": 1783902322,
+     "end": 1783902862,
+     "stage": "rem"
+    },
+    {
+     "start": 1783902862,
+     "end": 1783903252,
+     "stage": "light"
+    },
+    {
+     "start": 1783903252,
+     "end": 1783904092,
+     "stage": "deep"
+    },
+    {
+     "start": 1783904092,
+     "end": 1783906822,
+     "stage": "light"
+    },
+    {
+     "start": 1783906822,
+     "end": 1783907992,
+     "stage": "rem"
+    },
+    {
+     "start": 1783907992,
+     "end": 1783908322,
+     "stage": "light"
+    },
+    {
+     "start": 1783908322,
+     "end": 1783908892,
+     "stage": "wake"
+    },
+    {
+     "start": 1783908892,
      "end": 1783912792,
-     "stage": "deep"
+     "stage": "light"
     },
     {
      "start": 1783912792,
-     "end": 1783914622,
-     "stage": "light"
-    },
-    {
-     "start": 1783914622,
-     "end": 1783915252,
+     "end": 1783913092,
      "stage": "rem"
     },
     {
-     "start": 1783915252,
-     "end": 1783916482,
+     "start": 1783913092,
+     "end": 1783914592,
      "stage": "light"
     },
     {
-     "start": 1783916482,
-     "end": 1783916752,
-     "stage": "deep"
-    },
-    {
-     "start": 1783916752,
-     "end": 1783918640,
-     "stage": "light"
-    },
-    {
-     "start": 1783918640,
-     "end": 1783919582,
-     "stage": "wake"
-    },
-    {
-     "start": 1783919582,
-     "end": 1783920122,
-     "stage": "light"
-    },
-    {
-     "start": 1783920122,
-     "end": 1783920602,
+     "start": 1783914592,
+     "end": 1783915192,
      "stage": "rem"
     },
     {
-     "start": 1783920602,
-     "end": 1783921022,
+     "start": 1783915192,
+     "end": 1783915942,
+     "stage": "light"
+    },
+    {
+     "start": 1783915942,
+     "end": 1783918762,
+     "stage": "rem"
+    },
+    {
+     "start": 1783918762,
+     "end": 1783919482,
      "stage": "wake"
     },
     {
-     "start": 1783921022,
-     "end": 1783921112,
+     "start": 1783919482,
+     "end": 1783923292,
+     "stage": "rem"
+    },
+    {
+     "start": 1783923292,
+     "end": 1783924582,
      "stage": "light"
     },
     {
-     "start": 1783921112,
-     "end": 1783921292,
-     "stage": "deep"
+     "start": 1783924582,
+     "end": 1783924762,
+     "stage": "rem"
     },
     {
-     "start": 1783921292,
-     "end": 1783921442,
-     "stage": "light"
-    },
-    {
-     "start": 1783921442,
-     "end": 1783921712,
-     "stage": "deep"
-    },
-    {
-     "start": 1783921712,
-     "end": 1783922072,
-     "stage": "light"
-    },
-    {
-     "start": 1783922072,
-     "end": 1783922372,
-     "stage": "deep"
-    },
-    {
-     "start": 1783922372,
+     "start": 1783924762,
      "end": 1783925129,
-     "stage": "light"
+     "stage": "wake"
     }
    ],
    "hourly_hr": [
@@ -89740,8 +89520,8 @@
   {
    "date": "2026-07-14",
    "rhr": 48.08833333333333,
-   "rmssd": 34.05412764733815,
-   "readiness": 80.19802151862692,
+   "rmssd": 33.88581816272392,
+   "readiness": 79.7366205310914,
    "resp_rate": 13.522223733314192,
    "skin_temp_z": 2.581998719140345,
    "skin_temp_adc": 30406.00025889489,
@@ -89750,176 +89530,121 @@
    "strain": 11.8362061213452,
    "steps": 17640.0,
    "nap_min": 45.0,
-   "efficiency": 91.7,
+   "efficiency": 89.3,
    "onset_sec": 1783984492,
    "wake_sec": 1784011529,
-   "tst_min": 413,
+   "tst_min": 403,
    "sleep_coverage": 1.0,
    "hypnogram": [
     {
      "start": 1783984492,
-     "end": 1783985272,
-     "stage": "light"
-    },
-    {
-     "start": 1783985272,
-     "end": 1783985992,
-     "stage": "rem"
-    },
-    {
-     "start": 1783985992,
-     "end": 1783987822,
-     "stage": "light"
-    },
-    {
-     "start": 1783987822,
-     "end": 1783988242,
-     "stage": "rem"
-    },
-    {
-     "start": 1783988242,
-     "end": 1783988692,
-     "stage": "light"
-    },
-    {
-     "start": 1783988692,
-     "end": 1783989292,
+     "end": 1783985722,
      "stage": "wake"
     },
     {
-     "start": 1783989292,
-     "end": 1783990432,
+     "start": 1783985722,
+     "end": 1783987762,
      "stage": "light"
     },
     {
-     "start": 1783990432,
-     "end": 1783990732,
-     "stage": "rem"
-    },
-    {
-     "start": 1783990732,
-     "end": 1783993042,
-     "stage": "light"
-    },
-    {
-     "start": 1783993042,
-     "end": 1783993342,
-     "stage": "rem"
-    },
-    {
-     "start": 1783993342,
-     "end": 1783994302,
-     "stage": "light"
-    },
-    {
-     "start": 1783994302,
-     "end": 1783994872,
-     "stage": "rem"
-    },
-    {
-     "start": 1783994872,
-     "end": 1783995142,
-     "stage": "wake"
-    },
-    {
-     "start": 1783995142,
-     "end": 1783998142,
-     "stage": "light"
-    },
-    {
-     "start": 1783998142,
-     "end": 1783998382,
+     "start": 1783987762,
+     "end": 1783988512,
      "stage": "deep"
     },
     {
-     "start": 1783998382,
-     "end": 1783999012,
+     "start": 1783988512,
+     "end": 1783988722,
      "stage": "light"
     },
     {
-     "start": 1783999012,
+     "start": 1783988722,
+     "end": 1783989262,
+     "stage": "rem"
+    },
+    {
+     "start": 1783989262,
+     "end": 1783989652,
+     "stage": "light"
+    },
+    {
+     "start": 1783989652,
+     "end": 1783990492,
+     "stage": "deep"
+    },
+    {
+     "start": 1783990492,
+     "end": 1783993222,
+     "stage": "light"
+    },
+    {
+     "start": 1783993222,
+     "end": 1783994392,
+     "stage": "rem"
+    },
+    {
+     "start": 1783994392,
+     "end": 1783994722,
+     "stage": "light"
+    },
+    {
+     "start": 1783994722,
+     "end": 1783995292,
+     "stage": "wake"
+    },
+    {
+     "start": 1783995292,
      "end": 1783999192,
-     "stage": "deep"
+     "stage": "light"
     },
     {
      "start": 1783999192,
-     "end": 1784001022,
-     "stage": "light"
-    },
-    {
-     "start": 1784001022,
-     "end": 1784001652,
+     "end": 1783999492,
      "stage": "rem"
     },
     {
-     "start": 1784001652,
-     "end": 1784002882,
+     "start": 1783999492,
+     "end": 1784000992,
      "stage": "light"
     },
     {
-     "start": 1784002882,
-     "end": 1784003152,
-     "stage": "deep"
-    },
-    {
-     "start": 1784003152,
-     "end": 1784005040,
-     "stage": "light"
-    },
-    {
-     "start": 1784005040,
-     "end": 1784005982,
-     "stage": "wake"
-    },
-    {
-     "start": 1784005982,
-     "end": 1784006522,
-     "stage": "light"
-    },
-    {
-     "start": 1784006522,
-     "end": 1784007002,
+     "start": 1784000992,
+     "end": 1784001592,
      "stage": "rem"
     },
     {
-     "start": 1784007002,
-     "end": 1784007422,
+     "start": 1784001592,
+     "end": 1784002342,
+     "stage": "light"
+    },
+    {
+     "start": 1784002342,
+     "end": 1784005162,
+     "stage": "rem"
+    },
+    {
+     "start": 1784005162,
+     "end": 1784005882,
      "stage": "wake"
     },
     {
-     "start": 1784007422,
-     "end": 1784007512,
+     "start": 1784005882,
+     "end": 1784009692,
+     "stage": "rem"
+    },
+    {
+     "start": 1784009692,
+     "end": 1784010982,
      "stage": "light"
     },
     {
-     "start": 1784007512,
-     "end": 1784007692,
-     "stage": "deep"
+     "start": 1784010982,
+     "end": 1784011162,
+     "stage": "rem"
     },
     {
-     "start": 1784007692,
-     "end": 1784007842,
-     "stage": "light"
-    },
-    {
-     "start": 1784007842,
-     "end": 1784008202,
-     "stage": "deep"
-    },
-    {
-     "start": 1784008202,
-     "end": 1784008472,
-     "stage": "light"
-    },
-    {
-     "start": 1784008472,
-     "end": 1784008772,
-     "stage": "deep"
-    },
-    {
-     "start": 1784008772,
+     "start": 1784011162,
      "end": 1784011529,
-     "stage": "light"
+     "stage": "wake"
     }
    ],
    "hourly_hr": [
@@ -89955,8 +89680,8 @@
   {
    "date": "2026-07-15",
    "rhr": 48.08833333333333,
-   "rmssd": 34.05412764733815,
-   "readiness": 70.73324756456391,
+   "rmssd": 33.88581816272392,
+   "readiness": 70.2190445316922,
    "resp_rate": 13.522223733314192,
    "skin_temp_z": 2.083305937349391,
    "skin_temp_adc": 30406.000110954952,
@@ -89965,176 +89690,121 @@
    "strain": 11.835903309094508,
    "steps": 17640.0,
    "nap_min": 0.0,
-   "efficiency": 91.7,
+   "efficiency": 89.3,
    "onset_sec": 1784070892,
    "wake_sec": 1784097929,
-   "tst_min": 413,
+   "tst_min": 403,
    "sleep_coverage": 1.0,
    "hypnogram": [
     {
      "start": 1784070892,
-     "end": 1784071672,
-     "stage": "light"
-    },
-    {
-     "start": 1784071672,
-     "end": 1784072392,
-     "stage": "rem"
-    },
-    {
-     "start": 1784072392,
-     "end": 1784074222,
-     "stage": "light"
-    },
-    {
-     "start": 1784074222,
-     "end": 1784074642,
-     "stage": "rem"
-    },
-    {
-     "start": 1784074642,
-     "end": 1784075092,
-     "stage": "light"
-    },
-    {
-     "start": 1784075092,
-     "end": 1784075692,
+     "end": 1784072122,
      "stage": "wake"
     },
     {
-     "start": 1784075692,
-     "end": 1784076832,
+     "start": 1784072122,
+     "end": 1784074162,
      "stage": "light"
     },
     {
-     "start": 1784076832,
-     "end": 1784077132,
-     "stage": "rem"
-    },
-    {
-     "start": 1784077132,
-     "end": 1784079442,
-     "stage": "light"
-    },
-    {
-     "start": 1784079442,
-     "end": 1784079742,
-     "stage": "rem"
-    },
-    {
-     "start": 1784079742,
-     "end": 1784080702,
-     "stage": "light"
-    },
-    {
-     "start": 1784080702,
-     "end": 1784081272,
-     "stage": "rem"
-    },
-    {
-     "start": 1784081272,
-     "end": 1784081542,
-     "stage": "wake"
-    },
-    {
-     "start": 1784081542,
-     "end": 1784084542,
-     "stage": "light"
-    },
-    {
-     "start": 1784084542,
-     "end": 1784084782,
+     "start": 1784074162,
+     "end": 1784074912,
      "stage": "deep"
     },
     {
-     "start": 1784084782,
-     "end": 1784085412,
+     "start": 1784074912,
+     "end": 1784075122,
      "stage": "light"
     },
     {
-     "start": 1784085412,
+     "start": 1784075122,
+     "end": 1784075662,
+     "stage": "rem"
+    },
+    {
+     "start": 1784075662,
+     "end": 1784076052,
+     "stage": "light"
+    },
+    {
+     "start": 1784076052,
+     "end": 1784076892,
+     "stage": "deep"
+    },
+    {
+     "start": 1784076892,
+     "end": 1784079622,
+     "stage": "light"
+    },
+    {
+     "start": 1784079622,
+     "end": 1784080792,
+     "stage": "rem"
+    },
+    {
+     "start": 1784080792,
+     "end": 1784081122,
+     "stage": "light"
+    },
+    {
+     "start": 1784081122,
+     "end": 1784081692,
+     "stage": "wake"
+    },
+    {
+     "start": 1784081692,
      "end": 1784085592,
-     "stage": "deep"
+     "stage": "light"
     },
     {
      "start": 1784085592,
-     "end": 1784087422,
-     "stage": "light"
-    },
-    {
-     "start": 1784087422,
-     "end": 1784088052,
+     "end": 1784085892,
      "stage": "rem"
     },
     {
-     "start": 1784088052,
-     "end": 1784089282,
+     "start": 1784085892,
+     "end": 1784087392,
      "stage": "light"
     },
     {
-     "start": 1784089282,
-     "end": 1784089552,
-     "stage": "deep"
-    },
-    {
-     "start": 1784089552,
-     "end": 1784091440,
-     "stage": "light"
-    },
-    {
-     "start": 1784091440,
-     "end": 1784092382,
-     "stage": "wake"
-    },
-    {
-     "start": 1784092382,
-     "end": 1784092922,
-     "stage": "light"
-    },
-    {
-     "start": 1784092922,
-     "end": 1784093402,
+     "start": 1784087392,
+     "end": 1784087992,
      "stage": "rem"
     },
     {
-     "start": 1784093402,
-     "end": 1784093822,
+     "start": 1784087992,
+     "end": 1784088742,
+     "stage": "light"
+    },
+    {
+     "start": 1784088742,
+     "end": 1784091562,
+     "stage": "rem"
+    },
+    {
+     "start": 1784091562,
+     "end": 1784092282,
      "stage": "wake"
     },
     {
-     "start": 1784093822,
-     "end": 1784093912,
+     "start": 1784092282,
+     "end": 1784096092,
+     "stage": "rem"
+    },
+    {
+     "start": 1784096092,
+     "end": 1784097382,
      "stage": "light"
     },
     {
-     "start": 1784093912,
-     "end": 1784094092,
-     "stage": "deep"
+     "start": 1784097382,
+     "end": 1784097562,
+     "stage": "rem"
     },
     {
-     "start": 1784094092,
-     "end": 1784094242,
-     "stage": "light"
-    },
-    {
-     "start": 1784094242,
-     "end": 1784094512,
-     "stage": "deep"
-    },
-    {
-     "start": 1784094512,
-     "end": 1784094872,
-     "stage": "light"
-    },
-    {
-     "start": 1784094872,
-     "end": 1784095172,
-     "stage": "deep"
-    },
-    {
-     "start": 1784095172,
+     "start": 1784097562,
      "end": 1784097929,
-     "stage": "light"
+     "stage": "wake"
     }
    ],
    "hourly_hr": [
@@ -90313,7 +89983,7 @@
   },
   "sleep_debt": {
    "value": {
-    "habitual_hours": 6.883333,
+    "habitual_hours": 6.716667,
     "has_free_night": false
    },
    "confidence": 0.3,
@@ -90382,7 +90052,7 @@
     "personal_nights": 0,
     "strain_sec": 0.0,
     "debt_sec": 7200.0,
-    "debt_ledger_sec": 8299.261715058838,
+    "debt_ledger_sec": 9299.261715058838,
     "nap_credit_sec": 0.0,
     "goals_sec": {
      "peak": 37440.0,
@@ -90391,12 +90061,12 @@
     },
     "method": "patent_us12318226_logistic_strain+ledger_debt"
    },
-   "debt_hours": 2.305350476405233,
+   "debt_hours": 2.5831282541830105,
    "consistency_4d_pct": null,
    "restorative_pct": null,
    "bedtime": {
     "value": {
-     "bedtime_min_of_day": 1165.0035078153398
+     "bedtime_min_of_day": 1146.7151362448676
     },
     "confidence": 0.6,
     "tier": "ESTIMATE",
@@ -90408,7 +90078,7 @@
    },
    "wake": {
     "value": {
-     "wake_min_of_day": 405.48333333333335
+     "wake_min_of_day": 405.4833333333336
     },
     "confidence": 0.55,
     "tier": "ESTIMATE",

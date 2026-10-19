@@ -1,0 +1,35 @@
+
+::group::✅ gen4 freeze (setUpAll)
+[derive] movement floor FROZEN at 0.1100 g from 14 days (2026-07-13)
+[derive] derived 2026-07-13 v119 (sleep=true, final=false)
+[derive] crossday: only 1 usable day(s) — skip
+[derive] derived 2026-07-14 v119 (sleep=true, final=false)
+[derive] crossday: only 2 usable day(s) — skip
+[derive] derived 2026-07-15 v119 (sleep=true, final=false)
+[derive] crossday: stored over 3 day(s)
+[derive] derived 2026-07-14 v119 (sleep=true, final=false)
+[derive] crossday: stored over 3 day(s)
+::endgroup::
+✅ gen4 freeze stored output matches the committed golden byte for byte
+::group::✅ gen5 freeze (setUpAll)
+*** sqflite warning ***
+
+You are changing sqflite default factory.
+Be aware of the potential side effects. Any library using sqflite
+will have this factory as the default for all operations.
+
+*** sqflite warning ***
+
+[derive] movement floor FROZEN at 0.1100 g from 14 days (2026-07-13)
+[derive] derived 2026-07-13 v119 (sleep=true, final=false)
+[derive] crossday: only 1 usable day(s) — skip
+[derive] derived 2026-07-14 v119 (sleep=true, final=false)
+[derive] crossday: only 2 usable day(s) — skip
+[derive] derived 2026-07-15 v119 (sleep=true, final=false)
+[derive] crossday: stored over 3 day(s)
+[derive] derived 2026-07-14 v119 (sleep=true, final=false)
+[derive] crossday: stored over 3 day(s)
+::endgroup::
+✅ gen5 freeze stored output matches the committed golden byte for byte
+
+🎉 2 tests passed.
